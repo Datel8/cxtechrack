@@ -1087,6 +1087,34 @@
         }
     </style>
 </head>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ⛓ Wrapper funkce místo localStorage
+  window.saveClientDataToDb = async (clientName, data) => {
+    const ref = doc(db, "clients", clientName);
+    await setDoc(ref, { rackData: data }, { merge: true });
+  };
+
+  window.loadClientDataFromDb = async (clientName) => {
+    const ref = doc(db, "clients", clientName);
+    const snap = await getDoc(ref);
+    return snap.exists() ? snap.data().rackData : null;
+  };
+
+  window.updateClientDataInDb = async (clientName, data) => {
+    const ref = doc(db, "clients", clientName);
+    await updateDoc(ref, { rackData: data });
+  };
+
+  console.log("🔥 Firebase DB ready for cxtechrack!");
+</script>
+
 <body>
     <div class="header">
         <div class="header-brand">
@@ -1129,6 +1157,13 @@
                 <button class="btn" onclick="openDeviceModal()" id="addDeviceBtn" disabled>+ Přidat zařízení</button>
                 <button class="btn" onclick="openConnectionModal()" id="addConnectionBtn" disabled>🔗 Přidat propojení</button>
             </div>
+
+            <div class="control-section">
+    <h3>Cloud / Firestore</h3>
+    <button class="btn" onclick="loadFromCloud()">☁ Načíst z Firestore</button>
+    <button class="btn btn-secondary" onclick="saveToCloud()">☁ Uložit do Firestore</button>
+            </div>
+
             
             <div class="control-section">
                 <h3>Statistiky</h3>
@@ -2698,5 +2733,89 @@
         // Initialize on load
         window.addEventListener('load', init);
     </script>
+     // Initialize on load
+    window.addEventListener('load', init);
+    </script>
+    <!-- Firebase + Firestore integrace -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script>
+  // 👇 SEM jen doplníš svoje hodnoty z Firebase Console
+ const firebaseConfig = {
+  apiKey: "AIzaSyCSzMzAuSkMP1J8RZnrgVZLj3J4yfZ4Eq0",
+  authDomain: "cxtechrackmanager.firebaseapp.com",
+  projectId: "cxtechrackmanager",
+  storageBucket: "cxtechrackmanager.firebasestorage.app",
+  messagingSenderId: "1027981811620",
+  appId: "1:1027981811620:web:a581aca4f5a49d09f72b31",
+  measurementId: "G-2T5BERQ6RM"
+};
+
+  // 🔥 Inicializace Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // Použijeme jeden dokument pro celý stav – jednoduché na začátek
+  const globalDocRef = db.collection("rackManager").doc("global");
+
+  // ☁ Uložit všechna data do Firestore
+  async function saveToCloud() {
+    try {
+      const clients = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
+      const clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
+      const lastClientId = localStorage.getItem('rackManagerLastClient') || null;
+
+      const payload = {
+        clients,
+        clientData,
+        lastClientId,
+        updatedAt: new Date().toISOString()
+      };
+
+      await globalDocRef.set(payload, { merge: true });
+      alert('✅ Data byla uložena do Firestore');
+    } catch (err) {
+      console.error('Chyba při ukládání do Firestore:', err);
+      alert('❌ Chyba při ukládání do cloudu: ' + err.message);
+    }
+  }
+
+  // ☁ Načíst všechna data z Firestore
+  async function loadFromCloud() {
+    try {
+      const snap = await globalDocRef.get();
+      if (!snap.exists) {
+        alert('⚠ V cloudu zatím nejsou žádná data');
+        return;
+      }
+
+      const data = snap.data();
+      const clients = data.clients || [];
+      const clientData = data.clientData || {};
+      const lastClientId = data.lastClientId || null;
+
+      // Přepíšeme localStorage tím, co je v cloudu
+      localStorage.setItem('rackManagerClients', JSON.stringify(clients));
+      localStorage.setItem('rackManagerClientData', JSON.stringify(clientData));
+      if (lastClientId) {
+        localStorage.setItem('rackManagerLastClient', lastClientId);
+      } else {
+        localStorage.removeItem('rackManagerLastClient');
+      }
+
+      // Znovu zainicializujeme UI
+      if (typeof init === 'function') {
+        init();
+      }
+
+      alert('✅ Data byla načtena z Firestore');
+    } catch (err) {
+      console.error('Chyba při načítání z Firestore:', err);
+      alert('❌ Chyba při načítání z cloudu: ' + err.message);
+    }
+  }
+</script>
 </body>
 </html>
+   
+
