@@ -1,0 +1,2702 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CX.TECH Rack Manager Pro</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            /* CX.TECH Brand Colors */
+            --cx-orange: #f89a55;
+            --cx-black: #000000;
+            --cx-white: #ffffff;
+            
+            /* Application colors based on CX.TECH brand */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --accent-primary: #f89a55;
+            --accent-secondary: #ff7a35;
+            --accent-tertiary: #ffaa75;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #3a3a3a;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --info: #60a5fa;
+            
+            /* Legacy color mappings for compatibility */
+            --accent-cyan: var(--accent-primary);
+            --accent-magenta: var(--accent-secondary);
+            --accent-yellow: var(--accent-tertiary);
+            --rack-bg: #0f0f0f;
+            --rack-border: rgba(248, 154, 85, 0.3);
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated background with CX.TECH orange accents */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, var(--cx-orange) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--cx-orange) 0%, transparent 40%),
+                radial-gradient(circle at 40% 20%, var(--cx-orange) 0%, transparent 45%);
+            opacity: 0.02;
+            z-index: -1;
+            animation: backgroundPulse 20s ease-in-out infinite;
+        }
+        
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 0.03; }
+            50% { opacity: 0.06; }
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, #1f1f1f 100%);
+            padding: 2rem;
+            border-bottom: 3px solid var(--cx-orange);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                var(--cx-orange) 0%, 
+                transparent 50%, 
+                var(--cx-orange) 100%);
+            animation: borderGlow 3s linear infinite;
+        }
+        
+        @keyframes borderGlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .header-brand h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .header-brand .cx {
+            color: var(--cx-white);
+            font-weight: 800;
+        }
+        
+        .header-brand .dot {
+            color: var(--cx-orange);
+            font-weight: 800;
+        }
+        
+        .header-brand .tech {
+            color: var(--cx-white);
+            font-weight: 800;
+        }
+        
+        .header-brand .separator {
+            color: var(--cx-orange);
+            margin: 0 0.5rem;
+        }
+        
+        .header-brand .tagline {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 400;
+            margin-top: 0.5rem;
+        }
+        
+        /* Main container */
+        .container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        /* Control panel */
+        .control-panel {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .control-section {
+            margin-bottom: 2rem;
+        }
+        
+        .control-section h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, var(--cx-orange), #ff6a25);
+            color: var(--cx-white);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(248, 154, 85, 0.3);
+            background: linear-gradient(135deg, #ff6a25, var(--cx-orange));
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--cx-orange);
+            color: var(--cx-orange);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(248, 154, 85, 0.1);
+            border-color: var(--cx-orange);
+            box-shadow: 0 0 20px rgba(248, 154, 85, 0.2);
+        }
+        
+        /* Form elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+        
+        /* Rack visualization */
+        .rack-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .rack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .rack-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .rack-stats {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .rack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .rack {
+            background: var(--rack-bg);
+            border: 2px solid var(--rack-border);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .rack:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            transform: translateY(-4px);
+        }
+        
+        .rack-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+        }
+        
+        .rack-units {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 2px;
+            background: #000;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        
+        .rack-unit {
+            height: 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            position: relative;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .rack-unit.occupied {
+            cursor: pointer;
+        }
+        
+        .rack-unit.occupied.switch {
+            background: linear-gradient(90deg, #00ffff, #0099ff);
+            border-color: #00ffff;
+            color: #000;
+        }
+        
+        .rack-unit.occupied.router {
+            background: linear-gradient(90deg, #ff00ff, #9900ff);
+            border-color: #ff00ff;
+            color: #fff;
+        }
+        
+        .rack-unit.occupied.server {
+            background: linear-gradient(90deg, #ffff00, #ff9900);
+            border-color: #ffff00;
+            color: #000;
+        }
+        
+        .rack-unit.occupied.patch {
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            border-color: #00ff88;
+            color: #000;
+        }
+        
+        .rack-unit.occupied:hover {
+            transform: scaleX(1.05);
+            z-index: 10;
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        /* Device info tooltip */
+        .device-tooltip {
+            position: absolute;
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 8px;
+            padding: 1rem;
+            z-index: 1000;
+            min-width: 250px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            display: none;
+            animation: tooltipFadeIn 0.3s;
+        }
+        
+        @keyframes tooltipFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .device-tooltip.active {
+            display: block;
+        }
+        
+        .tooltip-header {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .tooltip-detail {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Device list */
+        .device-list {
+            margin-top: 2rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .device-list h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .device-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .device-table th {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+        }
+        
+        .device-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .device-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .device-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .device-type-badge.switch {
+            background: rgba(0, 255, 255, 0.2);
+            color: var(--accent-cyan);
+        }
+        
+        .device-type-badge.router {
+            background: rgba(255, 0, 255, 0.2);
+            color: var(--accent-magenta);
+        }
+        
+        .device-type-badge.server {
+            background: rgba(255, 255, 0, 0.2);
+            color: var(--accent-yellow);
+        }
+        
+        .device-type-badge.patch {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success);
+        }
+        
+        .delete-btn {
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+        }
+        
+        .delete-btn:hover {
+            background: var(--danger);
+            color: var(--text-primary);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+        }
+        
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .modal-close:hover {
+            color: var(--accent-cyan);
+        }
+        
+        /* Connections view */
+        .connections-container {
+            margin-top: 2rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .connection-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .connection-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+        
+        .connection-from, .connection-to {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .connection-arrow {
+            margin: 0 1rem;
+            color: var(--accent-cyan);
+            font-size: 1.5rem;
+        }
+        
+        
+        /* Client selector */
+        .client-selector-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid var(--accent-cyan);
+        }
+        
+        .client-selector {
+            flex: 1;
+            max-width: 300px;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .client-selector:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+        }
+        
+        .btn-small {
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, var(--accent-magenta), var(--accent-cyan));
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .btn-small:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 0, 255, 0.3);
+        }
+        
+        /* Client info panel */
+        .client-info {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+            border: 1px solid var(--accent-cyan);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .client-info h4 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-magenta);
+            margin-bottom: 0.5rem;
+        }
+        
+        .client-info-detail {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .client-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: linear-gradient(135deg, var(--accent-magenta), var(--accent-cyan));
+            color: var(--bg-primary);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 0.5rem;
+        }
+        
+        .no-client-warning {
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px dashed var(--warning);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            color: var(--warning);
+            margin: 2rem 0;
+        }
+        
+        .client-list {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .client-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .client-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateX(5px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+        
+        .client-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .client-card-name {
+            font-weight: 600;
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .client-card-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .client-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-icon {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-icon:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        
+        .btn-icon.danger:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        /* Network Visualization */
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            width: fit-content;
+        }
+        
+        .view-toggle-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+        
+        .view-toggle-btn.active {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            color: var(--bg-primary);
+            border-color: var(--accent-cyan);
+        }
+        
+        .view-toggle-btn:hover:not(.active) {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        
+        /* Network Map Container */
+        .network-map {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #networkCanvas {
+            width: 100%;
+            height: 500px;
+            cursor: grab;
+        }
+        
+        #networkCanvas:active {
+            cursor: grabbing;
+        }
+        
+        /* Port Management */
+        .port-details-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .port-details-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+        
+        .port-details-container {
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s;
+        }
+        
+        .port-details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .port-details-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .port-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .port-item {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .port-item:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        
+        .port-item.connected {
+            border-color: var(--success);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.05));
+        }
+        
+        .port-item.connected::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .port-item.trunk {
+            border-color: var(--accent-magenta);
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(255, 0, 255, 0.05));
+        }
+        
+        .port-item.uplink {
+            border-color: var(--accent-cyan);
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        }
+        
+        .port-item.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .port-number {
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+        
+        .port-label {
+            font-size: 0.625rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Connection Lines */
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            transform-origin: left center;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.6;
+            animation: flowAnimation 3s linear infinite;
+        }
+        
+        @keyframes flowAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+        
+        .connection-line.active {
+            opacity: 1;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+        
+        /* Port configuration modal */
+        .port-config-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .port-config-form .form-group {
+            margin-bottom: 0;
+        }
+        
+        .port-config-form .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        /* VLAN tags */
+        .vlan-tag {
+            display: inline-block;
+            padding: 0.125rem 0.375rem;
+            background: rgba(255, 255, 0, 0.2);
+            color: var(--accent-yellow);
+            border-radius: 4px;
+            font-size: 0.625rem;
+            font-weight: 600;
+            margin-right: 0.25rem;
+        }
+        
+        /* Connection path visualization */
+        .connection-path {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .connection-path-device {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            color: var(--bg-primary);
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        
+        .connection-path-arrow {
+            margin: 0 1rem;
+            color: var(--accent-cyan);
+        }
+        
+        .connection-path-port {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+        
+        /* Network stats */
+        .network-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .network-stat-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .network-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .network-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-brand">
+            <h1><span class="cx">CX</span><span class="dot">.</span><span class="tech">TECH</span> <span class="separator">></span> Rack Manager Pro</h1>
+            <p class="tagline">komplexní IT • Multi-tenant správa infrastruktury • MSP Edition</p>
+        </div>
+        <div class="client-selector-container">
+            <select id="clientSelector" class="client-selector" onchange="switchClient()">
+                <option value="">-- Vyberte klienta --</option>
+            </select>
+            <button class="btn-small" onclick="openClientModal()">+ Nový klient</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="control-panel">
+            <div class="client-info" id="clientInfo" style="display: none;">
+                <h4>Aktivní klient</h4>
+                <div class="client-info-detail" id="clientName"></div>
+                <div class="client-info-detail" id="clientContact"></div>
+                <div class="client-info-detail" id="clientLocation"></div>
+                <div style="margin-top: 0.5rem;">
+                    <span class="client-badge" id="clientType"></span>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>Správa klientů</h3>
+                <button class="btn" onclick="openClientManagerModal()">👥 Spravovat klienty</button>
+            </div>
+            
+            <div class="control-section">
+                <h3>Správa racků</h3>
+                <button class="btn" onclick="openRackModal()" id="addRackBtn" disabled>+ Přidat rack</button>
+                <button class="btn btn-secondary" onclick="clearAllRacks()" id="clearRacksBtn" disabled>Vymazat vše</button>
+            </div>
+            
+            <div class="control-section">
+                <h3>Správa zařízení</h3>
+                <button class="btn" onclick="openDeviceModal()" id="addDeviceBtn" disabled>+ Přidat zařízení</button>
+                <button class="btn" onclick="openConnectionModal()" id="addConnectionBtn" disabled>🔗 Přidat propojení</button>
+            </div>
+            
+            <div class="control-section">
+                <h3>Statistiky</h3>
+                <div class="stat">
+                    <div class="stat-value" id="totalDevices">0</div>
+                    <div class="stat-label">Celkem zařízení</div>
+                </div>
+                <div class="stat" style="margin-top: 1rem;">
+                    <div class="stat-value" id="totalRacks">0</div>
+                    <div class="stat-label">Celkem racků</div>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>Export / Import</h3>
+                <button class="btn btn-secondary" onclick="exportData()">Exportovat JSON</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">Importovat JSON</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="view-toggle">
+                <button class="view-toggle-btn active" onclick="switchView('racks')">📦 Racky</button>
+                <button class="view-toggle-btn" onclick="switchView('network')">🌐 Síťová mapa</button>
+                <button class="view-toggle-btn" onclick="switchView('topology')">🔗 Topologie</button>
+            </div>
+            
+            <div id="racksView" class="rack-container">
+                <div class="rack-header">
+                    <h2>Racky</h2>
+                    <div class="rack-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="usedUnits">0</div>
+                            <div class="stat-label">Obsazeno U</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="freeUnits">0</div>
+                            <div class="stat-label">Volno U</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="rackGrid" class="rack-grid">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <p>Zatím nemáte žádné racky.<br>Klikněte na "Přidat rack" pro vytvoření prvního racku.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="networkView" class="network-map" style="display: none;">
+                <div class="rack-header">
+                    <h2>Síťová mapa</h2>
+                    <div class="rack-stats">
+                        <button class="btn-small" onclick="resetNetworkView()">🔄 Reset View</button>
+                        <button class="btn-small" onclick="exportNetworkDiagram()">📥 Export SVG</button>
+                    </div>
+                </div>
+                <div class="network-stats">
+                    <div class="network-stat-card">
+                        <div class="network-stat-value" id="totalConnections">0</div>
+                        <div class="network-stat-label">Propojení</div>
+                    </div>
+                    <div class="network-stat-card">
+                        <div class="network-stat-value" id="totalPorts">0</div>
+                        <div class="network-stat-label">Portů celkem</div>
+                    </div>
+                    <div class="network-stat-card">
+                        <div class="network-stat-value" id="usedPorts">0</div>
+                        <div class="network-stat-label">Obsazeno</div>
+                    </div>
+                    <div class="network-stat-card">
+                        <div class="network-stat-value" id="trunkPorts">0</div>
+                        <div class="network-stat-label">Trunk portů</div>
+                    </div>
+                </div>
+                <canvas id="networkCanvas"></canvas>
+            </div>
+            
+            <div id="topologyView" style="display: none;">
+                <!-- Topology view will be dynamically generated -->
+            </div>
+            
+            <div class="device-list" id="deviceListContainer" style="display: none;">
+                <h3>Seznam zařízení</h3>
+                <table class="device-table">
+                    <thead>
+                        <tr>
+                            <th>Název</th>
+                            <th>Typ</th>
+                            <th>Rack</th>
+                            <th>Pozice</th>
+                            <th>IP adresa</th>
+                            <th>Model</th>
+                            <th>Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deviceTableBody">
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="connections-container" id="connectionsContainer" style="display: none;">
+                <h3>Propojení</h3>
+                <div id="connectionsList">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Port Details Overlay -->
+    <div id="portDetailsOverlay" class="port-details-overlay">
+        <div class="port-details-container">
+            <div class="port-details-header">
+                <h2 class="port-details-title" id="portDetailsTitle">Port Management</h2>
+                <button class="modal-close" onclick="closePortDetails()">×</button>
+            </div>
+            <div id="portDetailsContent">
+                <!-- Port details will be rendered here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Connection Modal -->
+    <div id="connectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nové propojení</h2>
+                <button class="modal-close" onclick="closeConnectionModal()">×</button>
+            </div>
+            <div class="form-group">
+                <label>Z zařízení</label>
+                <select id="connFromDevice" onchange="updateFromPorts()"></select>
+            </div>
+            <div class="form-group">
+                <label>Z portu</label>
+                <select id="connFromPort"></select>
+            </div>
+            <div class="form-group">
+                <label>Do zařízení</label>
+                <select id="connToDevice" onchange="updateToPorts()"></select>
+            </div>
+            <div class="form-group">
+                <label>Do portu</label>
+                <select id="connToPort"></select>
+            </div>
+            <div class="form-group">
+                <label>Typ spojení</label>
+                <select id="connType">
+                    <option value="access">Access</option>
+                    <option value="trunk">Trunk</option>
+                    <option value="uplink">Uplink</option>
+                    <option value="crossover">Crossover</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>VLAN (čárkou oddělené pro trunk)</label>
+                <input type="text" id="connVlans" placeholder="např. 10,20,30">
+            </div>
+            <div class="form-group">
+                <label>Rychlost</label>
+                <select id="connSpeed">
+                    <option value="10">10 Mbps</option>
+                    <option value="100">100 Mbps</option>
+                    <option value="1000" selected>1 Gbps</option>
+                    <option value="10000">10 Gbps</option>
+                    <option value="25000">25 Gbps</option>
+                    <option value="40000">40 Gbps</option>
+                    <option value="100000">100 Gbps</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Popis</label>
+                <input type="text" id="connDescription" placeholder="např. Uplink to core switch">
+            </div>
+            <button class="btn" onclick="addConnection()">Vytvořit propojení</button>
+        </div>
+    </div>
+    
+    <!-- Client Modal -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nový klient</h2>
+                <button class="modal-close" onclick="closeClientModal()">×</button>
+            </div>
+            <div class="form-group">
+                <label>Název klienta *</label>
+                <input type="text" id="newClientName" placeholder="např. Firma ABC s.r.o.">
+            </div>
+            <div class="form-group">
+                <label>IČO</label>
+                <input type="text" id="newClientICO" placeholder="např. 12345678">
+            </div>
+            <div class="form-group">
+                <label>Typ klienta</label>
+                <select id="newClientType">
+                    <option value="standard">Standard</option>
+                    <option value="premium">Premium</option>
+                    <option value="enterprise">Enterprise</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Kontaktní osoba</label>
+                <input type="text" id="newClientContact" placeholder="např. Jan Novák">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="newClientEmail" placeholder="např. info@firma.cz">
+            </div>
+            <div class="form-group">
+                <label>Telefon</label>
+                <input type="tel" id="newClientPhone" placeholder="např. +420 123 456 789">
+            </div>
+            <div class="form-group">
+                <label>Adresa</label>
+                <input type="text" id="newClientAddress" placeholder="např. Václavské náměstí 1, Praha">
+            </div>
+            <div class="form-group">
+                <label>Poznámky</label>
+                <textarea id="newClientNotes" rows="3" style="width: 100%; padding: 0.5rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem;"></textarea>
+            </div>
+            <button class="btn" onclick="addClient()">Vytvořit klienta</button>
+        </div>
+    </div>
+    
+    <!-- Client Manager Modal -->
+    <div id="clientManagerModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Správa klientů</h2>
+                <button class="modal-close" onclick="closeClientManagerModal()">×</button>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <input type="text" id="clientSearch" placeholder="Hledat klienta..." style="flex: 1; padding: 0.5rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);" onkeyup="searchClients()">
+                <button class="btn-small" onclick="openClientModal()">+ Nový klient</button>
+            </div>
+            <div id="clientList" class="client-list">
+                <!-- Clients will be rendered here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rack Modal -->
+    <div id="rackModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nový rack</h2>
+                <button class="modal-close" onclick="closeRackModal()">×</button>
+            </div>
+            <div class="form-group">
+                <label>Název racku</label>
+                <input type="text" id="rackName" placeholder="např. RACK-01">
+            </div>
+            <div class="form-group">
+                <label>Počet U (výška)</label>
+                <input type="number" id="rackUnits" value="42" min="1" max="50">
+            </div>
+            <div class="form-group">
+                <label>Umístění</label>
+                <input type="text" id="rackLocation" placeholder="např. Serverovna A">
+            </div>
+            <button class="btn" onclick="addRack()">Vytvořit rack</button>
+        </div>
+    </div>
+    
+    <!-- Device Modal -->
+    <div id="deviceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nové zařízení</h2>
+                <button class="modal-close" onclick="closeDeviceModal()">×</button>
+            </div>
+            <div class="form-group">
+                <label>Název zařízení</label>
+                <input type="text" id="deviceName" placeholder="např. SW-CORE-01">
+            </div>
+            <div class="form-group">
+                <label>Typ zařízení</label>
+                <select id="deviceType">
+                    <option value="switch">Switch</option>
+                    <option value="router">Router</option>
+                    <option value="server">Server</option>
+                    <option value="patch">Patch panel</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Rack</label>
+                <select id="deviceRack"></select>
+            </div>
+            <div class="form-group">
+                <label>Pozice U (od spodu)</label>
+                <input type="number" id="devicePosition" min="1" placeholder="např. 10">
+            </div>
+            <div class="form-group">
+                <label>Výška (počet U)</label>
+                <input type="number" id="deviceHeight" value="1" min="1" max="10">
+            </div>
+            <div class="form-group">
+                <label>IP adresa</label>
+                <input type="text" id="deviceIP" placeholder="např. 192.168.1.1">
+            </div>
+            <div class="form-group">
+                <label>Model</label>
+                <input type="text" id="deviceModel" placeholder="např. Cisco Catalyst 2960">
+            </div>
+            <div class="form-group">
+                <label>Sériové číslo</label>
+                <input type="text" id="deviceSerial" placeholder="např. ABC123456">
+            </div>
+            <div class="form-group">
+                <label>Počet portů</label>
+                <input type="number" id="devicePorts" value="24" min="1" max="48" placeholder="např. 24">
+            </div>
+            <button class="btn" onclick="addDevice()">Přidat zařízení</button>
+        </div>
+    </div>
+    
+    <!-- Device Tooltip -->
+    <div id="deviceTooltip" class="device-tooltip">
+        <div class="tooltip-header" id="tooltipName"></div>
+        <div class="tooltip-detail" id="tooltipType"></div>
+        <div class="tooltip-detail" id="tooltipPosition"></div>
+        <div class="tooltip-detail" id="tooltipIP"></div>
+        <div class="tooltip-detail" id="tooltipModel"></div>
+        <div class="tooltip-detail" id="tooltipSerial"></div>
+    </div>
+    
+    <script>
+        // Data storage - now with multi-tenant support
+        let clients = [];
+        let currentClientId = null;
+        let clientData = {}; // Will store data per client
+        
+        // Current client's data
+        let racks = [];
+        let devices = [];
+        let connections = [];
+        
+        // Initialize from localStorage
+        function init() {
+            // Load clients
+            const savedClients = localStorage.getItem('rackManagerClients');
+            if (savedClients) {
+                clients = JSON.parse(savedClients);
+            }
+            
+            // Load all client data
+            const savedClientData = localStorage.getItem('rackManagerClientData');
+            if (savedClientData) {
+                clientData = JSON.parse(savedClientData);
+            }
+            
+            // Check if there was a previously selected client
+            const lastClientId = localStorage.getItem('rackManagerLastClient');
+            if (lastClientId && clients.find(c => c.id === lastClientId)) {
+                currentClientId = lastClientId;
+                loadClientData(currentClientId);
+            }
+            
+            updateClientSelector();
+            render();
+        }
+        
+        // Save data to localStorage
+        function saveData() {
+            // Save current client's data
+            if (currentClientId) {
+                clientData[currentClientId] = {
+                    racks,
+                    devices,
+                    connections
+                };
+            }
+            
+            localStorage.setItem('rackManagerClients', JSON.stringify(clients));
+            localStorage.setItem('rackManagerClientData', JSON.stringify(clientData));
+            if (currentClientId) {
+                localStorage.setItem('rackManagerLastClient', currentClientId);
+            }
+        }
+        
+        // Load data for specific client
+        function loadClientData(clientId) {
+            if (clientData[clientId]) {
+                racks = clientData[clientId].racks || [];
+                devices = clientData[clientId].devices || [];
+                connections = clientData[clientId].connections || [];
+            } else {
+                racks = [];
+                devices = [];
+                connections = [];
+            }
+        }
+        
+        // Switch client
+        function switchClient() {
+            const selector = document.getElementById('clientSelector');
+            const clientId = selector.value;
+            
+            if (!clientId) {
+                currentClientId = null;
+                racks = [];
+                devices = [];
+                connections = [];
+                document.getElementById('clientInfo').style.display = 'none';
+                disableControls();
+            } else {
+                currentClientId = clientId;
+                loadClientData(clientId);
+                updateClientInfo();
+                enableControls();
+            }
+            
+            render();
+        }
+        
+        // Update client selector
+        function updateClientSelector() {
+            const selector = document.getElementById('clientSelector');
+            selector.innerHTML = '<option value="">-- Vyberte klienta --</option>' + 
+                clients.map(client => 
+                    `<option value="${client.id}" ${client.id === currentClientId ? 'selected' : ''}>${client.name}</option>`
+                ).join('');
+        }
+        
+        // Update client info panel
+        function updateClientInfo() {
+            const client = clients.find(c => c.id === currentClientId);
+            if (client) {
+                document.getElementById('clientInfo').style.display = 'block';
+                document.getElementById('clientName').textContent = client.name + (client.ico ? ` (IČO: ${client.ico})` : '');
+                document.getElementById('clientContact').textContent = client.contact ? `👤 ${client.contact}` : '';
+                document.getElementById('clientLocation').textContent = client.address ? `📍 ${client.address}` : '';
+                document.getElementById('clientType').textContent = client.type.toUpperCase();
+            } else {
+                document.getElementById('clientInfo').style.display = 'none';
+            }
+        }
+        
+        // Enable/disable controls
+        function enableControls() {
+            document.getElementById('addRackBtn').disabled = false;
+            document.getElementById('clearRacksBtn').disabled = false;
+            document.getElementById('addDeviceBtn').disabled = false;
+            document.getElementById('addConnectionBtn').disabled = false;
+        }
+        
+        function disableControls() {
+            document.getElementById('addRackBtn').disabled = true;
+            document.getElementById('clearRacksBtn').disabled = true;
+            document.getElementById('addDeviceBtn').disabled = true;
+            document.getElementById('addConnectionBtn').disabled = true;
+        }
+        
+        // View switching
+        function switchView(view) {
+            // Update toggle buttons
+            document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Hide all views
+            document.getElementById('racksView').style.display = 'none';
+            document.getElementById('networkView').style.display = 'none';
+            document.getElementById('topologyView').style.display = 'none';
+            
+            // Show selected view
+            switch(view) {
+                case 'racks':
+                    document.getElementById('racksView').style.display = 'block';
+                    break;
+                case 'network':
+                    document.getElementById('networkView').style.display = 'block';
+                    initNetworkVisualization();
+                    break;
+                case 'topology':
+                    document.getElementById('topologyView').style.display = 'block';
+                    renderTopologyView();
+                    break;
+            }
+        }
+        
+        // Network Visualization
+        let networkCanvas, networkCtx;
+        let networkNodes = [];
+        let networkEdges = [];
+        let isDragging = false;
+        let dragNode = null;
+        let offsetX, offsetY;
+        
+        function initNetworkVisualization() {
+            if (!currentClientId) return;
+            
+            networkCanvas = document.getElementById('networkCanvas');
+            if (!networkCanvas) return;
+            
+            networkCtx = networkCanvas.getContext('2d');
+            
+            // Set canvas size
+            networkCanvas.width = networkCanvas.clientWidth;
+            networkCanvas.height = 500;
+            
+            // Build network data
+            buildNetworkData();
+            
+            // Draw network
+            drawNetwork();
+            
+            // Update stats
+            updateNetworkStats();
+            
+            // Add event listeners
+            networkCanvas.addEventListener('mousedown', handleNetworkMouseDown);
+            networkCanvas.addEventListener('mousemove', handleNetworkMouseMove);
+            networkCanvas.addEventListener('mouseup', handleNetworkMouseUp);
+            networkCanvas.addEventListener('dblclick', handleNetworkDoubleClick);
+        }
+        
+        function buildNetworkData() {
+            networkNodes = [];
+            networkEdges = [];
+            
+            // Create nodes for each device
+            devices.forEach((device, index) => {
+                const angle = (index / devices.length) * Math.PI * 2;
+                const radius = 150;
+                const centerX = networkCanvas.width / 2;
+                const centerY = networkCanvas.height / 2;
+                
+                networkNodes.push({
+                    id: device.id,
+                    name: device.name,
+                    type: device.type,
+                    x: centerX + Math.cos(angle) * radius,
+                    y: centerY + Math.sin(angle) * radius,
+                    ports: device.ports || 24,
+                    device: device
+                });
+            });
+            
+            // Create edges for connections
+            connections.forEach(conn => {
+                const fromNode = networkNodes.find(n => n.id === conn.fromDevice);
+                const toNode = networkNodes.find(n => n.id === conn.toDevice);
+                
+                if (fromNode && toNode) {
+                    networkEdges.push({
+                        from: fromNode,
+                        to: toNode,
+                        connection: conn
+                    });
+                }
+            });
+        }
+        
+        function drawNetwork() {
+            if (!networkCtx) return;
+            
+            // Clear canvas
+            networkCtx.clearRect(0, 0, networkCanvas.width, networkCanvas.height);
+            
+            // Draw edges
+            networkEdges.forEach(edge => {
+                networkCtx.beginPath();
+                networkCtx.moveTo(edge.from.x, edge.from.y);
+                networkCtx.lineTo(edge.to.x, edge.to.y);
+                
+                // Style based on connection type
+                if (edge.connection.type === 'trunk') {
+                    networkCtx.strokeStyle = '#ff00ff';
+                    networkCtx.lineWidth = 3;
+                } else if (edge.connection.type === 'uplink') {
+                    networkCtx.strokeStyle = '#00ffff';
+                    networkCtx.lineWidth = 4;
+                } else {
+                    networkCtx.strokeStyle = '#00ff88';
+                    networkCtx.lineWidth = 2;
+                }
+                
+                networkCtx.stroke();
+                
+                // Draw speed label
+                const midX = (edge.from.x + edge.to.x) / 2;
+                const midY = (edge.from.y + edge.to.y) / 2;
+                networkCtx.fillStyle = '#ffffff';
+                networkCtx.font = '10px JetBrains Mono';
+                networkCtx.textAlign = 'center';
+                const speed = edge.connection.speed >= 1000 ? 
+                    (edge.connection.speed / 1000) + 'G' : 
+                    edge.connection.speed + 'M';
+                networkCtx.fillText(speed, midX, midY - 5);
+            });
+            
+            // Draw nodes
+            networkNodes.forEach(node => {
+                // Node circle
+                networkCtx.beginPath();
+                networkCtx.arc(node.x, node.y, 30, 0, Math.PI * 2);
+                
+                // Fill based on type
+                if (node.type === 'switch') {
+                    networkCtx.fillStyle = '#00ffff';
+                } else if (node.type === 'router') {
+                    networkCtx.fillStyle = '#ff00ff';
+                } else if (node.type === 'server') {
+                    networkCtx.fillStyle = '#ffff00';
+                } else {
+                    networkCtx.fillStyle = '#00ff88';
+                }
+                
+                networkCtx.fill();
+                networkCtx.strokeStyle = '#ffffff';
+                networkCtx.lineWidth = 2;
+                networkCtx.stroke();
+                
+                // Node label
+                networkCtx.fillStyle = '#000000';
+                networkCtx.font = 'bold 12px JetBrains Mono';
+                networkCtx.textAlign = 'center';
+                networkCtx.fillText(node.name, node.x, node.y + 5);
+                
+                // Port count
+                networkCtx.fillStyle = '#ffffff';
+                networkCtx.font = '10px JetBrains Mono';
+                networkCtx.fillText(node.ports + ' ports', node.x, node.y + 45);
+            });
+        }
+        
+        function handleNetworkMouseDown(e) {
+            const rect = networkCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Check if clicking on a node
+            networkNodes.forEach(node => {
+                const dx = x - node.x;
+                const dy = y - node.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance <= 30) {
+                    isDragging = true;
+                    dragNode = node;
+                    offsetX = dx;
+                    offsetY = dy;
+                    networkCanvas.style.cursor = 'grabbing';
+                }
+            });
+        }
+        
+        function handleNetworkMouseMove(e) {
+            if (isDragging && dragNode) {
+                const rect = networkCanvas.getBoundingClientRect();
+                dragNode.x = e.clientX - rect.left - offsetX;
+                dragNode.y = e.clientY - rect.top - offsetY;
+                drawNetwork();
+            }
+        }
+        
+        function handleNetworkMouseUp() {
+            isDragging = false;
+            dragNode = null;
+            networkCanvas.style.cursor = 'grab';
+        }
+        
+        function handleNetworkDoubleClick(e) {
+            const rect = networkCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Check if double-clicking on a node
+            networkNodes.forEach(node => {
+                const dx = x - node.x;
+                const dy = y - node.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance <= 30) {
+                    showPortDetails(node.device);
+                }
+            });
+        }
+        
+        function resetNetworkView() {
+            buildNetworkData();
+            drawNetwork();
+        }
+        
+        function exportNetworkDiagram() {
+            const link = document.createElement('a');
+            link.download = 'network-diagram.png';
+            link.href = networkCanvas.toDataURL();
+            link.click();
+        }
+        
+        function updateNetworkStats() {
+            const totalPortsCount = devices.reduce((sum, d) => sum + (d.ports || 24), 0);
+            const usedPortsCount = connections.length * 2; // Each connection uses 2 ports
+            const trunkPortsCount = connections.filter(c => c.type === 'trunk').length * 2;
+            
+            document.getElementById('totalConnections').textContent = connections.length;
+            document.getElementById('totalPorts').textContent = totalPortsCount;
+            document.getElementById('usedPorts').textContent = usedPortsCount;
+            document.getElementById('trunkPorts').textContent = trunkPortsCount;
+        }
+        
+        // Port Management
+        function showPortDetails(device) {
+            document.getElementById('portDetailsOverlay').classList.add('active');
+            document.getElementById('portDetailsTitle').textContent = device.name + ' - Port Management';
+            
+            const content = document.getElementById('portDetailsContent');
+            const portCount = device.ports || 24;
+            
+            // Get connections for this device
+            const deviceConnections = connections.filter(c => 
+                c.fromDevice === device.id || c.toDevice === device.id
+            );
+            
+            let html = `
+                <div class="port-grid">
+            `;
+            
+            for (let i = 1; i <= portCount; i++) {
+                const conn = deviceConnections.find(c => 
+                    (c.fromDevice === device.id && c.fromPort === i) ||
+                    (c.toDevice === device.id && c.toPort === i)
+                );
+                
+                let portClass = 'port-item';
+                let portLabel = '';
+                
+                if (conn) {
+                    portClass += ' connected';
+                    if (conn.type === 'trunk') portClass += ' trunk';
+                    if (conn.type === 'uplink') portClass += ' uplink';
+                    
+                    // Find connected device
+                    const connectedDeviceId = conn.fromDevice === device.id ? 
+                        conn.toDevice : conn.fromDevice;
+                    const connectedDevice = devices.find(d => d.id === connectedDeviceId);
+                    portLabel = connectedDevice ? connectedDevice.name : 'Connected';
+                }
+                
+                html += `
+                    <div class="${portClass}" onclick="configurePort('${device.id}', ${i})">
+                        <div class="port-number">${i}</div>
+                        ${portLabel ? `<div class="port-label">${portLabel}</div>` : ''}
+                        ${conn && conn.vlans ? `<div class="vlan-tag">VLAN ${conn.vlans}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            html += `
+                </div>
+                <div style="margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Aktivní propojení</h3>
+            `;
+            
+            if (deviceConnections.length > 0) {
+                deviceConnections.forEach(conn => {
+                    const otherDeviceId = conn.fromDevice === device.id ? 
+                        conn.toDevice : conn.fromDevice;
+                    const otherDevice = devices.find(d => d.id === otherDeviceId);
+                    const fromPort = conn.fromDevice === device.id ? conn.fromPort : conn.toPort;
+                    const toPort = conn.fromDevice === device.id ? conn.toPort : conn.fromPort;
+                    
+                    html += `
+                        <div class="connection-path">
+                            <div class="connection-path-device">${device.name}:${fromPort}</div>
+                            <div class="connection-path-arrow">→</div>
+                            <div class="connection-path-device">${otherDevice ? otherDevice.name : 'Unknown'}:${toPort}</div>
+                            <div style="margin-left: auto;">
+                                <span class="connection-path-port">
+                                    ${conn.type} | ${conn.speed >= 1000 ? (conn.speed/1000) + 'G' : conn.speed + 'M'}
+                                    ${conn.description ? ' | ' + conn.description : ''}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p style="color: var(--text-secondary);">Žádná aktivní propojení</p>';
+            }
+            
+            html += '</div>';
+            
+            content.innerHTML = html;
+        }
+        
+        function closePortDetails() {
+            document.getElementById('portDetailsOverlay').classList.remove('active');
+        }
+        
+        function configurePort(deviceId, portNumber) {
+            // Here you could open a modal to configure specific port
+            console.log('Configure port', portNumber, 'on device', deviceId);
+        }
+        
+        // Connection Management
+        function openConnectionModal() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            
+            if (devices.length < 2) {
+                alert('Pro vytvoření propojení potřebujete alespoň 2 zařízení');
+                return;
+            }
+            
+            // Populate device selects
+            const deviceOptions = devices.map(d => 
+                `<option value="${d.id}">${d.name} (${d.type})</option>`
+            ).join('');
+            
+            document.getElementById('connFromDevice').innerHTML = deviceOptions;
+            document.getElementById('connToDevice').innerHTML = deviceOptions;
+            
+            // Update port lists
+            updateFromPorts();
+            updateToPorts();
+            
+            document.getElementById('connectionModal').classList.add('active');
+        }
+        
+        function closeConnectionModal() {
+            document.getElementById('connectionModal').classList.remove('active');
+            clearConnectionForm();
+        }
+        
+        function updateFromPorts() {
+            const deviceId = document.getElementById('connFromDevice').value;
+            const device = devices.find(d => d.id === deviceId);
+            const portCount = device ? (device.ports || 24) : 24;
+            
+            let options = '';
+            for (let i = 1; i <= portCount; i++) {
+                // Check if port is already used
+                const isUsed = connections.some(c => 
+                    (c.fromDevice === deviceId && c.fromPort === i) ||
+                    (c.toDevice === deviceId && c.toPort === i)
+                );
+                
+                if (!isUsed) {
+                    options += `<option value="${i}">Port ${i}</option>`;
+                }
+            }
+            
+            document.getElementById('connFromPort').innerHTML = options || '<option>Všechny porty obsazeny</option>';
+        }
+        
+        function updateToPorts() {
+            const deviceId = document.getElementById('connToDevice').value;
+            const device = devices.find(d => d.id === deviceId);
+            const portCount = device ? (device.ports || 24) : 24;
+            
+            let options = '';
+            for (let i = 1; i <= portCount; i++) {
+                // Check if port is already used
+                const isUsed = connections.some(c => 
+                    (c.fromDevice === deviceId && c.fromPort === i) ||
+                    (c.toDevice === deviceId && c.toPort === i)
+                );
+                
+                if (!isUsed) {
+                    options += `<option value="${i}">Port ${i}</option>`;
+                }
+            }
+            
+            document.getElementById('connToPort').innerHTML = options || '<option>Všechny porty obsazeny</option>';
+        }
+        
+        function addConnection() {
+            const fromDevice = document.getElementById('connFromDevice').value;
+            const fromPort = parseInt(document.getElementById('connFromPort').value);
+            const toDevice = document.getElementById('connToDevice').value;
+            const toPort = parseInt(document.getElementById('connToPort').value);
+            const type = document.getElementById('connType').value;
+            const vlans = document.getElementById('connVlans').value;
+            const speed = parseInt(document.getElementById('connSpeed').value);
+            const description = document.getElementById('connDescription').value;
+            
+            if (!fromDevice || !toDevice || !fromPort || !toPort) {
+                alert('Vyplňte všechny povinné údaje');
+                return;
+            }
+            
+            if (fromDevice === toDevice) {
+                alert('Nelze propojit zařízení samo se sebou');
+                return;
+            }
+            
+            const connection = {
+                id: Date.now().toString(),
+                fromDevice,
+                fromPort,
+                toDevice,
+                toPort,
+                type,
+                vlans,
+                speed,
+                description,
+                createdAt: new Date().toISOString()
+            };
+            
+            connections.push(connection);
+            saveData();
+            render();
+            closeConnectionModal();
+        }
+        
+        function clearConnectionForm() {
+            document.getElementById('connFromPort').value = '';
+            document.getElementById('connToPort').value = '';
+            document.getElementById('connType').value = 'access';
+            document.getElementById('connVlans').value = '';
+            document.getElementById('connSpeed').value = '1000';
+            document.getElementById('connDescription').value = '';
+        }
+        
+        // Render topology view
+        function renderTopologyView() {
+            const container = document.getElementById('topologyView');
+            
+            if (!currentClientId) {
+                container.innerHTML = `
+                    <div class="no-client-warning">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p><strong>Nejprve vyberte klienta</strong><br>
+                        Pro zobrazení topologie musíte vybrat klienta z horního menu.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (devices.length === 0) {
+                container.innerHTML = `
+                    <div class="rack-container">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🔗</div>
+                            <p>Žádná zařízení k zobrazení topologie</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group devices by type
+            const switches = devices.filter(d => d.type === 'switch');
+            const routers = devices.filter(d => d.type === 'router');
+            const servers = devices.filter(d => d.type === 'server');
+            const others = devices.filter(d => d.type === 'patch');
+            
+            let html = `
+                <div class="rack-container">
+                    <h2>Síťová topologie</h2>
+                    <div style="display: grid; gap: 2rem; margin-top: 2rem;">
+            `;
+            
+            // Layer 3 - Routers
+            if (routers.length > 0) {
+                html += `
+                    <div style="background: var(--bg-tertiary); padding: 1.5rem; border-radius: 8px; border: 2px solid var(--accent-magenta);">
+                        <h3 style="color: var(--accent-magenta); margin-bottom: 1rem;">Layer 3 - Routers</h3>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                `;
+                routers.forEach(router => {
+                    html += `
+                        <div class="client-card" style="cursor: pointer;" onclick="showPortDetails(devices.find(d => d.id === '${router.id}'))">
+                            <div style="font-weight: 600; color: var(--accent-magenta);">${router.name}</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                ${router.ip || 'No IP'} | ${router.ports || 24} ports
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div></div>';
+            }
+            
+            // Layer 2 - Switches
+            if (switches.length > 0) {
+                html += `
+                    <div style="background: var(--bg-tertiary); padding: 1.5rem; border-radius: 8px; border: 2px solid var(--accent-cyan);">
+                        <h3 style="color: var(--accent-cyan); margin-bottom: 1rem;">Layer 2 - Switches</h3>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                `;
+                switches.forEach(sw => {
+                    html += `
+                        <div class="client-card" style="cursor: pointer;" onclick="showPortDetails(devices.find(d => d.id === '${sw.id}'))">
+                            <div style="font-weight: 600; color: var(--accent-cyan);">${sw.name}</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                ${sw.ip || 'No IP'} | ${sw.ports || 24} ports
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div></div>';
+            }
+            
+            // Servers
+            if (servers.length > 0) {
+                html += `
+                    <div style="background: var(--bg-tertiary); padding: 1.5rem; border-radius: 8px; border: 2px solid var(--accent-yellow);">
+                        <h3 style="color: var(--accent-yellow); margin-bottom: 1rem;">Servers</h3>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                `;
+                servers.forEach(server => {
+                    html += `
+                        <div class="client-card" style="cursor: pointer;" onclick="showPortDetails(devices.find(d => d.id === '${server.id}'))">
+                            <div style="font-weight: 600; color: var(--accent-yellow);">${server.name}</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                ${server.ip || 'No IP'} | ${server.model || 'Unknown model'}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div></div>';
+            }
+            
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+        
+        // Client management functions
+        function openClientModal() {
+            document.getElementById('clientModal').classList.add('active');
+        }
+        
+        function closeClientModal() {
+            document.getElementById('clientModal').classList.remove('active');
+            clearClientForm();
+        }
+        
+        function openClientManagerModal() {
+            renderClientList();
+            document.getElementById('clientManagerModal').classList.add('active');
+        }
+        
+        function closeClientManagerModal() {
+            document.getElementById('clientManagerModal').classList.remove('active');
+        }
+        
+        function clearClientForm() {
+            document.getElementById('newClientName').value = '';
+            document.getElementById('newClientICO').value = '';
+            document.getElementById('newClientType').value = 'standard';
+            document.getElementById('newClientContact').value = '';
+            document.getElementById('newClientEmail').value = '';
+            document.getElementById('newClientPhone').value = '';
+            document.getElementById('newClientAddress').value = '';
+            document.getElementById('newClientNotes').value = '';
+        }
+        
+        function addClient() {
+            const name = document.getElementById('newClientName').value;
+            const ico = document.getElementById('newClientICO').value;
+            const type = document.getElementById('newClientType').value;
+            const contact = document.getElementById('newClientContact').value;
+            const email = document.getElementById('newClientEmail').value;
+            const phone = document.getElementById('newClientPhone').value;
+            const address = document.getElementById('newClientAddress').value;
+            const notes = document.getElementById('newClientNotes').value;
+            
+            if (!name) {
+                alert('Název klienta je povinný');
+                return;
+            }
+            
+            const client = {
+                id: Date.now().toString(),
+                name,
+                ico,
+                type,
+                contact,
+                email,
+                phone,
+                address,
+                notes,
+                createdAt: new Date().toISOString()
+            };
+            
+            clients.push(client);
+            saveData();
+            updateClientSelector();
+            closeClientModal();
+            
+            // Automatically select the new client
+            document.getElementById('clientSelector').value = client.id;
+            switchClient();
+        }
+        
+        function deleteClient(clientId) {
+            const client = clients.find(c => c.id === clientId);
+            if (!client) return;
+            
+            if (confirm(`Opravdu chcete smazat klienta "${client.name}" včetně všech jeho dat?`)) {
+                // Remove client
+                clients = clients.filter(c => c.id !== clientId);
+                
+                // Remove client data
+                delete clientData[clientId];
+                
+                // If this was the current client, clear selection
+                if (currentClientId === clientId) {
+                    currentClientId = null;
+                    racks = [];
+                    devices = [];
+                    connections = [];
+                }
+                
+                saveData();
+                updateClientSelector();
+                render();
+                renderClientList();
+            }
+        }
+        
+        function renderClientList() {
+            const list = document.getElementById('clientList');
+            const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
+            
+            const filteredClients = clients.filter(client => 
+                client.name.toLowerCase().includes(searchTerm) ||
+                (client.ico && client.ico.includes(searchTerm)) ||
+                (client.contact && client.contact.toLowerCase().includes(searchTerm))
+            );
+            
+            if (filteredClients.length === 0) {
+                list.innerHTML = '<div class="empty-state"><p>Žádní klienti nenalezeni</p></div>';
+                return;
+            }
+            
+            list.innerHTML = filteredClients.map(client => {
+                const data = clientData[client.id] || { racks: [], devices: [] };
+                return `
+                    <div class="client-card" onclick="selectClientFromList('${client.id}')">
+                        <div class="client-card-header">
+                            <div class="client-card-name">${client.name}</div>
+                            <div class="client-actions" onclick="event.stopPropagation()">
+                                <button class="btn-icon danger" onclick="deleteClient('${client.id}')">🗑</button>
+                            </div>
+                        </div>
+                        <div class="client-card-stats">
+                            <span>📦 ${data.racks.length} racků</span>
+                            <span>🖥️ ${data.devices.length} zařízení</span>
+                            <span class="client-badge">${client.type}</span>
+                        </div>
+                        ${client.contact ? `<div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">👤 ${client.contact}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function selectClientFromList(clientId) {
+            document.getElementById('clientSelector').value = clientId;
+            switchClient();
+            closeClientManagerModal();
+        }
+        
+        function searchClients() {
+            renderClientList();
+        }
+        
+        // Render all components
+        function render() {
+            renderRacks();
+            renderDeviceTable();
+            renderConnections();
+            updateStats();
+        }
+        
+        // Render racks
+        function renderRacks() {
+            const grid = document.getElementById('rackGrid');
+            
+            if (!currentClientId) {
+                grid.innerHTML = `
+                    <div class="no-client-warning">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p><strong>Nejprve vyberte klienta</strong><br>
+                        Pro zobrazení a správu racků musíte vybrat klienta z horního menu.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (racks.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <p>Klient ${clients.find(c => c.id === currentClientId)?.name} zatím nemá žádné racky.<br>Klikněte na "Přidat rack" pro vytvoření prvního racku.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = racks.map(rack => `
+                <div class="rack">
+                    <div class="rack-title">${rack.name}</div>
+                    <div class="rack-units">
+                        ${generateRackUnits(rack)}
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                        📍 ${rack.location || 'Neurčeno'}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners for device hover
+            document.querySelectorAll('.rack-unit.occupied').forEach(unit => {
+                unit.addEventListener('mouseenter', showDeviceTooltip);
+                unit.addEventListener('mouseleave', hideDeviceTooltip);
+                unit.addEventListener('click', () => {
+                    const deviceId = unit.dataset.deviceId;
+                    if (deviceId) {
+                        const device = devices.find(d => d.id === deviceId);
+                        if (device) {
+                            showPortDetails(device);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Generate rack units HTML
+        function generateRackUnits(rack) {
+            let html = '';
+            const rackDevices = devices.filter(d => d.rack === rack.id);
+            
+            for (let i = 1; i <= rack.units; i++) {
+                const device = rackDevices.find(d => 
+                    i >= d.position && i < d.position + d.height
+                );
+                
+                if (device) {
+                    if (i === device.position) {
+                        html += `<div class="rack-unit occupied ${device.type}" 
+                                      data-device-id="${device.id}"
+                                      data-device-name="${device.name}"
+                                      data-device-type="${device.type}"
+                                      data-device-position="U${device.position}"
+                                      data-device-ip="${device.ip || 'N/A'}"
+                                      data-device-model="${device.model || 'N/A'}"
+                                      data-device-serial="${device.serial || 'N/A'}"
+                                      style="height: ${20 * device.height + 2 * (device.height - 1)}px;">
+                                    ${device.name}
+                                </div>`;
+                    }
+                } else {
+                    const isPartOfDevice = rackDevices.some(d => 
+                        i > d.position && i < d.position + d.height
+                    );
+                    if (!isPartOfDevice) {
+                        html += `<div class="rack-unit">U${i}</div>`;
+                    }
+                }
+            }
+            
+            return html;
+        }
+        
+        // Show device tooltip
+        function showDeviceTooltip(e) {
+            const tooltip = document.getElementById('deviceTooltip');
+            const unit = e.target;
+            
+            document.getElementById('tooltipName').textContent = unit.dataset.deviceName;
+            document.getElementById('tooltipType').textContent = `Typ: ${unit.dataset.deviceType}`;
+            document.getElementById('tooltipPosition').textContent = `Pozice: ${unit.dataset.devicePosition}`;
+            document.getElementById('tooltipIP').textContent = `IP: ${unit.dataset.deviceIp}`;
+            document.getElementById('tooltipModel').textContent = `Model: ${unit.dataset.deviceModel}`;
+            document.getElementById('tooltipSerial').textContent = `S/N: ${unit.dataset.deviceSerial}`;
+            
+            tooltip.classList.add('active');
+            
+            const rect = unit.getBoundingClientRect();
+            tooltip.style.left = rect.right + 10 + 'px';
+            tooltip.style.top = rect.top + 'px';
+        }
+        
+        // Hide device tooltip
+        function hideDeviceTooltip() {
+            document.getElementById('deviceTooltip').classList.remove('active');
+        }
+        
+        // Render device table
+        function renderDeviceTable() {
+            const container = document.getElementById('deviceListContainer');
+            const tbody = document.getElementById('deviceTableBody');
+            
+            if (devices.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            tbody.innerHTML = devices.map(device => {
+                const rack = racks.find(r => r.id === device.rack);
+                return `
+                    <tr>
+                        <td>${device.name}</td>
+                        <td><span class="device-type-badge ${device.type}">${device.type}</span></td>
+                        <td>${rack ? rack.name : 'N/A'}</td>
+                        <td>U${device.position}</td>
+                        <td>${device.ip || 'N/A'}</td>
+                        <td>${device.model || 'N/A'}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteDevice('${device.id}')">Smazat</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Render connections
+        function renderConnections() {
+            const container = document.getElementById('connectionsContainer');
+            const list = document.getElementById('connectionsList');
+            
+            if (connections.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            list.innerHTML = connections.map(conn => `
+                <div class="connection-item">
+                    <div class="connection-from">${conn.from}</div>
+                    <div class="connection-arrow">→</div>
+                    <div class="connection-to">${conn.to}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalDevices').textContent = devices.length;
+            document.getElementById('totalRacks').textContent = racks.length;
+            
+            const totalUnits = racks.reduce((sum, rack) => sum + rack.units, 0);
+            const usedUnits = devices.reduce((sum, device) => sum + device.height, 0);
+            
+            document.getElementById('usedUnits').textContent = usedUnits;
+            document.getElementById('freeUnits').textContent = totalUnits - usedUnits;
+        }
+        
+        // Modal functions
+        function openRackModal() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            document.getElementById('rackModal').classList.add('active');
+        }
+        
+        function closeRackModal() {
+            document.getElementById('rackModal').classList.remove('active');
+            clearRackForm();
+        }
+        
+        function openDeviceModal() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            
+            if (racks.length === 0) {
+                alert('Nejprve vytvořte rack');
+                return;
+            }
+            
+            const select = document.getElementById('deviceRack');
+            select.innerHTML = racks.map(rack => 
+                `<option value="${rack.id}">${rack.name}</option>`
+            ).join('');
+            
+            document.getElementById('deviceModal').classList.add('active');
+        }
+        
+        function closeDeviceModal() {
+            document.getElementById('deviceModal').classList.remove('active');
+            clearDeviceForm();
+        }
+        
+        // Add rack
+        function addRack() {
+            const name = document.getElementById('rackName').value;
+            const units = parseInt(document.getElementById('rackUnits').value);
+            const location = document.getElementById('rackLocation').value;
+            
+            if (!name || !units) {
+                alert('Vyplňte všechny povinné údaje');
+                return;
+            }
+            
+            const rack = {
+                id: Date.now().toString(),
+                name,
+                units,
+                location
+            };
+            
+            racks.push(rack);
+            saveData();
+            render();
+            closeRackModal();
+        }
+        
+        // Add device
+        function addDevice() {
+            const name = document.getElementById('deviceName').value;
+            const type = document.getElementById('deviceType').value;
+            const rack = document.getElementById('deviceRack').value;
+            const position = parseInt(document.getElementById('devicePosition').value);
+            const height = parseInt(document.getElementById('deviceHeight').value);
+            const ip = document.getElementById('deviceIP').value;
+            const model = document.getElementById('deviceModel').value;
+            const serial = document.getElementById('deviceSerial').value;
+            const ports = parseInt(document.getElementById('devicePorts').value) || 24;
+            
+            if (!name || !rack || !position) {
+                alert('Vyplňte všechny povinné údaje');
+                return;
+            }
+            
+            // Check if position is available
+            const rackObj = racks.find(r => r.id === rack);
+            if (position + height - 1 > rackObj.units) {
+                alert('Zařízení se nevejde do racku');
+                return;
+            }
+            
+            const existingDevices = devices.filter(d => d.rack === rack);
+            for (let device of existingDevices) {
+                if ((position >= device.position && position < device.position + device.height) ||
+                    (position + height > device.position && position + height <= device.position + device.height)) {
+                    alert('Pozice je již obsazena');
+                    return;
+                }
+            }
+            
+            const device = {
+                id: Date.now().toString(),
+                name,
+                type,
+                rack,
+                position,
+                height,
+                ip,
+                model,
+                serial,
+                ports
+            };
+            
+            devices.push(device);
+            saveData();
+            render();
+            closeDeviceModal();
+        }
+        
+        // Delete device
+        function deleteDevice(id) {
+            if (confirm('Opravdu chcete smazat toto zařízení?')) {
+                devices = devices.filter(d => d.id !== id);
+                connections = connections.filter(c => c.fromDevice !== id && c.toDevice !== id);
+                saveData();
+                render();
+            }
+        }
+        
+        // Clear forms
+        function clearRackForm() {
+            document.getElementById('rackName').value = '';
+            document.getElementById('rackUnits').value = '42';
+            document.getElementById('rackLocation').value = '';
+        }
+        
+        function clearDeviceForm() {
+            document.getElementById('deviceName').value = '';
+            document.getElementById('deviceType').value = 'switch';
+            document.getElementById('devicePosition').value = '';
+            document.getElementById('deviceHeight').value = '1';
+            document.getElementById('deviceIP').value = '';
+            document.getElementById('deviceModel').value = '';
+            document.getElementById('deviceSerial').value = '';
+            document.getElementById('devicePorts').value = '24';
+        }
+        
+        // Clear all data
+        function clearAllRacks() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            
+            const client = clients.find(c => c.id === currentClientId);
+            if (confirm(`Opravdu chcete smazat všechna data klienta "${client.name}"? Tato akce je nevratná.`)) {
+                racks = [];
+                devices = [];
+                connections = [];
+                saveData();
+                render();
+            }
+        }
+        
+        // Export data
+        function exportData() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            
+            const client = clients.find(c => c.id === currentClientId);
+            const data = {
+                client: client,
+                racks,
+                devices,
+                connections,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rack-manager-${client.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Import data
+        function importData(event) {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta pro import dat');
+                return;
+            }
+            
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.racks && data.devices) {
+                        const client = clients.find(c => c.id === currentClientId);
+                        if (confirm(`Import přepíše všechna stávající data klienta "${client.name}". Pokračovat?`)) {
+                            racks = data.racks || [];
+                            devices = data.devices || [];
+                            connections = data.connections || [];
+                            saveData();
+                            render();
+                            alert('Data úspěšně importována');
+                        }
+                    } else {
+                        alert('Neplatný formát souboru');
+                    }
+                } catch (err) {
+                    alert('Chyba při importu: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
