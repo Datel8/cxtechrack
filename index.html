@@ -1112,12 +1112,59 @@
     }
   }
 
+  // Funkce pro aktualizaci statusu v UI
+  function updateFirestoreStatus(status, color, message) {
+    // Zkusit najít status element - může být v headeru nebo jinde
+    let statusEl = document.getElementById('firebaseStatus');
+    if (!statusEl) {
+      // Pokud neexistuje, vytvořit ho
+      const header = document.querySelector('.header');
+      if (header) {
+        statusEl = document.createElement('div');
+        statusEl.id = 'firebaseStatus';
+        statusEl.style.cssText = 'position: absolute; top: 1rem; right: 1rem; font-size: 0.875rem; font-weight: 600; cursor: pointer;';
+        statusEl.title = message || '';
+        header.appendChild(statusEl);
+      }
+    }
+    
+    if (statusEl) {
+      statusEl.innerHTML = status;
+      statusEl.style.color = color;
+      statusEl.title = message || '';
+      
+      // Přidat click handler pro zobrazení detailů
+      statusEl.onclick = function() {
+        console.log('Firestore Status:', {
+          ready: window.firestoreReady,
+          functions: {
+            saveClientDataToDb: typeof window.saveClientDataToDb,
+            loadClientDataFromDb: typeof window.loadClientDataFromDb
+          },
+          message: message
+        });
+      };
+    }
+    
+    // Také zobrazit v konzoli
+    console.log('🔥 Firestore Status:', status, message || '');
+  }
+
   // Inicializace Firestore
   let firestoreApp, firestoreDb;
   window.firestoreReady = false;
   
+  // Zobrazit loading status
+  updateFirestoreStatus('⏳ Loading...', '#fbbf24', 'Načítání Firebase konfigurace...');
+  
   loadFirebaseConfig().then(config => {
     console.log('✅ Firebase config loaded:', config);
+    
+    // Validace configu
+    if (!config.apiKey || !config.projectId) {
+      throw new Error('Neplatná Firebase konfigurace - chybí apiKey nebo projectId');
+    }
+    
     firestoreApp = initializeApp(config);
     firestoreDb = getFirestore(firestoreApp);
 
@@ -1141,29 +1188,45 @@
     window.firestoreReady = true;
     console.log("🔥 Firebase Firestore ready for cxtechrack!");
     
-    // Zobrazit status v UI
-    const statusEl = document.getElementById('firebaseStatus');
-    if (statusEl) {
-      statusEl.innerHTML = '🟢 Firestore Ready';
-      statusEl.style.color = '#4ade80';
-    }
+    // Zobrazit úspěšný status
+    updateFirestoreStatus('🟢 Firestore Ready', '#4ade80', 'Firestore je připraven k použití');
   }).catch(error => {
     console.error('❌ Firebase Firestore initialization failed:', error);
     window.firestoreReady = false;
     
-    // Zobrazit chybu v UI
-    const statusEl = document.getElementById('firebaseStatus');
-    if (statusEl) {
-      statusEl.innerHTML = '🔴 Firestore Error';
-      statusEl.style.color = '#f87171';
+    // Zjistit příčinu chyby
+    let errorMessage = 'Firestore inicializace selhala';
+    if (error.message.includes('Failed to load Firebase config')) {
+      errorMessage = 'API endpoint /api/config nefunguje. Zkontrolujte environment variables v Vercelu.';
+    } else if (error.message.includes('apiKey') || error.message.includes('projectId')) {
+      errorMessage = 'Neplatná Firebase konfigurace. Zkontrolujte environment variables.';
+    } else {
+      errorMessage = error.message || 'Neznámá chyba';
     }
+    
+    // Zobrazit chybu v UI
+    updateFirestoreStatus('🔴 Firestore Error', '#f87171', errorMessage);
     
     // Zobrazit detailní chybu v konzoli
     console.error('Detail chyby:', {
       message: error.message,
       stack: error.stack,
-      apiEndpoint: '/api/config'
+      apiEndpoint: '/api/config',
+      tip: 'Otevřete /api/config v prohlížeči pro kontrolu'
     });
+    
+    // Zkusit načíst config přímo pro diagnostiku
+    fetch('/api/config')
+      .then(r => {
+        console.log('API Response status:', r.status);
+        return r.json();
+      })
+      .then(data => {
+        console.log('API Response data:', data);
+      })
+      .catch(err => {
+        console.error('API Request failed:', err);
+      });
   });
 </script>
 
