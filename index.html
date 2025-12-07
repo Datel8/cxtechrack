@@ -1075,6 +1075,7 @@
             font-family: 'JetBrains Mono', monospace;
             background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
@@ -1092,27 +1093,52 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  // Načtení Firebase config z API endpointu
+  async function loadFirebaseConfig() {
+    try {
+      const response = await fetch('/api/config');
+      if (!response.ok) {
+        throw new Error('Failed to load Firebase config');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('❌ Error loading Firebase config:', error);
+      // Fallback na window.firebaseConfig pokud existuje (pro lokální vývoj)
+      if (window.firebaseConfig) {
+        console.warn('⚠️ Using fallback config from window.firebaseConfig');
+        return window.firebaseConfig;
+      }
+      throw error;
+    }
+  }
 
-  // ⛓ Wrapper funkce místo localStorage
-  window.saveClientDataToDb = async (clientName, data) => {
-    const ref = doc(db, "clients", clientName);
-    await setDoc(ref, { rackData: data }, { merge: true });
-  };
+  // Inicializace Firestore
+  let firestoreApp, firestoreDb;
+  loadFirebaseConfig().then(config => {
+    firestoreApp = initializeApp(config);
+    firestoreDb = getFirestore(firestoreApp);
 
-  window.loadClientDataFromDb = async (clientName) => {
-    const ref = doc(db, "clients", clientName);
-    const snap = await getDoc(ref);
-    return snap.exists() ? snap.data().rackData : null;
-  };
+    // ⛓ Wrapper funkce místo localStorage
+    window.saveClientDataToDb = async (clientName, data) => {
+      const ref = doc(firestoreDb, "clients", clientName);
+      await setDoc(ref, { rackData: data }, { merge: true });
+    };
 
-  window.updateClientDataInDb = async (clientName, data) => {
-    const ref = doc(db, "clients", clientName);
-    await updateDoc(ref, { rackData: data });
-  };
+    window.loadClientDataFromDb = async (clientName) => {
+      const ref = doc(firestoreDb, "clients", clientName);
+      const snap = await getDoc(ref);
+      return snap.exists() ? snap.data().rackData : null;
+    };
 
-  console.log("🔥 Firebase DB ready for cxtechrack!");
+    window.updateClientDataInDb = async (clientName, data) => {
+      const ref = doc(firestoreDb, "clients", clientName);
+      await updateDoc(ref, { rackData: data });
+    };
+
+    console.log("🔥 Firebase Firestore ready for cxtechrack!");
+  }).catch(error => {
+    console.error('❌ Firebase Firestore initialization failed:', error);
+  });
 </script>
 
 <body>
@@ -1179,9 +1205,16 @@
             
             <div class="control-section">
                 <h3>Export / Import</h3>
-                <button class="btn btn-secondary" onclick="exportData()">Exportovat JSON</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">Importovat JSON</button>
+                <button class="btn btn-secondary" onclick="exportData()">📥 Export JSON</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 Import JSON</button>
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            </div>
+            
+            <div class="control-section">
+                <h3>🔥 Firebase Sync</h3>
+                <button class="btn" onclick="saveToFirebase()" style="background: linear-gradient(135deg, #f89a55, #ff6a25);">☁️ Uložit do cloudu</button>
+                <button class="btn btn-secondary" onclick="loadFromFirebase()">⬇️ Načíst z cloudu</button>
+                <div id="firebaseStatusLocal" style="margin-top: 0.5rem; font-size: 0.75rem; text-align: center;"></div>
             </div>
         </div>
         
@@ -2732,69 +2765,318 @@
         
         // Initialize on load
         window.addEventListener('load', init);
+        
+        // ==========================================
+        // Firebase Realtime Database Functions
+        // ==========================================
+        
+        // Save to Firebase Realtime Database
+        function saveToFirebase() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            
+            if (!db) {
+                alert('Firebase není inicializováno. Zkontrolujte konfiguraci.');
+                return;
+            }
+            
+            const client = clients.find(c => c.id === currentClientId);
+            if (!client) return;
+            
+            // Prepare data for Firebase
+            const dataToSave = {
+                client: client,
+                racks: racks,
+                devices: devices,
+                connections: connections,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                savedBy: auth && auth.currentUser ? auth.currentUser.email : 'anonymous'
+            };
+            
+            // Save to Firebase Realtime Database
+            const clientRef = db.ref('clients/' + currentClientId);
+            
+            clientRef.set(dataToSave)
+                .then(() => {
+                    console.log('✅ Data saved to Firebase');
+                    alert('Data úspěšně uložena do Firebase!');
+                    
+                    // Also save to localStorage as backup
+                    saveData();
+                })
+                .catch((error) => {
+                    console.error('❌ Firebase save error:', error);
+                    alert('Chyba při ukládání do Firebase: ' + error.message);
+                });
+        }
+        
+        // Load from Firebase Realtime Database
+        function loadFromFirebase() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            
+            if (!db) {
+                alert('Firebase není inicializováno. Zkontrolujte konfiguraci.');
+                return;
+            }
+            
+            const clientRef = db.ref('clients/' + currentClientId);
+            
+            clientRef.once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    
+                    if (data) {
+                        // Load data from Firebase
+                        if (data.racks) racks = data.racks;
+                        if (data.devices) devices = data.devices;
+                        if (data.connections) connections = data.connections;
+                        
+                        // Save to localStorage too
+                        saveData();
+                        
+                        // Re-render
+                        render();
+                        
+                        console.log('✅ Data loaded from Firebase');
+                        alert('Data načtena z Firebase!');
+                    } else {
+                        alert('Pro tohoto klienta nejsou v Firebase žádná data');
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ Firebase load error:', error);
+                    alert('Chyba při načítání z Firebase: ' + error.message);
+                });
+        }
+        
+        // Setup realtime sync for current client
+        function setupRealtimeSync() {
+            if (!currentClientId || !db) return;
+            
+            // Remove previous listener if exists
+            if (window.firebaseListener) {
+                db.ref('clients/' + window.lastSyncedClient).off('value', window.firebaseListener);
+            }
+            
+            // Setup new listener
+            const clientRef = db.ref('clients/' + currentClientId);
+            
+            window.firebaseListener = clientRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.timestamp) {
+                    // Check if this is newer than our local data
+                    const localTimestamp = localStorage.getItem('cxtech_lastUpdate_' + currentClientId);
+                    
+                    if (!localTimestamp || data.timestamp > parseInt(localTimestamp)) {
+                        // Update from Firebase
+                        if (data.racks) racks = data.racks;
+                        if (data.devices) devices = data.devices;
+                        if (data.connections) connections = data.connections;
+                        
+                        saveData();
+                        render();
+                        
+                        console.log('🔄 Data synced from Firebase');
+                    }
+                }
+            });
+            
+            window.lastSyncedClient = currentClientId;
+        }
+        
+        // Add Firebase status indicator to UI
+        function addFirebaseStatusIndicator() {
+            const header = document.querySelector('.header');
+            if (header && !document.getElementById('firebaseStatus')) {
+                const statusDiv = document.createElement('div');
+                statusDiv.id = 'firebaseStatus';
+                statusDiv.style.cssText = 'position: absolute; top: 1rem; right: 1rem; font-size: 0.875rem; font-weight: 600;';
+                statusDiv.innerHTML = '⏳ Connecting...';
+                header.appendChild(statusDiv);
+            }
+        }
+        
+        // Call on init
+        addFirebaseStatusIndicator();
     </script>
      // Initialize on load
     window.addEventListener('load', init);
     </script>
-    <!-- Firebase + Firestore integrace -->
+   <!-- Firebase Auth + Realtime Database -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-  // 👇 SEM jen doplníš svoje hodnoty z Firebase Console
- const firebaseConfig = {
-  apiKey: "AIzaSyCSzMzAuSkMP1J8RZnrgVZLj3J4yfZ4Eq0",
-  authDomain: "cxtechrackmanager.firebaseapp.com",
-  projectId: "cxtechrackmanager",
-  storageBucket: "cxtechrackmanager.firebasestorage.app",
-  messagingSenderId: "1027981811620",
-  appId: "1:1027981811620:web:a581aca4f5a49d09f72b31",
-  measurementId: "G-2T5BERQ6RM"
-};
+  // Firebase Configuration - načítá se z API endpointu
+  var firebaseConfig = null;
+  var auth = null;
+  var db = null;
 
-  // 🔥 Inicializace Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  // Použijeme jeden dokument pro celý stav – jednoduché na začátek
-  const globalDocRef = db.collection("rackManager").doc("global");
-
-  // ☁ Uložit všechna data do Firestore
-  async function saveToCloud() {
+  // Asynchronní načtení konfigurace z API
+  async function initializeFirebase() {
     try {
-      const clients = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
-      const clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
-      const lastClientId = localStorage.getItem('rackManagerLastClient') || null;
+      const response = await fetch('/api/config');
+      if (!response.ok) {
+        throw new Error('Failed to load Firebase config from API');
+      }
+      firebaseConfig = await response.json();
+      
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      console.log("🔥 Firebase initialized for CX.TECH Rack Manager");
 
-      const payload = {
-        clients,
-        clientData,
-        lastClientId,
-        updatedAt: new Date().toISOString()
-      };
-
-      await globalDocRef.set(payload, { merge: true });
-      alert('✅ Data byla uložena do Firestore');
-    } catch (err) {
-      console.error('Chyba při ukládání do Firestore:', err);
-      alert('❌ Chyba při ukládání do cloudu: ' + err.message);
+      auth = firebase.auth();
+      db = firebase.database();   // 🔁 Realtime DB
+      
+      // Spustit další inicializaci po načtení
+      setupFirebaseListeners();
+    } catch (error) {
+      console.error('❌ Error loading Firebase config:', error);
+      // Fallback pro lokální vývoj
+      if (window.firebaseConfig) {
+        console.warn('⚠️ Using fallback config from window.firebaseConfig');
+        firebaseConfig = window.firebaseConfig;
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.database();
+        setupFirebaseListeners();
+      } else {
+        console.error('❌ No Firebase config available. Please set environment variables in Vercel.');
+      }
     }
   }
 
-  // ☁ Načíst všechna data z Firestore
+  function setupFirebaseListeners() {
+  
+    if (!db) return;
+    
+    // Monitor Firebase connection status
+    db.ref('.info/connected').on('value', function(snapshot) {
+      var connected = snapshot.val();
+      var statusElem = document.getElementById('firebaseStatus');
+      if (statusElem) {
+        if (connected) {
+          statusElem.innerHTML = '🟢 Online';
+          statusElem.style.color = '#4ade80';
+        } else {
+          statusElem.innerHTML = '🔴 Offline';
+          statusElem.style.color = '#f87171';
+        }
+      }
+      console.log('Firebase connection:', connected ? 'Online' : 'Offline');
+    });
+  }
+
+  // Spustit inicializaci při načtení stránky
+  initializeFirebase();
+
+  // --- UI pro přihlášení ---
+  function updateAuthUI(user) {
+    var statusEl = document.getElementById('authStatus');
+    var loginBtn = document.getElementById('loginBtn');
+    var logoutBtn = document.getElementById('logoutBtn');
+
+    if (!statusEl || !loginBtn || !logoutBtn) return;
+
+    if (user) {
+      statusEl.textContent = "Přihlášen: " + (user.email || user.uid);
+      loginBtn.style.display = 'none';
+      logoutBtn.style.display = 'inline-block';
+    } else {
+      statusEl.textContent = "Nepřihlášen";
+      loginBtn.style.display = 'inline-block';
+      logoutBtn.style.display = 'none';
+    }
+  }
+
+  function loginWithGoogle() {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(function (error) {
+      console.error("Auth error:", error);
+      alert("Chyba při přihlášení: " + error.message);
+    });
+  }
+
+  function logout() {
+    auth.signOut().catch(function (error) {
+      console.error("Sign-out error:", error);
+      alert("Chyba při odhlášení: " + error.message);
+    });
+  }
+
+  auth.onAuthStateChanged(function (user) {
+    updateAuthUI(user);
+  });
+
+  function requireAuth() {
+    var user = auth.currentUser;
+    if (!user) {
+      alert("Nejprve se přihlaste (Google účet @cxtech.cz).");
+      throw new Error("NOT_AUTHENTICATED");
+    }
+    return user;
+  }
+
+  // --- Cesta v Realtime DB, kde budeme držet data ---
+  var GLOBAL_PATH = "rackManager/global";
+
+  // ☁ Uložit všechna data z localStorage do Realtime DB
+  async function saveToCloud() {
+    try {
+      if (!db) {
+        alert('Firebase není inicializováno. Zkontrolujte konfiguraci.');
+        return;
+      }
+      
+      var user = requireAuth();
+
+      var clients = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
+      var clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
+      var lastClientId = localStorage.getItem('rackManagerLastClient') || null;
+
+      var payload = {
+        clients: clients,
+        clientData: clientData,
+        lastClientId: lastClientId,
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.email || user.uid
+      };
+
+      await db.ref(GLOBAL_PATH).set(payload);
+      alert("✅ Data byla uložena do Realtime DB");
+    } catch (err) {
+      if (err.message === "NOT_AUTHENTICATED") return;
+      console.error("Chyba při ukládání:", err);
+      alert("❌ Chyba při ukládání do cloudu: " + err.message);
+    }
+  }
+
+  // ☁ Načíst všechna data z Realtime DB do localStorage
   async function loadFromCloud() {
     try {
-      const snap = await globalDocRef.get();
-      if (!snap.exists) {
-        alert('⚠ V cloudu zatím nejsou žádná data');
+      if (!db) {
+        alert('Firebase není inicializováno. Zkontrolujte konfiguraci.');
+        return;
+      }
+      
+      requireAuth();
+
+      var snap = await db.ref(GLOBAL_PATH).once("value");
+      if (!snap.exists()) {
+        alert("⚠ V cloudu zatím nejsou žádná data");
         return;
       }
 
-      const data = snap.data();
-      const clients = data.clients || [];
-      const clientData = data.clientData || {};
-      const lastClientId = data.lastClientId || null;
+      var data = snap.val() || {};
+      var clients = data.clients || [];
+      var clientData = data.clientData || {};
+      var lastClientId = data.lastClientId || null;
 
-      // Přepíšeme localStorage tím, co je v cloudu
       localStorage.setItem('rackManagerClients', JSON.stringify(clients));
       localStorage.setItem('rackManagerClientData', JSON.stringify(clientData));
       if (lastClientId) {
@@ -2803,19 +3085,18 @@
         localStorage.removeItem('rackManagerLastClient');
       }
 
-      // Znovu zainicializujeme UI
-      if (typeof init === 'function') {
+      // přerenderovat UI podle nových dat
+      if (typeof init === "function") {
         init();
       }
 
-      alert('✅ Data byla načtena z Firestore');
+      alert("✅ Data byla načtena z Realtime DB");
     } catch (err) {
-      console.error('Chyba při načítání z Firestore:', err);
-      alert('❌ Chyba při načítání z cloudu: ' + err.message);
+      if (err.message === "NOT_AUTHENTICATED") return;
+      console.error("Chyba při načítání:", err);
+      alert("❌ Chyba při načítání z cloudu: " + err.message);
     }
   }
 </script>
 </body>
 </html>
-   
-
