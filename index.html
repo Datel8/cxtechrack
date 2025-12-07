@@ -3082,9 +3082,23 @@
     });
   }
 
-  auth.onAuthStateChanged(function (user) {
-    updateAuthUI(user);
-  });
+  // Inicializace auth state listener (počkat až je auth připraven)
+  if (auth) {
+    auth.onAuthStateChanged(function (user) {
+      updateAuthUI(user);
+    });
+  } else {
+    // Pokud auth ještě není připraven, počkat na inicializaci
+    setTimeout(function() {
+      if (auth) {
+        auth.onAuthStateChanged(function (user) {
+          updateAuthUI(user);
+        });
+      } else {
+        console.warn('Auth not initialized, UI will not update');
+      }
+    }, 1000);
+  }
 
   function requireAuth() {
     var user = auth.currentUser;
