@@ -1114,7 +1114,10 @@
 
   // Inicializace Firestore
   let firestoreApp, firestoreDb;
+  window.firestoreReady = false;
+  
   loadFirebaseConfig().then(config => {
+    console.log('✅ Firebase config loaded:', config);
     firestoreApp = initializeApp(config);
     firestoreDb = getFirestore(firestoreApp);
 
@@ -1135,9 +1138,32 @@
       await updateDoc(ref, { rackData: data });
     };
 
+    window.firestoreReady = true;
     console.log("🔥 Firebase Firestore ready for cxtechrack!");
+    
+    // Zobrazit status v UI
+    const statusEl = document.getElementById('firebaseStatus');
+    if (statusEl) {
+      statusEl.innerHTML = '🟢 Firestore Ready';
+      statusEl.style.color = '#4ade80';
+    }
   }).catch(error => {
     console.error('❌ Firebase Firestore initialization failed:', error);
+    window.firestoreReady = false;
+    
+    // Zobrazit chybu v UI
+    const statusEl = document.getElementById('firebaseStatus');
+    if (statusEl) {
+      statusEl.innerHTML = '🔴 Firestore Error';
+      statusEl.style.color = '#f87171';
+    }
+    
+    // Zobrazit detailní chybu v konzoli
+    console.error('Detail chyby:', {
+      message: error.message,
+      stack: error.stack,
+      apiEndpoint: '/api/config'
+    });
   });
 </script>
 
@@ -3025,57 +3051,78 @@
   // --- Cesta v Realtime DB, kde budeme držet data ---
   var GLOBAL_PATH = "rackManager/global";
 
-  // ☁ Uložit všechna data z localStorage do Realtime DB
+  // ☁ Uložit všechna data z localStorage do Firestore
   async function saveToCloud() {
     try {
-      if (!db) {
-        alert('Firebase není inicializováno. Zkontrolujte konfiguraci.');
+      // Kontrola, zda jsou Firestore funkce dostupné
+      if (!window.saveClientDataToDb) {
+        alert('Firebase Firestore není inicializováno. Zkontrolujte konfiguraci a zkuste to znovu za chvíli.');
+        console.error('Firestore functions not available. Check if API endpoint /api/config is working.');
         return;
       }
-      
-      var user = requireAuth();
 
       var clients = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
       var clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
       var lastClientId = localStorage.getItem('rackManagerLastClient') || null;
 
-      var payload = {
+      // Uložit všechna data klientů do Firestore
+      const savePromises = [];
+      
+      // Uložit globální data pod klíčem "global"
+      const globalData = {
         clients: clients,
         clientData: clientData,
         lastClientId: lastClientId,
-        updatedAt: new Date().toISOString(),
-        updatedBy: user.email || user.uid
+        updatedAt: new Date().toISOString()
       };
+      
+      savePromises.push(window.saveClientDataToDb('global', globalData));
 
-      await db.ref(GLOBAL_PATH).set(payload);
-      alert("✅ Data byla uložena do Realtime DB");
+      // Uložit data každého klienta zvlášť
+      for (const clientId in clientData) {
+        if (clientData[clientId]) {
+          savePromises.push(window.saveClientDataToDb(clientId, clientData[clientId]));
+        }
+      }
+
+      await Promise.all(savePromises);
+      alert("✅ Data byla uložena do Firestore");
     } catch (err) {
-      if (err.message === "NOT_AUTHENTICATED") return;
-      console.error("Chyba při ukládání:", err);
-      alert("❌ Chyba při ukládání do cloudu: " + err.message);
+      console.error("Chyba při ukládání do Firestore:", err);
+      alert("❌ Chyba při ukládání do Firestore: " + err.message);
     }
   }
 
-  // ☁ Načíst všechna data z Realtime DB do localStorage
+  // ☁ Načíst všechna data z Firestore do localStorage
   async function loadFromCloud() {
     try {
-      if (!db) {
-        alert('Firebase není inicializováno. Zkontrolujte konfiguraci.');
+      // Kontrola, zda jsou Firestore funkce dostupné
+      if (!window.loadClientDataFromDb) {
+        alert('Firebase Firestore není inicializováno. Zkontrolujte konfiguraci a zkuste to znovu za chvíli.');
+        console.error('Firestore functions not available. Check if API endpoint /api/config is working.');
         return;
       }
+
+      // Načíst globální data
+      const globalData = await window.loadClientDataFromDb('global');
       
-      requireAuth();
-
-      var snap = await db.ref(GLOBAL_PATH).once("value");
-      if (!snap.exists()) {
-        alert("⚠ V cloudu zatím nejsou žádná data");
+      if (!globalData) {
+        alert("⚠ V Firestore zatím nejsou žádná data");
         return;
       }
 
-      var data = snap.val() || {};
-      var clients = data.clients || [];
-      var clientData = data.clientData || {};
-      var lastClientId = data.lastClientId || null;
+      var clients = globalData.clients || [];
+      var clientData = globalData.clientData || {};
+      var lastClientId = globalData.lastClientId || null;
+
+      // Načíst data jednotlivých klientů (pokud existují)
+      const clientIds = Object.keys(clientData);
+      for (const clientId of clientIds) {
+        const clientDataFromDb = await window.loadClientDataFromDb(clientId);
+        if (clientDataFromDb) {
+          clientData[clientId] = clientDataFromDb;
+        }
+      }
 
       localStorage.setItem('rackManagerClients', JSON.stringify(clients));
       localStorage.setItem('rackManagerClientData', JSON.stringify(clientData));
@@ -3090,11 +3137,10 @@
         init();
       }
 
-      alert("✅ Data byla načtena z Realtime DB");
+      alert("✅ Data byla načtena z Firestore");
     } catch (err) {
-      if (err.message === "NOT_AUTHENTICATED") return;
-      console.error("Chyba při načítání:", err);
-      alert("❌ Chyba při načítání z cloudu: " + err.message);
+      console.error("Chyba při načítání z Firestore:", err);
+      alert("❌ Chyba při načítání z Firestore: " + err.message);
     }
   }
 </script>
