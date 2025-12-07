@@ -25,15 +25,23 @@ module.exports = function handler(req, res) {
   };
 
   // Validace, že všechny hodnoty jsou nastavené
-  const missingVars = Object.entries(firebaseConfig)
-    .filter(([key, value]) => !value)
-    .map(([key]) => key);
+  // databaseURL je volitelný (potřebný jen pro Realtime Database, ne pro Firestore)
+  const requiredVars = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+  const missingVars = requiredVars
+    .filter(key => !firebaseConfig[key])
+    .map(key => key);
 
   if (missingVars.length > 0) {
     return res.status(500).json({
-      error: 'Missing environment variables',
-      missing: missingVars
+      error: 'Missing required environment variables',
+      missing: missingVars,
+      note: 'databaseURL is optional (only needed for Realtime Database, not Firestore)'
     });
+  }
+  
+  // Pokud databaseURL není nastavený, nastavíme null (pro Firestore to není problém)
+  if (!firebaseConfig.databaseURL) {
+    firebaseConfig.databaseURL = null;
   }
 
   // Vrácení konfigurace
