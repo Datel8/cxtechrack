@@ -1292,6 +1292,14 @@
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
             </div>
             
+            <div class="control-section">
+                <h3>🔐 Autentizace</h3>
+                <div id="authStatus" style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Nepřihlášen</div>
+                <button id="loginBtnGoogle" class="btn btn-secondary" onclick="loginWithGoogle()" style="margin-bottom: 0.5rem; width: 100%;">🔵 Přihlásit se (Google)</button>
+                <button id="loginBtnMicrosoft" class="btn btn-secondary" onclick="loginWithMicrosoft()" style="margin-bottom: 0.5rem; width: 100%;">🔷 Přihlásit se (Microsoft 365)</button>
+                <button id="logoutBtn" class="btn btn-secondary" onclick="logout()" style="display: none; width: 100%;">Odhlásit se</button>
+            </div>
+            
         </div>
         
         <div class="main-content">
@@ -2984,27 +2992,86 @@
   // --- UI pro přihlášení ---
   function updateAuthUI(user) {
     var statusEl = document.getElementById('authStatus');
-    var loginBtn = document.getElementById('loginBtn');
+    var loginBtnGoogle = document.getElementById('loginBtnGoogle');
+    var loginBtnMicrosoft = document.getElementById('loginBtnMicrosoft');
     var logoutBtn = document.getElementById('logoutBtn');
 
-    if (!statusEl || !loginBtn || !logoutBtn) return;
+    if (!statusEl || !loginBtnGoogle || !loginBtnMicrosoft || !logoutBtn) return;
 
     if (user) {
-      statusEl.textContent = "Přihlášen: " + (user.email || user.uid);
-      loginBtn.style.display = 'none';
+      var provider = user.providerData && user.providerData[0] ? user.providerData[0].providerId : 'unknown';
+      var providerName = provider === 'microsoft.com' ? 'Microsoft 365' : provider === 'google.com' ? 'Google' : 'Neznámý';
+      statusEl.textContent = "Přihlášen: " + (user.email || user.uid) + " (" + providerName + ")";
+      statusEl.style.color = 'var(--success)';
+      loginBtnGoogle.style.display = 'none';
+      loginBtnMicrosoft.style.display = 'none';
       logoutBtn.style.display = 'inline-block';
     } else {
       statusEl.textContent = "Nepřihlášen";
-      loginBtn.style.display = 'inline-block';
+      statusEl.style.color = 'var(--text-secondary)';
+      loginBtnGoogle.style.display = 'inline-block';
+      loginBtnMicrosoft.style.display = 'inline-block';
       logoutBtn.style.display = 'none';
     }
   }
 
   function loginWithGoogle() {
+    if (!auth) {
+      alert('Firebase Auth není inicializováno. Zkontrolujte konfiguraci.');
+      return;
+    }
+    
     var provider = new firebase.auth.GoogleAuthProvider();
+    // Nastavit doménu pro organizaci (volitelné)
+    provider.setCustomParameters({
+      hd: 'cxtech.cz' // Omezit na doménu cxtech.cz
+    });
+    
     auth.signInWithPopup(provider).catch(function (error) {
       console.error("Auth error:", error);
       alert("Chyba při přihlášení: " + error.message);
+    });
+  }
+
+  function loginWithMicrosoft() {
+    if (!auth) {
+      alert('Firebase Auth není inicializováno. Zkontrolujte konfiguraci.');
+      return;
+    }
+    
+    var provider = new firebase.auth.OAuthProvider('microsoft.com');
+    
+    // Nastavit tenant ID pro organizaci (pokud máte specifický tenant)
+    // provider.setCustomParameters({
+    //   tenant: 'your-tenant-id'
+    // });
+    
+    // Nebo použít common pro multi-tenant
+    provider.setCustomParameters({
+      prompt: 'select_account' // Zobrazit výběr účtu
+    });
+    
+    // Přidat scope pro Microsoft Graph API (volitelné)
+    provider.addScope('openid');
+    provider.addScope('email');
+    provider.addScope('profile');
+    
+    auth.signInWithPopup(provider).then(function(result) {
+      console.log('✅ Microsoft login successful:', result.user);
+    }).catch(function (error) {
+      console.error("Microsoft Auth error:", error);
+      
+      // Lepší error handling pro Microsoft
+      let errorMessage = "Chyba při přihlášení přes Microsoft 365";
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = "Přihlášení bylo zrušeno";
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = "Popup byl zablokován. Povolte popupy pro tuto stránku.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
     });
   }
 
@@ -3022,9 +3089,20 @@
   function requireAuth() {
     var user = auth.currentUser;
     if (!user) {
-      alert("Nejprve se přihlaste (Google účet @cxtech.cz).");
+      alert("Nejprve se přihlaste (Google nebo Microsoft 365 účet).");
       throw new Error("NOT_AUTHENTICATED");
     }
+    
+    // Volitelně: kontrola domény
+    var email = user.email || '';
+    var allowedDomains = ['cxtech.cz']; // Přidejte další povolené domény
+    
+    if (allowedDomains.length > 0 && !allowedDomains.some(domain => email.endsWith('@' + domain))) {
+      alert("Pouze účty z povolených domén mohou přistupovat k aplikaci.");
+      logout();
+      throw new Error("UNAUTHORIZED_DOMAIN");
+    }
+    
     return user;
   }
 
