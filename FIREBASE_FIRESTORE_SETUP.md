@@ -154,3 +154,6 @@ Pokud chcete používat autentizaci:
 - [Security Rules Guide](https://firebase.google.com/docs/firestore/security/get-started)
 - [Firestore Pricing](https://firebase.google.com/pricing)
 
+
+
+

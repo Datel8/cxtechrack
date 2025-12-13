@@ -1095,13 +1095,26 @@
 
   // Načtení Firebase config z API endpointu
   async function loadFirebaseConfig() {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1097',message:'loadFirebaseConfig ENTRY',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     try {
       const response = await fetch('/api/config');
       if (!response.ok) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1101',message:'loadFirebaseConfig response NOT OK',data:{status:response.status,statusText:response.statusText},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
         throw new Error('Failed to load Firebase config');
       }
-      return await response.json();
+      const config = await response.json();
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1103',message:'loadFirebaseConfig SUCCESS',data:{hasApiKey:!!config.apiKey,hasProjectId:!!config.projectId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      return config;
     } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1105',message:'loadFirebaseConfig ERROR',data:{errorMessage:error.message,hasFallback:!!window.firebaseConfig},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       console.error('❌ Error loading Firebase config:', error);
       // Fallback na window.firebaseConfig pokud existuje (pro lokální vývoj)
       if (window.firebaseConfig) {
@@ -1158,10 +1171,16 @@
   updateFirestoreStatus('⏳ Loading...', '#fbbf24', 'Načítání Firebase konfigurace...');
   
   loadFirebaseConfig().then(config => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1160',message:'Firestore init START',data:{hasApiKey:!!config.apiKey,hasProjectId:!!config.projectId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     console.log('✅ Firebase config loaded:', config);
     
     // Validace configu
     if (!config.apiKey || !config.projectId) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1164',message:'Firestore init VALIDATION FAILED',data:{hasApiKey:!!config.apiKey,hasProjectId:!!config.projectId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       throw new Error('Neplatná Firebase konfigurace - chybí apiKey nebo projectId');
     }
     
@@ -1170,8 +1189,21 @@
 
     // ⛓ Wrapper funkce místo localStorage
     window.saveClientDataToDb = async (clientName, data) => {
-      const ref = doc(firestoreDb, "clients", clientName);
-      await setDoc(ref, { rackData: data }, { merge: true });
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1172',message:'saveClientDataToDb ENTRY',data:{clientName:clientName,dataSize:JSON.stringify(data||{}).length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+      // #endregion
+      try {
+        const ref = doc(firestoreDb, "clients", clientName);
+        await setDoc(ref, { rackData: data }, { merge: true });
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1174',message:'saveClientDataToDb SUCCESS',data:{clientName:clientName},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
+      } catch (err) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1174',message:'saveClientDataToDb ERROR',data:{clientName:clientName,errorMessage:err.message,errorCode:err.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
+        throw err;
+      }
     };
 
     window.loadClientDataFromDb = async (clientName) => {
@@ -1186,11 +1218,17 @@
     };
 
     window.firestoreReady = true;
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1188',message:'Firestore init SUCCESS',data:{firestoreReady:window.firestoreReady,hasSaveFunc:typeof window.saveClientDataToDb==='function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     console.log("🔥 Firebase Firestore ready for cxtechrack!");
     
     // Zobrazit úspěšný status
     updateFirestoreStatus('🟢 Firestore Ready', '#4ade80', 'Firestore je připraven k použití');
   }).catch(error => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1193',message:'Firestore init ERROR',data:{errorMessage:error.message,firestoreReady:window.firestoreReady},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     console.error('❌ Firebase Firestore initialization failed:', error);
     window.firestoreReady = false;
     
@@ -1677,6 +1715,9 @@
         
         // Save data to localStorage and auto-sync to Firestore
         function saveData() {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1679',message:'saveData ENTRY',data:{hasCurrentClient:!!currentClientId,clientsCount:clients.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             // Save current client's data
             if (currentClientId) {
                 clientData[currentClientId] = {
@@ -1698,12 +1739,21 @@
         
         // Automatický sync do Firestore
         async function autoSyncToFirestore() {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1700',message:'autoSyncToFirestore ENTRY',data:{firestoreReady:window.firestoreReady,hasSaveFunc:typeof window.saveClientDataToDb,currentClientId:currentClientId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             // Kontrola, zda je Firestore připraven
             if (!window.firestoreReady || !window.saveClientDataToDb) {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1702',message:'autoSyncToFirestore EARLY RETURN',data:{firestoreReady:window.firestoreReady,hasSaveFunc:typeof window.saveClientDataToDb},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
                 return; // Firestore není připraven, sync přeskočíme
             }
             
             try {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1706',message:'autoSyncToFirestore BEFORE SAVE',data:{currentClientId:currentClientId,hasClientData:!!(currentClientId&&clientData[currentClientId])},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+                // #endregion
                 // Uložit globální data
                 const globalData = {
                     clients: clients,
@@ -1719,8 +1769,14 @@
                     await window.saveClientDataToDb(currentClientId, clientData[currentClientId]);
                 }
                 
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1722',message:'autoSyncToFirestore SUCCESS',data:{savedGlobal:true,savedClient:!!(currentClientId&&clientData[currentClientId])},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+                // #endregion
                 console.log('✅ Auto-sync to Firestore successful');
             } catch (error) {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:1723',message:'autoSyncToFirestore ERROR',data:{errorMessage:error.message,errorCode:error.code,errorStack:error.stack?.substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+                // #endregion
                 // Tichá chyba - nechceme rušit uživatele při každém uložení
                 console.warn('⚠️ Auto-sync to Firestore failed:', error.message);
             }

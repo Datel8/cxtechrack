@@ -116,3 +116,6 @@ if (window.saveClientDataToDb) {
 3. Zkontrolujte Response - měl by obsahovat JSON s konfigurací
 4. Zkontrolujte Status Code - měl by být 200 OK
 
+
+
+

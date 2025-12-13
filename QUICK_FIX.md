@@ -103,3 +103,6 @@ if (window.saveClientDataToDb) {
 - **Příčina:** Firestore databáze není vytvořená v Firebase Console
 - **Řešení:** Firebase Console → Firestore Database → Create database
 
+
+
+

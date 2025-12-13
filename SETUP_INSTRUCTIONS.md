@@ -99,3 +99,6 @@ NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789012:web:abcdef123456
 
 Podrobnější instrukce najdete v `README_VERCEL_SETUP.md`
 
+
+
+

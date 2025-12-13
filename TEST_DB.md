@@ -214,3 +214,6 @@ curl https://your-app.vercel.app/api/config
 ### CORS chyby
 - **Řešení**: Zkontrolujte `vercel.json` - CORS headers jsou nastavené
 
+
+
+

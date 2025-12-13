@@ -141,3 +141,6 @@ Pokud chcete použít lokální konfiguraci bez API, můžete přidat do `index.
 - [Firebase Setup Guide](https://firebase.google.com/docs/web/setup)
 - [Firebase Realtime Database](https://firebase.google.com/docs/database)
 
+
+
+
