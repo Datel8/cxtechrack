@@ -12,16 +12,22 @@ module.exports = function handler(req, res) {
     return res.status(200).end();
   }
 
+  // Helper funkce pro odstranění uvozovek z hodnot
+  const stripQuotes = (value) => {
+    if (!value) return value;
+    return value.toString().replace(/^["']|["']$/g, '');
+  };
+
   // Načtení environment variables z Vercelu
   // Podporujeme oba formáty: NEXT_PUBLIC_FIREBASE_* i NEXT_PUBLIC_* (pro zpětnou kompatibilitu)
   const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_apiKey || process.env.FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.NEXT_PUBLIC_authDomain || process.env.FIREBASE_AUTH_DOMAIN,
-    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || process.env.NEXT_PUBLIC_databaseURL || process.env.NEXT_PUBLIC_databaseUrl || process.env.FIREBASE_DATABASE_URL,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_projectId || process.env.FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_storageBucket || process.env.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || process.env.NEXT_PUBLIC_messagingSenderId || process.env.FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || process.env.NEXT_PUBLIC_appId || process.env.FIREBASE_APP_ID
+    apiKey: stripQuotes(process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_apiKey || process.env.FIREBASE_API_KEY),
+    authDomain: stripQuotes(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.NEXT_PUBLIC_authDomain || process.env.FIREBASE_AUTH_DOMAIN),
+    databaseURL: stripQuotes(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || process.env.NEXT_PUBLIC_databaseURL || process.env.NEXT_PUBLIC_databaseUrl || process.env.FIREBASE_DATABASE_URL),
+    projectId: stripQuotes(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_projectId || process.env.FIREBASE_PROJECT_ID),
+    storageBucket: stripQuotes(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_storageBucket || process.env.FIREBASE_STORAGE_BUCKET),
+    messagingSenderId: stripQuotes(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || process.env.NEXT_PUBLIC_messagingSenderId || process.env.FIREBASE_MESSAGING_SENDER_ID),
+    appId: stripQuotes(process.env.NEXT_PUBLIC_FIREBASE_APP_ID || process.env.NEXT_PUBLIC_appId || process.env.FIREBASE_APP_ID)
   };
 
   // Validace, že všechny hodnoty jsou nastavené
