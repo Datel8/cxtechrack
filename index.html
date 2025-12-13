@@ -1205,6 +1205,13 @@
       }
     }
     firestoreDb = getFirestore(firestoreApp);
+    // #region agent log
+    debugLog('index.html:1207', 'Firestore DB initialized', {
+      projectId: firestoreApp.options.projectId,
+      hasDb: !!firestoreDb,
+      dbType: typeof firestoreDb
+    }, 'B');
+    // #endregion
 
     // ⛓ Wrapper funkce místo localStorage
     window.saveClientDataToDb = async (clientName, data) => {
