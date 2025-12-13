@@ -1233,15 +1233,20 @@
         debugLog('index.html:1215', 'saveClientDataToDb BEFORE setDoc', {
           clientName:clientName,
           refPath:ref.path,
+          refId:ref.id,
+          refParent:ref.parent?.path,
           dataType:typeof cleanData,
-          dataKeys:Object.keys(cleanData||{})
+          dataKeys:Object.keys(cleanData||{}),
+          projectId:firestoreApp?.options?.projectId,
+          databaseId:firestoreDb?._delegate?._databaseId?.databaseId
         }, 'E');
         // #endregion
+        // Zkusit také bez merge pro test
         await setDoc(ref, { rackData: cleanData }, { merge: true });
         // #region agent log
         debugLog('index.html:1217', 'saveClientDataToDb SUCCESS', {clientName:clientName,refPath:ref.path}, 'E');
         // #endregion
-      } catch (err) {
+        } catch (err) {
         // #region agent log
         debugLog('index.html:1220', 'saveClientDataToDb ERROR', {
           clientName:clientName,
@@ -1251,9 +1256,22 @@
           errorName:err.name
         }, 'E');
         // #endregion
-        console.error('❌ Firestore save error details:', {
-          code: err.code,
-          message: err.message,
+        
+        // Lepší error handling pro API key chyby
+        if (err.code === 'permission-denied' || err.message?.includes('API key')) {
+          console.error('❌ Firestore save error - API key problem:', {
+            code: err.code,
+            message: err.message,
+            tip: 'Zkontrolujte API klíč v Firebase Console a restrictions v Google Cloud Console'
+          });
+          
+          // Zobrazit uživatelsky přívětivou chybu
+          updateFirestoreStatus('🔴 API Key Error', '#f87171', 
+            'API klíč není platný. Zkontrolujte nastavení v Firebase Console.');
+        } else {
+          console.error('❌ Firestore save error details:', {
+            code: err.code,
+            message: err.message,
           clientName: clientName,
           dataPreview: JSON.stringify(data).substring(0, 200)
         });
@@ -1832,8 +1850,17 @@
                 // #region agent log
                 if (typeof debugLog !== 'undefined') debugLog('index.html:1723', 'autoSyncToFirestore ERROR', {errorMessage:error.message,errorCode:error.code,errorStack:error.stack?.substring(0,200)}, 'E');
                 // #endregion
+                
+                // Zobrazit chybu v UI, pokud je to API key problém
+                if (error.message?.includes('API key') || error.code === 'permission-denied') {
+                    updateFirestoreStatus('🔴 Save Error', '#f87171', 
+                        'Chyba při ukládání: ' + error.message + '. Zkontrolujte API klíč v Firebase Console.');
+                }
+                
                 // Tichá chyba - nechceme rušit uživatele při každém uložení
                 console.warn('⚠️ Auto-sync to Firestore failed:', error.message);
+                console.warn('Error code:', error.code);
+                console.warn('Tip: Zkontrolujte API klíč v Firebase Console a restrictions v Google Cloud Console');
             }
         }
         
