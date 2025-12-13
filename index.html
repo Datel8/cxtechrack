@@ -1209,18 +1209,47 @@
     // ⛓ Wrapper funkce místo localStorage
     window.saveClientDataToDb = async (clientName, data) => {
       // #region agent log
-      debugLog('index.html:1172', 'saveClientDataToDb ENTRY', {clientName:clientName,dataSize:JSON.stringify(data||{}).length}, 'E');
+      const dataStr = JSON.stringify(data||{});
+      debugLog('index.html:1210', 'saveClientDataToDb ENTRY', {
+        clientName:clientName,
+        dataSize:dataStr.length,
+        dataKeys:data?Object.keys(data):[],
+        hasFirestoreDb:!!firestoreDb,
+        collectionPath:`clients/${clientName}`
+      }, 'E');
       // #endregion
       try {
+        // Validace dat - odstranit undefined hodnoty
+        const cleanData = JSON.parse(JSON.stringify(data || {}));
         const ref = doc(firestoreDb, "clients", clientName);
-        await setDoc(ref, { rackData: data }, { merge: true });
         // #region agent log
-        debugLog('index.html:1174', 'saveClientDataToDb SUCCESS', {clientName:clientName}, 'E');
+        debugLog('index.html:1215', 'saveClientDataToDb BEFORE setDoc', {
+          clientName:clientName,
+          refPath:ref.path,
+          dataType:typeof cleanData,
+          dataKeys:Object.keys(cleanData||{})
+        }, 'E');
+        // #endregion
+        await setDoc(ref, { rackData: cleanData }, { merge: true });
+        // #region agent log
+        debugLog('index.html:1217', 'saveClientDataToDb SUCCESS', {clientName:clientName,refPath:ref.path}, 'E');
         // #endregion
       } catch (err) {
         // #region agent log
-        debugLog('index.html:1174', 'saveClientDataToDb ERROR', {clientName:clientName,errorMessage:err.message,errorCode:err.code}, 'E');
+        debugLog('index.html:1220', 'saveClientDataToDb ERROR', {
+          clientName:clientName,
+          errorMessage:err.message,
+          errorCode:err.code,
+          errorStack:err.stack?.substring(0,300),
+          errorName:err.name
+        }, 'E');
         // #endregion
+        console.error('❌ Firestore save error details:', {
+          code: err.code,
+          message: err.message,
+          clientName: clientName,
+          dataPreview: JSON.stringify(data).substring(0, 200)
+        });
         throw err;
       }
     };
