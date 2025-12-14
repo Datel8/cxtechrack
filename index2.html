@@ -1174,23 +1174,11 @@
   // Inicializace Firestore
   let firestoreApp, firestoreDb;
   window.firestoreReady = false;
-  window.firestoreReadyCallbacks = window.firestoreReadyCallbacks || [];
-
-  function notifyFirestoreReady() {
-    window.firestoreReadyCallbacks.forEach(cb => {
-      try {
-        cb();
-      } catch (err) {
-        console.warn('⚠️ Firestore ready callback failed:', err.message);
-      }
-    });
-  }
   
   // Zobrazit loading status
   updateFirestoreStatus('⏳ Loading...', '#fbbf24', 'Načítání Firebase konfigurace...');
   
-  // Uložit promise pro inicializaci Firestore, aby na ni ostatní části aplikace mohly počkat
-  window.firestoreInitPromise = loadFirebaseConfig().then(config => {
+  loadFirebaseConfig().then(config => {
     // #region agent log
     debugLog('index.html:1160', 'Firestore init START', {hasApiKey:!!config.apiKey,hasProjectId:!!config.projectId}, 'B');
     // #endregion
@@ -1307,11 +1295,9 @@
     debugLog('index.html:1188', 'Firestore init SUCCESS', {firestoreReady:window.firestoreReady,hasSaveFunc:typeof window.saveClientDataToDb==='function'}, 'B');
     // #endregion
     console.log("🔥 Firebase Firestore ready for cxtechrack!");
-
+    
     // Zobrazit úspěšný status
     updateFirestoreStatus('🟢 Firestore Ready', '#4ade80', 'Firestore je připraven k použití');
-
-    notifyFirestoreReady();
   }).catch(error => {
     // #region agent log
     debugLog('index.html:1193', 'Firestore init ERROR', {errorMessage:error.message,firestoreReady:window.firestoreReady}, 'B');
@@ -1744,30 +1730,9 @@
         let racks = [];
         let devices = [];
         let connections = [];
-
-        function onFirestoreReady(cb) {
-            window.firestoreReadyCallbacks = window.firestoreReadyCallbacks || [];
-            window.firestoreReadyCallbacks.push(cb);
-            if (window.firestoreReady) {
-                try {
-                    cb();
-                } catch (err) {
-                    console.warn('⚠️ onFirestoreReady callback failed:', err.message);
-                }
-            }
-        }
         
         // Initialize from localStorage and auto-load from Firestore
         async function init() {
-            // Počkat na dokončení inicializace Firestore, aby se data mohly načíst z cloudu
-            if (window.firestoreInitPromise) {
-                try {
-                    await window.firestoreInitPromise;
-                } catch (err) {
-                    console.warn('⚠️ Firestore initialization failed, falling back to localStorage:', err.message);
-                }
-            }
-
             // Nejdřív zkusit načíst z Firestore (pokud je dostupné)
             if (window.firestoreReady && window.loadClientDataFromDb) {
                 try {
@@ -1898,15 +1863,7 @@
                 console.warn('Tip: Zkontrolujte API klíč v Firebase Console a restrictions v Google Cloud Console');
             }
         }
-
-        onFirestoreReady(() => {
-            if (clients.length || Object.keys(clientData).length) {
-                autoSyncToFirestore().catch(err => {
-                    console.warn('⚠️ Initial auto-sync after Firestore ready failed:', err.message);
-                });
-            }
-        });
-
+        
         // Load data for specific client
         function loadClientData(clientId) {
             if (clientData[clientId]) {
@@ -3097,7 +3054,10 @@
                 console.error('Error during initialization:', err);
             });
         });
-
+        
+    </script>
+     // Initialize on load
+    window.addEventListener('load', init);
     </script>
    <!-- Firebase Auth + Realtime Database -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>

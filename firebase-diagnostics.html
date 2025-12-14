@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Diagnostika - CX.TECH Rack Manager</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #0ff;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 { 
+            color: #f89a55; 
+            border-bottom: 2px solid #f89a55;
+            padding-bottom: 0.5rem;
+        }
+        .test-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .test-result {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        .success { background: rgba(0, 255, 0, 0.1); color: #0f0; }
+        .error { background: rgba(255, 0, 0, 0.1); color: #f00; }
+        .warning { background: rgba(255, 165, 0, 0.1); color: #fa0; }
+        .info { background: rgba(0, 255, 255, 0.1); color: #0ff; }
+        button {
+            background: #f89a55;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 0.25rem;
+        }
+        button:hover { background: #ff7a35; }
+        pre {
+            background: #000;
+            padding: 0.5rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.8rem;
+        }
+        .spinner {
+            border: 2px solid #333;
+            border-top: 2px solid #f89a55;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Firebase Diagnostika - CX.TECH Rack Manager</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test 1: API Endpoint</h2>
+        <button onclick="testAPIEndpoint()">Spustit test</button>
+        <div id="apiTest"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔥 Test 2: Firestore Inicializace</h2>
+        <button onclick="testFirestoreInit()">Spustit test</button>
+        <div id="firestoreTest"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>💾 Test 3: Firestore Zápis</h2>
+        <button onclick="testFirestoreWrite()">Spustit test</button>
+        <div id="writeTest"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📖 Test 4: Firestore Čtení</h2>
+        <button onclick="testFirestoreRead()">Spustit test</button>
+        <div id="readTest"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔒 Test 5: Security Rules</h2>
+        <button onclick="testSecurityRules()">Spustit test</button>
+        <div id="rulesTest"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🌐 Test 6: API Key Restrictions</h2>
+        <button onclick="testAPIKeyRestrictions()">Spustit test</button>
+        <div id="apiKeyTest"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 Kompletní test</h2>
+        <button onclick="runAllTests()">Spustit všechny testy</button>
+        <div id="allTests"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let firebaseApp = null;
+        let firestoreDb = null;
+
+        // Test 1: API Endpoint
+        window.testAPIEndpoint = async function() {
+            const testDiv = document.getElementById('apiTest');
+            testDiv.innerHTML = '<div class="test-result info">⏳ Testování API endpointu...</div>';
+            
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                
+                let html = '';
+                if (response.ok) {
+                    html += '<div class="test-result success">✅ API endpoint funguje (status ' + response.status + ')</div>';
+                    
+                    const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+                    const missingFields = requiredFields.filter(field => !data[field]);
+                    
+                    if (missingFields.length === 0) {
+                        html += '<div class="test-result success">✅ Všechny povinné hodnoty jsou nastavené</div>';
+                        html += '<div class="test-result info">Project ID: ' + data.projectId + '</div>';
+                        html += '<div class="test-result info">API Key (prvních 10 znaků): ' + data.apiKey.substring(0, 10) + '...</div>';
+                    } else {
+                        html += '<div class="test-result error">❌ Chybí hodnoty: ' + missingFields.join(', ') + '</div>';
+                        html += '<div class="test-result warning">⚠️ Zkontrolujte environment variables v Vercelu</div>';
+                    }
+                } else {
+                    html += '<div class="test-result error">❌ API endpoint vrátil chybu ' + response.status + '</div>';
+                    if (data.error) {
+                        html += '<div class="test-result error">Chyba: ' + data.error + '</div>';
+                    }
+                    if (data.missing) {
+                        html += '<div class="test-result error">Chybí proměnné: ' + data.missing.join(', ') + '</div>';
+                    }
+                }
+                
+                testDiv.innerHTML = html;
+                return data;
+            } catch (error) {
+                testDiv.innerHTML = '<div class="test-result error">❌ Kritická chyba: ' + error.message + '</div>';
+                return null;
+            }
+        }
+
+        // Test 2: Firestore Inicializace
+        window.testFirestoreInit = async function() {
+            const testDiv = document.getElementById('firestoreTest');
+            testDiv.innerHTML = '<div class="test-result info">⏳ Inicializace Firestore...</div>';
+            
+            try {
+                // Nejdřív načíst config
+                const config = await testAPIEndpoint();
+                if (!config || !config.apiKey) {
+                    testDiv.innerHTML = '<div class="test-result error">❌ Nelze inicializovat bez platné konfigurace</div>';
+                    return;
+                }
+                
+                // Inicializovat Firebase
+                if (!firebaseApp) {
+                    firebaseApp = initializeApp(config);
+                }
+                firestoreDb = getFirestore(firebaseApp);
+                
+                testDiv.innerHTML = `
+                    <div class="test-result success">✅ Firebase App inicializován</div>
+                    <div class="test-result success">✅ Firestore DB inicializován</div>
+                    <div class="test-result info">Project ID: ${firebaseApp.options.projectId}</div>
+                `;
+                
+                window.firestoreTestDb = firestoreDb;
+                return true;
+            } catch (error) {
+                testDiv.innerHTML = `
+                    <div class="test-result error">❌ Chyba inicializace: ${error.message}</div>
+                    <div class="test-result warning">Tip: Zkontrolujte API klíč v Firebase Console</div>
+                `;
+                return false;
+            }
+        }
+
+        // Test 3: Firestore Zápis
+        window.testFirestoreWrite = async function() {
+            const testDiv = document.getElementById('writeTest');
+            testDiv.innerHTML = '<div class="test-result info">⏳ Test zápisu do Firestore...</div>';
+            
+            try {
+                if (!firestoreDb) {
+                    await testFirestoreInit();
+                    if (!firestoreDb) {
+                        testDiv.innerHTML = '<div class="test-result error">❌ Firestore není inicializován</div>';
+                        return;
+                    }
+                }
+                
+                const testData = {
+                    test: true,
+                    timestamp: new Date().toISOString(),
+                    source: 'diagnostics',
+                    random: Math.random()
+                };
+                
+                const testId = 'test-' + Date.now();
+                const docRef = doc(firestoreDb, "clients", testId);
+                
+                await setDoc(docRef, { rackData: testData }, { merge: true });
+                
+                testDiv.innerHTML = `
+                    <div class="test-result success">✅ Zápis úspěšný!</div>
+                    <div class="test-result info">Document ID: ${testId}</div>
+                    <div class="test-result info">Data: <pre>${JSON.stringify(testData, null, 2)}</pre></div>
+                `;
+                
+                window.lastTestId = testId;
+                return true;
+            } catch (error) {
+                let errorHtml = `<div class="test-result error">❌ Chyba zápisu: ${error.message}</div>`;
+                
+                if (error.code === 'permission-denied') {
+                    errorHtml += `
+                        <div class="test-result warning">⚠️ Problém s oprávněními</div>
+                        <div class="test-result info">Řešení:
+                            <br>1. Firebase Console → Firestore → Rules
+                            <br>2. Nastavte: allow read, write: if true;
+                            <br>3. Klikněte Publish
+                        </div>
+                    `;
+                } else if (error.message.includes('API key')) {
+                    errorHtml += `
+                        <div class="test-result warning">⚠️ Problém s API klíčem</div>
+                        <div class="test-result info">Řešení:
+                            <br>1. Google Cloud Console → APIs & Services → Credentials
+                            <br>2. Najděte váš API Key
+                            <br>3. Zkontrolujte restrictions (měl by obsahovat Firestore API)
+                            <br>4. Nebo odstraňte všechny restrictions pro test
+                        </div>
+                    `;
+                }
+                
+                testDiv.innerHTML = errorHtml;
+                return false;
+            }
+        }
+
+        // Test 4: Firestore Čtení
+        window.testFirestoreRead = async function() {
+            const testDiv = document.getElementById('readTest');
+            testDiv.innerHTML = '<div class="test-result info">⏳ Test čtení z Firestore...</div>';
+            
+            try {
+                if (!firestoreDb) {
+                    await testFirestoreInit();
+                    if (!firestoreDb) {
+                        testDiv.innerHTML = '<div class="test-result error">❌ Firestore není inicializován</div>';
+                        return;
+                    }
+                }
+                
+                const testId = window.lastTestId || 'global';
+                const docRef = doc(firestoreDb, "clients", testId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    testDiv.innerHTML = `
+                        <div class="test-result success">✅ Čtení úspěšné!</div>
+                        <div class="test-result info">Document ID: ${testId}</div>
+                        <div class="test-result info">Data: <pre>${JSON.stringify(data, null, 2)}</pre></div>
+                    `;
+                } else {
+                    testDiv.innerHTML = `
+                        <div class="test-result warning">⚠️ Dokument neexistuje: ${testId}</div>
+                        <div class="test-result info">Zkuste nejdřív spustit Test 3 (Zápis)</div>
+                    `;
+                }
+                return true;
+            } catch (error) {
+                testDiv.innerHTML = `
+                    <div class="test-result error">❌ Chyba čtení: ${error.message}</div>
+                `;
+                return false;
+            }
+        }
+
+        // Test 5: Security Rules
+        window.testSecurityRules = async function() {
+            const testDiv = document.getElementById('rulesTest');
+            testDiv.innerHTML = '<div class="test-result info">⏳ Test Security Rules...</div>';
+            
+            try {
+                if (!firestoreDb) {
+                    await testFirestoreInit();
+                    if (!firestoreDb) {
+                        testDiv.innerHTML = '<div class="test-result error">❌ Firestore není inicializován</div>';
+                        return;
+                    }
+                }
+                
+                // Test různých operací
+                const tests = [];
+                
+                // Test 1: Zápis do clients collection
+                try {
+                    await setDoc(doc(firestoreDb, "clients", "rules-test"), { test: true }, { merge: true });
+                    tests.push('<div class="test-result success">✅ Zápis do /clients povolen</div>');
+                } catch (e) {
+                    tests.push('<div class="test-result error">❌ Zápis do /clients zakázán</div>');
+                }
+                
+                // Test 2: Čtení z clients collection
+                try {
+                    await getDoc(doc(firestoreDb, "clients", "rules-test"));
+                    tests.push('<div class="test-result success">✅ Čtení z /clients povoleno</div>');
+                } catch (e) {
+                    tests.push('<div class="test-result error">❌ Čtení z /clients zakázáno</div>');
+                }
+                
+                // Test 3: Test jiné collection (měla by selhat pokud rules jsou správně nastavené)
+                try {
+                    await setDoc(doc(firestoreDb, "test-collection", "test"), { test: true });
+                    tests.push('<div class="test-result warning">⚠️ Zápis do jiných kolekcí povolen (možné bezpečnostní riziko)</div>');
+                } catch (e) {
+                    tests.push('<div class="test-result success">✅ Zápis do jiných kolekcí správně zakázán</div>');
+                }
+                
+                testDiv.innerHTML = tests.join('');
+            } catch (error) {
+                testDiv.innerHTML = `<div class="test-result error">❌ Chyba testu: ${error.message}</div>`;
+            }
+        }
+
+        // Test 6: API Key Restrictions
+        window.testAPIKeyRestrictions = async function() {
+            const testDiv = document.getElementById('apiKeyTest');
+            testDiv.innerHTML = '<div class="test-result info">⏳ Kontrola API Key restrictions...</div>';
+            
+            let html = '';
+            
+            // Získat aktuální URL
+            const currentUrl = window.location.origin;
+            html += `<div class="test-result info">📍 Aktuální doména: ${currentUrl}</div>`;
+            
+            // Testovat různé Firebase služby
+            try {
+                if (!firestoreDb) {
+                    await testFirestoreInit();
+                }
+                
+                // Test Firestore
+                try {
+                    await getDoc(doc(firestoreDb, "test", "test"));
+                    html += '<div class="test-result success">✅ Firestore API funguje</div>';
+                } catch (e) {
+                    if (e.message.includes('API key')) {
+                        html += '<div class="test-result error">❌ Firestore API - problém s API key</div>';
+                    }
+                }
+                
+                html += `
+                    <div class="test-result warning">
+                        <strong>⚠️ Doporučení pro API Key:</strong><br>
+                        1. Google Cloud Console → APIs & Services → Credentials<br>
+                        2. Najděte váš API Key<br>
+                        3. V "Application restrictions" přidejte:<br>
+                        &nbsp;&nbsp;• ${currentUrl}/*<br>
+                        &nbsp;&nbsp;• https://*.vercel.app/* (pro preview deployments)<br>
+                        &nbsp;&nbsp;• http://localhost:* (pro lokální vývoj)<br>
+                        4. V "API restrictions" povolte:<br>
+                        &nbsp;&nbsp;• Cloud Firestore API<br>
+                        &nbsp;&nbsp;• Identity Toolkit API<br>
+                        &nbsp;&nbsp;• Firebase Installations API
+                    </div>
+                `;
+            } catch (error) {
+                html += `<div class="test-result error">❌ Test selhal: ${error.message}</div>`;
+            }
+            
+            testDiv.innerHTML = html;
+        }
+
+        // Spustit všechny testy
+        window.runAllTests = async function() {
+            const testDiv = document.getElementById('allTests');
+            testDiv.innerHTML = '<div class="test-result info">⏳ Spouštím všechny testy... <div class="spinner"></div></div>';
+            
+            const results = [];
+            
+            // Test 1
+            results.push('📋 Test API Endpoint...');
+            const apiResult = await testAPIEndpoint();
+            results.push(apiResult ? '✅ API Endpoint OK' : '❌ API Endpoint FAILED');
+            
+            // Test 2
+            results.push('🔥 Test Firestore Init...');
+            const initResult = await testFirestoreInit();
+            results.push(initResult ? '✅ Firestore Init OK' : '❌ Firestore Init FAILED');
+            
+            if (initResult) {
+                // Test 3
+                results.push('💾 Test Firestore Write...');
+                const writeResult = await testFirestoreWrite();
+                results.push(writeResult ? '✅ Firestore Write OK' : '❌ Firestore Write FAILED');
+                
+                // Test 4
+                results.push('📖 Test Firestore Read...');
+                const readResult = await testFirestoreRead();
+                results.push(readResult ? '✅ Firestore Read OK' : '❌ Firestore Read FAILED');
+                
+                // Test 5
+                results.push('🔒 Test Security Rules...');
+                await testSecurityRules();
+                results.push('✅ Security Rules tested');
+                
+                // Test 6
+                results.push('🌐 Test API Key...');
+                await testAPIKeyRestrictions();
+                results.push('✅ API Key tested');
+            }
+            
+            let finalHtml = '<h3>📊 Souhrn testů:</h3>';
+            finalHtml += results.map(r => `<div class="test-result ${r.includes('✅') ? 'success' : r.includes('❌') ? 'error' : 'info'}">${r}</div>`).join('');
+            
+            if (results.filter(r => r.includes('❌')).length === 0) {
+                finalHtml += '<div class="test-result success"><strong>🎉 Všechny testy prošly! Firebase je správně nakonfigurován.</strong></div>';
+            } else {
+                finalHtml += '<div class="test-result warning"><strong>⚠️ Některé testy selhaly. Zkontrolujte výsledky výše.</strong></div>';
+            }
+            
+            testDiv.innerHTML = finalHtml;
+        }
+
+        // Automaticky spustit test API při načtení
+        window.addEventListener('load', () => {
+            console.log('🔧 Firebase Diagnostics loaded');
+            console.log('📍 Current URL:', window.location.href);
+            console.log('🔗 API Endpoint:', window.location.origin + '/api/config');
+        });
+    </script>
+</body>
+</html>
