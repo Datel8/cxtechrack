@@ -1284,10 +1284,11 @@
           console.error('❌ Firestore save error details:', {
             code: err.code,
             message: err.message,
-          clientName: clientName,
-          dataPreview: JSON.stringify(data).substring(0, 200)
-        });
-        throw err;
+            clientName: clientName,
+            dataPreview: JSON.stringify(data).substring(0, 200)
+          });
+          throw err;
+        }
       }
     };
 
@@ -3131,7 +3132,13 @@
       }
 
       auth = firebase.auth();
-      db = firebase.database();   // 🔁 Realtime DB
+      // Realtime DB pouze pokud je k dispozici databaseURL v configu
+      if (firebaseConfig.databaseURL) {
+        db = firebase.database();
+      } else {
+        db = null;
+        console.warn("⚠️ Skipping Realtime Database init because databaseURL is missing");
+      }
       
       // Spustit další inicializaci po načtení
       setupFirebaseListeners();
@@ -3151,7 +3158,12 @@
           }
         }
         auth = firebase.auth();
-        db = firebase.database();
+        if (firebaseConfig.databaseURL) {
+          db = firebase.database();
+        } else {
+          db = null;
+          console.warn("⚠️ Skipping Realtime Database init because databaseURL is missing (fallback config)");
+        }
         setupFirebaseListeners();
       } else {
         console.error('❌ No Firebase config available. Please set environment variables in Vercel.');
