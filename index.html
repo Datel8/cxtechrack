@@ -1086,6 +1086,51 @@
             letter-spacing: 0.1em;
             margin-top: 0.25rem;
         }
+
+        /* Login gate */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .login-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 320px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+        .login-box h2 {
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+        .login-box p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        .login-input {
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+        .login-error {
+            color: var(--danger);
+            font-size: 0.875rem;
+            min-height: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 
@@ -1357,6 +1402,17 @@
 </script>
 
 <body>
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h2>Restricted Access</h2>
+            <p>Zadejte dočasný přístupový kód</p>
+            <form id="loginForm">
+                <input id="accessCodeInput" class="login-input" type="password" placeholder="Access code" autocomplete="off">
+                <div id="loginError" class="login-error"></div>
+                <button class="btn" type="submit">Odblokovat</button>
+            </form>
+        </div>
+    </div>
     <div class="header">
         <div class="header-brand">
             <h1><span class="cx">CX</span><span class="dot">.</span><span class="tech">TECH</span> <span class="separator">></span> Rack Manager Pro</h1>
@@ -1736,6 +1792,52 @@
     </div>
     
     <script>
+        // Jednoduchý lokální přístupový zámek (dočasný, bez M365)
+        const LOCAL_ACCESS_CODE = 'rack123'; // změňte podle potřeby
+        const ACCESS_FLAG_KEY = 'cxtechRackAccess';
+        let appBootstrapped = false;
+
+        function isAccessGranted() {
+            return sessionStorage.getItem(ACCESS_FLAG_KEY) === '1';
+        }
+
+        function showLoginOverlay() {
+            const overlay = document.getElementById('loginOverlay');
+            if (overlay) overlay.style.display = 'flex';
+        }
+
+        function hideLoginOverlay() {
+            const overlay = document.getElementById('loginOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function handleLoginSubmit(event) {
+            event.preventDefault();
+            const input = document.getElementById('accessCodeInput');
+            const errorEl = document.getElementById('loginError');
+            const code = (input?.value || '').trim();
+            if (!code) {
+                if (errorEl) errorEl.textContent = 'Zadejte kód.';
+                return;
+            }
+            if (code !== LOCAL_ACCESS_CODE) {
+                if (errorEl) errorEl.textContent = 'Nesprávný kód.';
+                return;
+            }
+            sessionStorage.setItem(ACCESS_FLAG_KEY, '1');
+            if (errorEl) errorEl.textContent = '';
+            hideLoginOverlay();
+            bootstrapApp();
+        }
+
+        function bootstrapApp() {
+            if (appBootstrapped) return;
+            appBootstrapped = true;
+            init().catch(err => {
+                console.error('Error during initialization:', err);
+            });
+        }
+
         // Data storage - now with multi-tenant support
         let clients = [];
         let currentClientId = null;
@@ -3092,11 +3194,18 @@
             reader.readAsText(file);
         }
         
-        // Initialize on load (async)
+        // Initialize on load (async) - gated behind access code
         window.addEventListener('load', () => {
-            init().catch(err => {
-                console.error('Error during initialization:', err);
-            });
+            const form = document.getElementById('loginForm');
+            if (form) {
+                form.addEventListener('submit', handleLoginSubmit);
+            }
+            if (isAccessGranted()) {
+                hideLoginOverlay();
+                bootstrapApp();
+            } else {
+                showLoginOverlay();
+            }
         });
 
     </script>
