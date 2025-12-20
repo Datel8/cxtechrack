@@ -1262,6 +1262,12 @@
             gap: 0.5rem;
             margin-bottom: 2rem;
         }
+
+        .port-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
         
         .port-item {
             background: var(--bg-tertiary);
@@ -3057,12 +3063,22 @@
         }
         
         // Port Management
+        function findPortConnection(deviceId, portNumber) {
+            return connections.find(c =>
+                (c.fromDevice === deviceId && c.fromPort === portNumber) ||
+                (c.toDevice === deviceId && c.toPort === portNumber)
+            );
+        }
+
         function showPortDetails(device) {
             document.getElementById('portDetailsOverlay').classList.add('active');
             document.getElementById('portDetailsTitle').textContent = device.name + ' - Port Management';
             
             const content = document.getElementById('portDetailsContent');
             const portCount = device.ports || 24;
+            const hint = canEditTopology()
+                ? 'Klikni na volny port pro rychle propojeni.'
+                : 'Pro propojeni potrebujes prava pro topologii.';
             
             // Get connections for this device
             const deviceConnections = connections.filter(c => 
@@ -3070,11 +3086,12 @@
             );
             
             let html = `
+                <div class="port-hint">${hint}</div>
                 <div class="port-grid">
             `;
             
             for (let i = 1; i <= portCount; i++) {
-                const conn = deviceConnections.find(c => 
+                const conn = deviceConnections.find(c =>
                     (c.fromDevice === device.id && c.fromPort === i) ||
                     (c.toDevice === device.id && c.toPort === i)
                 );
@@ -3145,12 +3162,25 @@
         }
         
         function configurePort(deviceId, portNumber) {
-            // Here you could open a modal to configure specific port
-            console.log('Configure port', portNumber, 'on device', deviceId);
+            if (!canEditTopology()) {
+                alert('Nemate opravneni upravovat topologii');
+                return;
+            }
+
+            const existing = findPortConnection(deviceId, portNumber);
+            if (existing) {
+                alert('Port je uz obsazeny.');
+                return;
+            }
+
+            openConnectionModal({
+                fromDevice: deviceId,
+                fromPort: portNumber
+            });
         }
         
         // Connection Management
-        function openConnectionModal() {
+        function openConnectionModal(prefill) {
             if (!currentClientId) {
                 alert('Nejprve vyberte klienta');
                 return;
@@ -3168,11 +3198,32 @@
                 `<option value="${d.id}">${d.name} (${d.type})</option>`
             ).join('');
 
-            document.getElementById('connFromDevice').innerHTML = deviceOptions;
-            document.getElementById('connToDevice').innerHTML = deviceOptions;
+            const fromSelect = document.getElementById('connFromDevice');
+            const toSelect = document.getElementById('connToDevice');
+
+            fromSelect.innerHTML = deviceOptions;
+            toSelect.innerHTML = deviceOptions;
+
+            if (prefill && prefill.fromDevice) {
+                fromSelect.value = prefill.fromDevice;
+            }
+
+            let targetDevice = prefill && prefill.toDevice ? prefill.toDevice : '';
+            if (!targetDevice || targetDevice === fromSelect.value) {
+                const other = devices.find(d => d.id !== fromSelect.value);
+                targetDevice = other ? other.id : fromSelect.value;
+            }
+            toSelect.value = targetDevice;
 
             updateFromPorts();
             updateToPorts();
+
+            if (prefill && prefill.fromPort) {
+                document.getElementById('connFromPort').value = String(prefill.fromPort);
+            }
+            if (prefill && prefill.toPort) {
+                document.getElementById('connToPort').value = String(prefill.toPort);
+            }
 
             document.getElementById('connectionModal').classList.add('active');
         }
