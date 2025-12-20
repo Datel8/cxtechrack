@@ -553,29 +553,6 @@
             text-align: left;
         }
         
-        .rack-unit.occupied.switch {
-            background: linear-gradient(90deg, #00ffff, #0099ff);
-            border-color: #00ffff;
-            color: #000;
-        }
-        
-        .rack-unit.occupied.router {
-            background: linear-gradient(90deg, #ff00ff, #9900ff);
-            border-color: #ff00ff;
-            color: #fff;
-        }
-        
-        .rack-unit.occupied.server {
-            background: linear-gradient(90deg, #ffff00, #ff9900);
-            border-color: #ffff00;
-            color: #000;
-        }
-        
-        .rack-unit.occupied.patch {
-            background: linear-gradient(90deg, #00ff88, #00cc66);
-            border-color: #00ff88;
-            color: #000;
-        }
         
         .rack-unit.occupied:hover {
             transform: scaleX(1.05);
@@ -737,26 +714,6 @@
             background: var(--badge-bg, rgba(248, 154, 85, 0.15));
             color: var(--badge-color, var(--text-primary));
             border: 1px solid var(--badge-border, transparent);
-        }
-        
-        .device-type-badge.switch {
-            background: rgba(0, 255, 255, 0.2);
-            color: var(--accent-cyan);
-        }
-        
-        .device-type-badge.router {
-            background: rgba(255, 0, 255, 0.2);
-            color: var(--accent-magenta);
-        }
-        
-        .device-type-badge.server {
-            background: rgba(255, 255, 0, 0.2);
-            color: var(--accent-yellow);
-        }
-        
-        .device-type-badge.patch {
-            background: rgba(0, 255, 136, 0.2);
-            color: var(--success);
         }
         
         .delete-btn {
@@ -1014,7 +971,8 @@
         
         .connection-item {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            gap: 0.4rem;
             padding: 1rem;
             background: var(--bg-tertiary);
             border-radius: 8px;
@@ -1028,14 +986,201 @@
         }
         
         .connection-from, .connection-to {
-            flex: 1;
             font-family: 'IBM Plex Mono', monospace;
         }
-        
+
         .connection-arrow {
             margin: 0 1rem;
             color: var(--accent-cyan);
             font-size: 1.5rem;
+        }
+
+        .connection-path-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .connection-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* Time tracking */
+        .time-tracking {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .time-layout {
+            display: grid;
+            grid-template-columns: minmax(320px, 1.2fr) minmax(320px, 1fr);
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 1100px) {
+            .time-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .time-panel {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .calendar-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.4rem;
+        }
+
+        .calendar-weekday {
+            text-transform: uppercase;
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            text-align: center;
+            letter-spacing: 0.12em;
+        }
+
+        .calendar-day {
+            background: #111111;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            min-height: 64px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-day:hover {
+            border-color: rgba(248, 154, 85, 0.6);
+        }
+
+        .calendar-day.muted {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        .calendar-day.selected {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px rgba(248, 154, 85, 0.25);
+        }
+
+        .calendar-day.today {
+            border-color: rgba(248, 154, 85, 0.9);
+        }
+
+        .calendar-day.has-hours {
+            background: rgba(248, 154, 85, 0.08);
+        }
+
+        .day-number {
+            font-size: 0.75rem;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .day-hours {
+            font-size: 0.7rem;
+            margin-top: 0.35rem;
+            color: var(--accent-primary);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .time-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-card {
+            background: var(--panel-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.75rem;
+        }
+
+        .summary-value {
+            font-size: 1.2rem;
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--accent-primary);
+        }
+
+        .summary-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .time-form {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .time-form .btn {
+            margin-bottom: 0;
+        }
+
+        .time-report-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .time-report-header select {
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .time-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .time-table th,
+        .time-table td {
+            padding: 0.5rem 0.6rem;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .time-table th {
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
         }
         
         
@@ -1628,6 +1773,7 @@
                     <button class="view-toggle-btn nav-btn" data-view="network" onclick="switchView('network', this)">Sitova mapa</button>
                     <button class="view-toggle-btn nav-btn" data-view="topology" onclick="switchView('topology', this)">Topologie</button>
                     <button class="view-toggle-btn nav-btn" data-view="overview" onclick="switchView('overview', this)">Prehled klienta</button>
+                    <button class="view-toggle-btn nav-btn" data-view="time" onclick="switchView('time', this)">Vykazovani</button>
                 </div>
             </div>
 
@@ -1742,6 +1888,56 @@
                     </div>
                 </div>
                 <canvas id="networkCanvas"></canvas>
+            </div>
+
+            <div id="timeView" class="time-tracking" style="display: none;">
+                <div class="rack-header">
+                    <h2>Vykazovani hodin</h2>
+                    <div class="rack-stats">
+                        <button class="btn-small" onclick="exportTimeReport()">Export PDF</button>
+                    </div>
+                </div>
+                <div class="time-layout">
+                    <div class="time-panel">
+                        <div class="calendar-header">
+                            <button class="btn-small" onclick="shiftTimeMonth(-1)">‹</button>
+                            <div class="calendar-title" id="timeCalendarTitle">-</div>
+                            <button class="btn-small" onclick="shiftTimeMonth(1)">›</button>
+                        </div>
+                        <div class="calendar-grid" id="timeCalendarWeekdays"></div>
+                        <div class="calendar-grid" id="timeCalendarGrid"></div>
+                    </div>
+                    <div class="time-panel">
+                        <div class="time-summary" id="timeSummary"></div>
+                        <div class="time-form">
+                            <div class="form-group">
+                                <label>Datum</label>
+                                <input type="date" id="timeEntryDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Hodiny</label>
+                                <input type="number" id="timeEntryHours" min="0" step="0.25" placeholder="napr. 1.5">
+                            </div>
+                            <div class="form-group">
+                                <label>Popis</label>
+                                <input type="text" id="timeEntryDesc" placeholder="Co se delalo">
+                            </div>
+                            <div class="form-group">
+                                <label>Kategorie</label>
+                                <input type="text" id="timeEntryCategory" placeholder="Např. Monitoring, Support">
+                            </div>
+                            <div class="form-group">
+                                <label><input type="checkbox" id="timeEntryBillable"> Billable</label>
+                            </div>
+                            <button class="btn" id="addTimeEntryBtn" onclick="addTimeEntry()">Pridat zapis</button>
+                        </div>
+                        <div class="time-report-header">
+                            <div class="section-title">Live report</div>
+                            <select id="timeReportScope" onchange="onTimeReportScopeChange()"></select>
+                        </div>
+                        <div id="timeReportTable"></div>
+                    </div>
+                </div>
             </div>
             
             <div id="topologyView" style="display: none;">
@@ -2063,12 +2259,18 @@
         let racks = [];
         let devices = [];
         let connections = [];
+        let timeEntries = [];
+        let timeViewMonth = new Date();
+        let timeSelectedDate = '';
 
         // Module types
         const DEFAULT_MODULE_TYPES = [
-            { id: 'switch', label: 'Switch', color: '#00ffff', gradient: ['#00ffff', '#0099ff'], text: '#000000', group: 'Network' },
-            { id: 'router', label: 'Router', color: '#ff00ff', gradient: ['#ff00ff', '#9900ff'], text: '#ffffff', group: 'Network' },
-            { id: 'server', label: 'Server', color: '#ffff00', gradient: ['#ffff00', '#ff9900'], text: '#000000', group: 'Compute' },
+            { id: 'fortigate', label: 'Fortigate', color: '#f8fafc', gradient: ['#f8fafc', '#e2e8f0'], text: '#111827', group: 'Security' },
+            { id: 'zyxel', label: 'Zyxel', color: '#5b1e2d', gradient: ['#5b1e2d', '#7a2438'], text: '#ffffff', group: 'Network' },
+            { id: 'router', label: 'Ubiquity router', color: '#2563eb', gradient: ['#3b82f6', '#1d4ed8'], text: '#ffffff', group: 'Network' },
+            { id: 'switch', label: 'Switch', color: '#6b7280', gradient: ['#6b7280', '#4b5563'], text: '#ffffff', group: 'Network' },
+            { id: 'ap', label: 'Access point', color: '#f1f5f9', gradient: ['#f1f5f9', '#e2e8f0'], text: '#111827', group: 'Wireless' },
+            { id: 'server', label: 'Server', color: '#fbbf24', gradient: ['#fbbf24', '#f59e0b'], text: '#111827', group: 'Compute' },
             { id: 'patch', label: 'Patch panel', color: '#00ff88', gradient: ['#00ff88', '#00cc66'], text: '#000000', group: 'Cabling' }
         ];
         let moduleTypes = [];
@@ -2082,7 +2284,9 @@
                 manageRacks: true,
                 manageDevices: true,
                 manageCategories: true,
-                manageRoles: true
+                manageRoles: true,
+                manageTime: true,
+                viewTimeAll: true
             },
             technician: {
                 deleteRacks: false,
@@ -2091,7 +2295,9 @@
                 manageRacks: true,
                 manageDevices: true,
                 manageCategories: false,
-                manageRoles: false
+                manageRoles: false,
+                manageTime: true,
+                viewTimeAll: false
             },
             readonly: {
                 deleteRacks: false,
@@ -2100,7 +2306,9 @@
                 manageRacks: false,
                 manageDevices: false,
                 manageCategories: false,
-                manageRoles: false
+                manageRoles: false,
+                manageTime: false,
+                viewTimeAll: false
             },
             auditor: {
                 deleteRacks: false,
@@ -2109,7 +2317,9 @@
                 manageRacks: false,
                 manageDevices: false,
                 manageCategories: false,
-                manageRoles: false
+                manageRoles: false,
+                manageTime: false,
+                viewTimeAll: true
             }
         };
 
@@ -2186,6 +2396,14 @@
             return getRolePermissions(currentUserRole).deleteRacks;
         }
 
+        function canManageTimeEntries() {
+            return getRolePermissions(currentUserRole).manageTime;
+        }
+
+        function canViewAllTimeEntries() {
+            return getRolePermissions(currentUserRole).viewTimeAll;
+        }
+
         function updateRoleLabel() {
             const roleLabel = document.getElementById('userRole');
             if (roleLabel) {
@@ -2205,6 +2423,7 @@
             const addConnectionBtn = document.getElementById('addConnectionBtn');
             const moduleButtons = document.querySelectorAll('[onclick="openModuleModal()"]');
             const roleManagerBtn = document.getElementById('roleManagerBtn');
+            const addTimeEntryBtn = document.getElementById('addTimeEntryBtn');
 
             moduleButtons.forEach((button) => {
                 button.disabled = !canManageCategories();
@@ -2222,6 +2441,7 @@
             if (clearRacksBtn) clearRacksBtn.disabled = !canDeleteRacks();
             if (addDeviceBtn) addDeviceBtn.disabled = !canManageDevices();
             if (addConnectionBtn) addConnectionBtn.disabled = !canEditTopology();
+            if (addTimeEntryBtn) addTimeEntryBtn.disabled = !canManageTimeEntries();
         }
 
         function setCurrentRole(role) {
@@ -2288,6 +2508,7 @@
         window.onAuthRoleChanged = function (user) {
             if (user && currentClientId) {
                 fetchUserRole();
+                initTimeTracking();
             } else {
                 setCurrentRole('readonly');
             }
@@ -2892,6 +3113,7 @@
             }
             render();
             fetchUserRole();
+            initTimeTracking();
             switchView('overview');
         }
         
@@ -2947,6 +3169,7 @@
             document.getElementById('networkView').style.display = 'none';
             document.getElementById('topologyView').style.display = 'none';
             document.getElementById('overviewView').style.display = 'none';
+            document.getElementById('timeView').style.display = 'none';
             
             // Show selected view
             switch(view) {
@@ -2964,6 +3187,14 @@
                 case 'overview':
                     document.getElementById('overviewView').style.display = 'block';
                     renderClientOverview();
+                    break;
+                case 'time':
+                    document.getElementById('timeView').style.display = 'block';
+                    if (currentClientId) {
+                        loadTimeEntriesForMonth();
+                    } else {
+                        renderTimeTracking();
+                    }
                     break;
             }
         }
@@ -3405,12 +3636,21 @@
                     const otherDevice = devices.find(d => d.id === otherDeviceId);
                     const fromPort = conn.fromDevice === device.id ? conn.fromPort : conn.toPort;
                     const toPort = conn.fromDevice === device.id ? conn.toPort : conn.fromPort;
+                    let tailLabel = '';
+                    if (otherDevice && otherDevice.type === 'patch') {
+                        const patchPort = otherDevice.id === conn.fromDevice ? conn.fromPort : conn.toPort;
+                        tailLabel = getPatchTailLabel(otherDevice.id, patchPort, conn.id);
+                    } else if (device.type === 'patch') {
+                        const patchPort = device.id === conn.fromDevice ? conn.fromPort : conn.toPort;
+                        tailLabel = getPatchTailLabel(device.id, patchPort, conn.id);
+                    }
                     
                     html += `
                         <div class="connection-path">
                             <div class="connection-path-device">${device.name}:${fromPort}</div>
                             <div class="connection-path-arrow">→</div>
                             <div class="connection-path-device">${otherDevice ? otherDevice.name : 'Unknown'}:${toPort}</div>
+                            ${tailLabel ? `<div class="connection-path-arrow">→</div><div class="connection-path-device">${tailLabel}</div>` : ''}
                             <div style="margin-left: auto;">
                                 <span class="connection-path-port">
                                     ${conn.type} | ${conn.speed >= 1000 ? (conn.speed/1000) + 'G' : conn.speed + 'M'}
@@ -4104,13 +4344,502 @@
             }
             
             container.style.display = 'block';
-            list.innerHTML = connections.map(conn => `
-                <div class="connection-item">
-                    <div class="connection-from">${conn.from}</div>
-                    <div class="connection-arrow">→</div>
-                    <div class="connection-to">${conn.to}</div>
+            list.innerHTML = connections.map(conn => {
+                const fromDevice = devices.find(d => d.id === conn.fromDevice);
+                const toDevice = devices.find(d => d.id === conn.toDevice);
+                const fromLabel = `${fromDevice ? fromDevice.name : 'Unknown'}:${conn.fromPort}`;
+                const toLabel = `${toDevice ? toDevice.name : 'Unknown'}:${conn.toPort}`;
+
+                let tailLabel = '';
+                if (toDevice && toDevice.type === 'patch') {
+                    tailLabel = getPatchTailLabel(toDevice.id, conn.toPort, conn.id);
+                } else if (fromDevice && fromDevice.type === 'patch') {
+                    tailLabel = getPatchTailLabel(fromDevice.id, conn.fromPort, conn.id);
+                }
+
+                const speedLabel = getConnectionSpeedLabel(conn.speed);
+                const metaParts = [conn.type || 'link', speedLabel];
+                if (conn.vlans) metaParts.push(`VLAN ${conn.vlans}`);
+                if (conn.description) metaParts.push(conn.description);
+                const meta = metaParts.join(' | ');
+
+                return `
+                    <div class="connection-item">
+                        <div class="connection-path-row">
+                            <div class="connection-from">${fromLabel}</div>
+                            <div class="connection-arrow">→</div>
+                            <div class="connection-to">${toLabel}</div>
+                            ${tailLabel ? `<div class="connection-arrow">→</div><div class="connection-to">${tailLabel}</div>` : ''}
+                        </div>
+                        <div class="connection-meta">${meta}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getConnectionSpeedLabel(speed) {
+            if (!speed) return 'N/A';
+            return speed >= 1000 ? (speed / 1000) + 'G' : speed + 'M';
+        }
+
+        function getPatchTailLabel(patchId, patchPort, currentConnectionId) {
+            const match = connections.find(c => c.id !== currentConnectionId && (
+                (c.fromDevice === patchId && c.fromPort === patchPort) ||
+                (c.toDevice === patchId && c.toPort === patchPort)
+            ));
+            if (!match) return '';
+            const otherDeviceId = match.fromDevice === patchId ? match.toDevice : match.fromDevice;
+            const otherPort = match.fromDevice === patchId ? match.fromPort : match.toPort;
+            const otherDevice = devices.find(d => d.id === otherDeviceId);
+            return `${otherDevice ? otherDevice.name : 'Unknown'}:${otherPort}`;
+        }
+
+        // Time tracking
+        function getMonthBounds(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const start = new Date(year, month, 1);
+            const end = new Date(year, month + 1, 0);
+            return {
+                start: formatDateKey(start),
+                end: formatDateKey(end)
+            };
+        }
+
+        function formatDateKey(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function parseDateKey(dateKey) {
+            if (!dateKey) return null;
+            return new Date(dateKey + 'T00:00:00');
+        }
+
+        function shiftTimeMonth(delta) {
+            timeViewMonth = new Date(timeViewMonth.getFullYear(), timeViewMonth.getMonth() + delta, 1);
+            loadTimeEntriesForMonth();
+        }
+
+        function onTimeReportScopeChange() {
+            loadTimeEntriesForMonth();
+        }
+
+        function initTimeTracking() {
+            timeViewMonth = new Date(timeViewMonth.getFullYear(), timeViewMonth.getMonth(), 1);
+            loadTimeEntriesForMonth();
+        }
+
+        async function loadTimeEntriesForMonth() {
+            if (!currentClientId) {
+                timeEntries = [];
+                renderTimeTracking();
+                return;
+            }
+            if (!window.db || !window.auth || !auth.currentUser) {
+                timeEntries = [];
+                renderTimeTracking();
+                return;
+            }
+
+            const bounds = getMonthBounds(timeViewMonth);
+            buildReportScopeOptions();
+            let ref = db.collection('clients')
+                .doc(currentClientId)
+                .collection('timeEntries')
+                .where('date', '>=', bounds.start)
+                .where('date', '<=', bounds.end);
+
+            if (!canViewAllTimeEntries()) {
+                ref = ref.where('userId', '==', auth.currentUser.uid);
+            } else {
+                const scopeSelect = document.getElementById('timeReportScope');
+                if (scopeSelect && scopeSelect.value === 'mine') {
+                    ref = ref.where('userId', '==', auth.currentUser.uid);
+                }
+            }
+
+            try {
+                const snapshot = await ref.orderBy('date', 'desc').get();
+                timeEntries = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                renderTimeTracking();
+            } catch (err) {
+                console.warn('Time entries load failed:', err);
+                timeEntries = [];
+                renderTimeTracking();
+            }
+        }
+
+        function renderTimeTracking() {
+            const view = document.getElementById('timeView');
+            if (!view) return;
+            renderTimeCalendar();
+            renderTimeSummary();
+            renderTimeReportTable();
+            const dateInput = document.getElementById('timeEntryDate');
+            if (dateInput) {
+                if (timeSelectedDate) {
+                    dateInput.value = timeSelectedDate;
+                } else if (!dateInput.value) {
+                    dateInput.value = formatDateKey(new Date());
+                }
+            }
+            applyRolePermissions();
+        }
+
+        function renderTimeCalendar() {
+            const titleEl = document.getElementById('timeCalendarTitle');
+            const weekdayGrid = document.getElementById('timeCalendarWeekdays');
+            const grid = document.getElementById('timeCalendarGrid');
+            if (!titleEl || !weekdayGrid || !grid) return;
+
+            if (!currentClientId) {
+                titleEl.textContent = 'Vyberte klienta';
+                weekdayGrid.innerHTML = '';
+                grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">Nejprve vyberte klienta.</div>';
+                return;
+            }
+
+            const monthLabel = timeViewMonth.toLocaleString('cs-CZ', { month: 'long', year: 'numeric' });
+            titleEl.textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+            const weekdays = ['Po', 'Ut', 'St', 'Ct', 'Pa', 'So', 'Ne'];
+            weekdayGrid.innerHTML = weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join('');
+
+            const year = timeViewMonth.getFullYear();
+            const month = timeViewMonth.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const prevDays = new Date(year, month, 0).getDate();
+            const startIndex = (firstDay.getDay() + 6) % 7;
+            const todayKey = formatDateKey(new Date());
+
+            let cells = '';
+            for (let i = 0; i < 42; i++) {
+                const dayNum = i - startIndex + 1;
+                let dateKey = '';
+                let isMuted = false;
+                if (dayNum < 1) {
+                    dateKey = formatDateKey(new Date(year, month - 1, prevDays + dayNum));
+                    isMuted = true;
+                } else if (dayNum > daysInMonth) {
+                    dateKey = formatDateKey(new Date(year, month + 1, dayNum - daysInMonth));
+                    isMuted = true;
+                } else {
+                    dateKey = formatDateKey(new Date(year, month, dayNum));
+                }
+
+                const dayEntries = timeEntries.filter(entry => entry.date === dateKey);
+                const totalHours = dayEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+                const hasHours = totalHours > 0;
+                const selected = !isMuted && timeSelectedDate === dateKey;
+                const isToday = dateKey === todayKey;
+
+                const classes = [
+                    'calendar-day',
+                    isMuted ? 'muted' : '',
+                    hasHours ? 'has-hours' : '',
+                    selected ? 'selected' : '',
+                    isToday ? 'today' : ''
+                ].filter(Boolean).join(' ');
+
+                const click = !isMuted ? `onclick="selectTimeDay('${dateKey}')"` : '';
+                const hoursLabel = hasHours ? `<div class="day-hours">${totalHours} h</div>` : '';
+                const dayLabel = isMuted ? (dateKey.split('-')[2]) : dayNum;
+
+                cells += `
+                    <div class="${classes}" ${click}>
+                        <div class="day-number">${dayLabel}</div>
+                        ${hoursLabel}
+                    </div>
+                `;
+            }
+
+            grid.innerHTML = cells;
+        }
+
+        function selectTimeDay(dateKey) {
+            timeSelectedDate = dateKey;
+            const input = document.getElementById('timeEntryDate');
+            if (input) {
+                input.value = dateKey;
+            }
+            renderTimeTracking();
+        }
+
+        function renderTimeSummary() {
+            const summary = document.getElementById('timeSummary');
+            if (!summary) return;
+            if (!currentClientId) {
+                summary.innerHTML = '';
+                return;
+            }
+
+            const monthTotal = timeEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+            const todayKey = formatDateKey(new Date());
+            const todayTotal = timeEntries
+                .filter(entry => entry.date === todayKey)
+                .reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+
+            const now = new Date();
+            const day = now.getDay();
+            const diff = (day + 6) % 7;
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - diff);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+
+            const weekTotal = timeEntries.filter(entry => {
+                const date = parseDateKey(entry.date);
+                return date && date >= weekStart && date <= weekEnd;
+            }).reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+
+            const selectedTotal = timeSelectedDate
+                ? timeEntries.filter(entry => entry.date === timeSelectedDate)
+                    .reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0)
+                : null;
+
+            summary.innerHTML = `
+                <div class="summary-card">
+                    <div class="summary-value">${monthTotal} h</div>
+                    <div class="summary-label">Mesic</div>
                 </div>
+                <div class="summary-card">
+                    <div class="summary-value">${weekTotal} h</div>
+                    <div class="summary-label">Tento tyden</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${todayTotal} h</div>
+                    <div class="summary-label">Dnes</div>
+                </div>
+                ${selectedTotal !== null ? `
+                    <div class="summary-card">
+                        <div class="summary-value">${selectedTotal} h</div>
+                        <div class="summary-label">Vybrany den</div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function buildReportScopeOptions() {
+            const select = document.getElementById('timeReportScope');
+            if (!select) return;
+            const previous = select.value || 'mine';
+            if (canViewAllTimeEntries()) {
+                select.innerHTML = `
+                    <option value="all">Vsechny zapisy</option>
+                    <option value="mine">Moje zapisy</option>
+                `;
+                select.value = previous || 'all';
+            } else {
+                select.innerHTML = `<option value="mine">Moje zapisy</option>`;
+                select.value = 'mine';
+            }
+        }
+
+        function getFilteredTimeEntries() {
+            buildReportScopeOptions();
+            const scopeSelect = document.getElementById('timeReportScope');
+            let entries = [...timeEntries];
+            if (scopeSelect && scopeSelect.value === 'mine') {
+                entries = entries.filter(entry => entry.userId === (auth && auth.currentUser ? auth.currentUser.uid : ''));
+            }
+            if (timeSelectedDate) {
+                entries = entries.filter(entry => entry.date === timeSelectedDate);
+            }
+            return entries;
+        }
+
+        function renderTimeReportTable() {
+            const container = document.getElementById('timeReportTable');
+            if (!container) return;
+            if (!currentClientId) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const entries = getFilteredTimeEntries();
+            if (entries.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Zadne vykazane hodiny.</p></div>';
+                return;
+            }
+
+            const showUser = canViewAllTimeEntries();
+            const currentUserId = auth && auth.currentUser ? auth.currentUser.uid : '';
+            const headerCols = `
+                <th>Datum</th>
+                <th>Hodiny</th>
+                ${showUser ? '<th>Uzivatel</th>' : ''}
+                <th>Kategorie</th>
+                <th>Popis</th>
+                <th>Billable</th>
+                <th>Akce</th>
+            `;
+
+            const rows = entries.map(entry => {
+                const canDelete = canManageTimeEntries() && (!canViewAllTimeEntries() ? entry.userId === currentUserId : true);
+                return `
+                    <tr>
+                        <td>${entry.date || '-'}</td>
+                        <td>${entry.hours || 0}</td>
+                        ${showUser ? `<td>${entry.userEmail || entry.userId || '-'}</td>` : ''}
+                        <td>${entry.category || '-'}</td>
+                        <td>${entry.description || '-'}</td>
+                        <td>${entry.billable ? 'Ano' : 'Ne'}</td>
+                        <td>
+                            ${canDelete ? `<button class="delete-btn" onclick="deleteTimeEntry('${entry.id}')">Smazat</button>` : '-'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <table class="time-table">
+                    <thead><tr>${headerCols}</tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        async function addTimeEntry() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            if (!canManageTimeEntries()) {
+                alert('Nemate opravneni zapisovat hodiny');
+                return;
+            }
+            const user = requireAuth();
+            const dateInput = document.getElementById('timeEntryDate');
+            const hoursInput = document.getElementById('timeEntryHours');
+            const descInput = document.getElementById('timeEntryDesc');
+            const catInput = document.getElementById('timeEntryCategory');
+            const billableInput = document.getElementById('timeEntryBillable');
+
+            const date = dateInput ? dateInput.value : '';
+            const hours = hoursInput ? parseFloat(hoursInput.value) : 0;
+            const description = descInput ? descInput.value.trim() : '';
+            const category = catInput ? catInput.value.trim() : '';
+            const billable = billableInput ? billableInput.checked : false;
+
+            if (!date || !hours) {
+                alert('Vyplnte datum a hodiny');
+                return;
+            }
+
+            const payload = {
+                date,
+                hours,
+                description,
+                category,
+                billable,
+                userId: user.uid,
+                userEmail: user.email || '',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('clients')
+                    .doc(currentClientId)
+                    .collection('timeEntries')
+                    .add(payload);
+
+                if (hoursInput) hoursInput.value = '';
+                if (descInput) descInput.value = '';
+                if (catInput) catInput.value = '';
+                if (billableInput) billableInput.checked = false;
+
+                timeSelectedDate = date;
+                loadTimeEntriesForMonth();
+            } catch (err) {
+                console.error('Time entry save failed:', err);
+                alert('Chyba pri ukladani hodin: ' + err.message);
+            }
+        }
+
+        async function deleteTimeEntry(entryId) {
+            if (!canManageTimeEntries()) return;
+            if (!currentClientId) return;
+            try {
+                await db.collection('clients')
+                    .doc(currentClientId)
+                    .collection('timeEntries')
+                    .doc(entryId)
+                    .delete();
+                loadTimeEntriesForMonth();
+            } catch (err) {
+                console.error('Time entry delete failed:', err);
+                alert('Chyba pri mazani: ' + err.message);
+            }
+        }
+
+        function exportTimeReport() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            const entries = getFilteredTimeEntries();
+            const monthLabel = document.getElementById('timeCalendarTitle')?.textContent || '';
+            const tableRows = entries.map(entry => `
+                <tr>
+                    <td>${entry.date || '-'}</td>
+                    <td>${entry.hours || 0}</td>
+                    <td>${entry.userEmail || entry.userId || '-'}</td>
+                    <td>${entry.category || '-'}</td>
+                    <td>${entry.description || '-'}</td>
+                    <td>${entry.billable ? 'Ano' : 'Ne'}</td>
+                </tr>
             `).join('');
+
+            const reportHtml = `
+                <h1>Vykaz hodin - ${monthLabel}</h1>
+                <p>Klient: ${clients.find(c => c.id === currentClientId)?.name || '-'}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Hodiny</th>
+                            <th>Uzivatel</th>
+                            <th>Kategorie</th>
+                            <th>Popis</th>
+                            <th>Billable</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows || '<tr><td colspan="6">Zadne zaznamy</td></tr>'}
+                    </tbody>
+                </table>
+            `;
+
+            const printWindow = window.open('', '_blank', 'width=900,height=700');
+            if (!printWindow) {
+                alert('Pro export povolte vyskakovaci okna.');
+                return;
+            }
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Vykaz hodin</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
+                            h1 { margin-bottom: 8px; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+                            th, td { border: 1px solid #ccc; padding: 8px; font-size: 12px; text-align: left; }
+                            th { background: #f1f1f1; }
+                        </style>
+                    </head>
+                    <body>${reportHtml}</body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
         }
         
         // Update statistics
