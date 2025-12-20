@@ -47,7 +47,7 @@ module.exports = function handler(req, res) {
   
   // Pokud databaseURL není nastavený, nastavíme null (pro Firestore to není problém)
   if (!firebaseConfig.databaseURL) {
-    firebaseConfig.databaseURL = null;
+    delete firebaseConfig.databaseURL;
   }
 
   // Vrácení konfigurace

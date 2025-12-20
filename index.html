@@ -258,6 +258,16 @@
             margin-bottom: 1.5rem;
         }
 
+        .auth-stack {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .auth-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
         .role-manager-table {
             width: 100%;
             border-collapse: collapse;
@@ -1446,7 +1456,13 @@
         <div class="auth-card">
             <h2>Prihlaseni</h2>
             <p>Pro pristup do MSP konzole se prihlaste pres Google ucet.</p>
-            <button class="btn" onclick="loginWithGoogle()">Prihlasit pres Google</button>
+            <div class="auth-stack">
+                <button class="btn" onclick="loginWithGoogle()">Prihlasit pres Google</button>
+                <input type="email" id="emailLoginInput" placeholder="email@firma.cz">
+                <button class="btn btn-secondary" onclick="sendMagicLink()">Poslat magic link</button>
+                <div class="auth-hint">Magic link prijde na e-mail.</div>
+                <button class="btn btn-secondary" id="localAdminBtn" onclick="enableLocalAdmin()" style="display: none;">Lokalni admin</button>
+            </div>
         </div>
     </div>
     <div class="app-shell">
@@ -4036,6 +4052,40 @@
     window.auth = auth;
     window.db = db;
 
+    function isLocalHost() {
+      return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    }
+
+    function updateLocalAdminUI(enabled) {
+      var statusEl = document.getElementById('authStatus');
+      var overlay = document.getElementById('authOverlay');
+      if (enabled) {
+        if (statusEl) statusEl.textContent = 'Local admin';
+        if (overlay) overlay.classList.add('hidden');
+        document.body.classList.remove('auth-locked');
+        if (window.setCurrentRole) {
+          window.setCurrentRole('admin');
+        } else {
+          setCurrentRole('admin');
+        }
+      }
+    }
+
+    function enableLocalAdmin() {
+      if (!isLocalHost()) return;
+      localStorage.setItem('localAdmin', 'true');
+      updateLocalAdminUI(true);
+    }
+
+    function isLocalAdminActive() {
+      return isLocalHost() && localStorage.getItem('localAdmin') === 'true';
+    }
+
+    var localAdminBtn = document.getElementById('localAdminBtn');
+    if (localAdminBtn && isLocalHost()) {
+      localAdminBtn.style.display = 'inline-block';
+    }
+
     // Monitor Firebase connection status
     db.ref('.info/connected').on('value', function(snapshot) {
       var connected = snapshot.val();
@@ -4060,6 +4110,16 @@
       var overlay = document.getElementById('authOverlay');
 
       if (!statusEl || !loginBtn || !logoutBtn) return;
+
+      if (!user && isLocalAdminActive()) {
+        updateLocalAdminUI(true);
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'none';
+        if (window.applyRolePermissions) {
+          window.applyRolePermissions();
+        }
+        return;
+      }
 
       if (user) {
         statusEl.textContent = 'Prihlasen: ' + (user.email || user.uid);
@@ -4087,6 +4147,45 @@
       });
     }
 
+    function sendMagicLink() {
+      var input = document.getElementById('emailLoginInput');
+      var email = input ? input.value.trim() : '';
+      if (!email || !email.includes('@')) {
+        alert('Zadejte platny email');
+        return;
+      }
+      var actionCodeSettings = {
+        url: window.location.origin + window.location.pathname,
+        handleCodeInApp: true
+      };
+      auth.sendSignInLinkToEmail(email, actionCodeSettings)
+        .then(function() {
+          window.localStorage.setItem('emailForSignIn', email);
+          if (input) input.value = '';
+          alert('Magic link byl odeslan na e-mail');
+        })
+        .catch(function(err) {
+          console.error('Magic link error:', err);
+          alert('Chyba pri odeslani magic linku: ' + err.message);
+        });
+    }
+
+    if (auth.isSignInWithEmailLink(window.location.href)) {
+      var email = window.localStorage.getItem('emailForSignIn');
+      if (!email) {
+        email = window.prompt('Zadejte email pro dokon?en? p?ihl??en?');
+      }
+      auth.signInWithEmailLink(email, window.location.href)
+        .then(function() {
+          window.localStorage.removeItem('emailForSignIn');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        })
+        .catch(function(err) {
+          console.error('Email link sign-in error:', err);
+          alert('Chyba pri prihlaseni: ' + err.message);
+        });
+    }
+
     function logout() {
       auth.signOut().catch(function (error) {
         console.error('Sign-out error:', error);
@@ -4111,8 +4210,10 @@
     }
 
     window.loginWithGoogle = loginWithGoogle;
+    window.sendMagicLink = sendMagicLink;
     window.logout = logout;
     window.requireAuth = requireAuth;
+    window.enableLocalAdmin = enableLocalAdmin;
   }).catch(function(err) {
     console.error('Firebase config error:', err);
     alert('Firebase config error: ' + err.message);
