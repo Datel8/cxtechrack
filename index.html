@@ -1087,6 +1087,17 @@
             box-shadow: 0 0 0 1px rgba(248, 154, 85, 0.25);
         }
 
+        .calendar-day.in-range {
+            background: rgba(248, 154, 85, 0.12);
+            border-color: rgba(248, 154, 85, 0.55);
+        }
+
+        .calendar-day.range-start,
+        .calendar-day.range-end {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px rgba(248, 154, 85, 0.35);
+        }
+
         .calendar-day.today {
             border-color: rgba(248, 154, 85, 0.9);
         }
@@ -1900,37 +1911,17 @@
                 <div class="time-layout">
                     <div class="time-panel">
                         <div class="calendar-header">
-                            <button class="btn-small" onclick="shiftTimeMonth(-1)">‹</button>
+                            <button class="btn-small" onclick="shiftTimeWeek(-1)">‹</button>
                             <div class="calendar-title" id="timeCalendarTitle">-</div>
-                            <button class="btn-small" onclick="shiftTimeMonth(1)">›</button>
+                            <button class="btn-small" onclick="shiftTimeWeek(1)">›</button>
                         </div>
                         <div class="calendar-grid" id="timeCalendarWeekdays"></div>
                         <div class="calendar-grid" id="timeCalendarGrid"></div>
                     </div>
                     <div class="time-panel">
                         <div class="time-summary" id="timeSummary"></div>
-                        <div class="time-form">
-                            <div class="form-group">
-                                <label>Datum</label>
-                                <input type="date" id="timeEntryDate">
-                            </div>
-                            <div class="form-group">
-                                <label>Hodiny</label>
-                                <input type="number" id="timeEntryHours" min="0" step="0.25" placeholder="napr. 1.5">
-                            </div>
-                            <div class="form-group">
-                                <label>Popis</label>
-                                <input type="text" id="timeEntryDesc" placeholder="Co se delalo">
-                            </div>
-                            <div class="form-group">
-                                <label>Kategorie</label>
-                                <input type="text" id="timeEntryCategory" placeholder="Např. Monitoring, Support">
-                            </div>
-                            <div class="form-group">
-                                <label><input type="checkbox" id="timeEntryBillable"> Billable</label>
-                            </div>
-                            <button class="btn" id="addTimeEntryBtn" onclick="addTimeEntry()">Pridat zapis</button>
-                        </div>
+                        <button class="btn" id="addTimeEntryBtn" onclick="openTimeEntryModal()">Novy zapis</button>
+                        <div class="role-note" style="margin-top: 0.75rem;">Tip: oznac si rozsah v kalendari tahem mysi.</div>
                         <div class="time-report-header">
                             <div class="section-title">Live report</div>
                             <select id="timeReportScope" onchange="onTimeReportScopeChange()"></select>
@@ -1980,6 +1971,48 @@
             </div>
             <div id="portDetailsContent">
                 <!-- Port details will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Entry Modal -->
+    <div id="timeEntryModal" class="modal">
+        <div class="modal-content" style="max-width: 560px;">
+            <div class="modal-header">
+                <h2>Novy zapis hodin</h2>
+                <button class="modal-close" onclick="closeTimeEntryModal()">×</button>
+            </div>
+            <div class="time-form">
+                <div class="form-group">
+                    <label>Klient</label>
+                    <select id="timeEntryClient"></select>
+                </div>
+                <div class="form-group">
+                    <label>Cinnost</label>
+                    <input type="text" id="timeEntryActivity" list="timeActivityOptions" placeholder="Např. Monitoring">
+                    <datalist id="timeActivityOptions"></datalist>
+                </div>
+                <div class="form-group">
+                    <label>Od</label>
+                    <input type="date" id="timeEntryStart" onchange="updateTimeEntrySummary()">
+                </div>
+                <div class="form-group">
+                    <label>Do</label>
+                    <input type="date" id="timeEntryEnd" onchange="updateTimeEntrySummary()">
+                </div>
+                <div class="form-group">
+                    <label>Hodiny na den</label>
+                    <input type="number" id="timeEntryHours" min="0" step="0.25" placeholder="napr. 1.5" oninput="updateTimeEntrySummary()">
+                </div>
+                <div class="form-group">
+                    <label>Popis</label>
+                    <input type="text" id="timeEntryDesc" placeholder="Co se delalo">
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="timeEntryBillable"> Billable</label>
+                </div>
+                <div class="role-note" id="timeEntrySummary"></div>
+                <button class="btn" onclick="saveTimeEntryRange()">Ulozit</button>
             </div>
         </div>
     </div>
@@ -2260,8 +2293,11 @@
         let devices = [];
         let connections = [];
         let timeEntries = [];
-        let timeViewMonth = new Date();
-        let timeSelectedDate = '';
+        let timeViewWeekStart = new Date();
+        let timeSelectionStart = '';
+        let timeSelectionEnd = '';
+        let isTimeSelecting = false;
+        let timeSelectionActive = false;
 
         // Module types
         const DEFAULT_MODULE_TYPES = [
@@ -2358,6 +2394,17 @@
                 status: 'planned',
                 description: 'Planovani a evidovani aktualizaci firmware a OS.'
             }
+        ];
+
+        const DEFAULT_TIME_ACTIVITIES = [
+            'Monitoring',
+            'Support',
+            'Implementace',
+            'Incident',
+            'Maintenance',
+            'Backup',
+            'Audit',
+            'Dokumentace'
         ];
 
         function getRolePermissions(role) {
@@ -3191,7 +3238,7 @@
                 case 'time':
                     document.getElementById('timeView').style.display = 'block';
                     if (currentClientId) {
-                        loadTimeEntriesForMonth();
+                        loadTimeEntriesForWeek();
                     } else {
                         renderTimeTracking();
                     }
@@ -4395,14 +4442,21 @@
         }
 
         // Time tracking
-        function getMonthBounds(date) {
-            const year = date.getFullYear();
-            const month = date.getMonth();
-            const start = new Date(year, month, 1);
-            const end = new Date(year, month + 1, 0);
+        function getWeekStart(date) {
+            const base = new Date(date);
+            const day = (base.getDay() + 6) % 7;
+            base.setDate(base.getDate() - day);
+            base.setHours(0, 0, 0, 0);
+            return base;
+        }
+
+        function getWeekBounds(date) {
+            const startDate = getWeekStart(date);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
             return {
-                start: formatDateKey(start),
-                end: formatDateKey(end)
+                start: formatDateKey(startDate),
+                end: formatDateKey(endDate)
             };
         }
 
@@ -4418,21 +4472,39 @@
             return new Date(dateKey + 'T00:00:00');
         }
 
-        function shiftTimeMonth(delta) {
-            timeViewMonth = new Date(timeViewMonth.getFullYear(), timeViewMonth.getMonth() + delta, 1);
-            loadTimeEntriesForMonth();
+        function shiftTimeWeek(delta) {
+            const base = timeViewWeekStart || getWeekStart(new Date());
+            const next = new Date(base);
+            next.setDate(base.getDate() + delta * 7);
+            timeViewWeekStart = getWeekStart(next);
+            timeSelectionActive = false;
+            loadTimeEntriesForWeek();
         }
 
         function onTimeReportScopeChange() {
-            loadTimeEntriesForMonth();
+            loadTimeEntriesForWeek();
         }
 
         function initTimeTracking() {
-            timeViewMonth = new Date(timeViewMonth.getFullYear(), timeViewMonth.getMonth(), 1);
-            loadTimeEntriesForMonth();
+            timeViewWeekStart = getWeekStart(new Date());
+            timeSelectionActive = false;
+            if (!timeSelectionStart) {
+                timeSelectionStart = formatDateKey(new Date());
+                timeSelectionEnd = timeSelectionStart;
+            }
+            if (!window.timeMouseUpBound) {
+                window.timeMouseUpBound = true;
+                document.addEventListener('mouseup', () => {
+                    if (isTimeSelecting) {
+                        isTimeSelecting = false;
+                        openTimeEntryModal();
+                    }
+                });
+            }
+            loadTimeEntriesForWeek();
         }
 
-        async function loadTimeEntriesForMonth() {
+        async function loadTimeEntriesForWeek() {
             if (!currentClientId) {
                 timeEntries = [];
                 renderTimeTracking();
@@ -4444,7 +4516,7 @@
                 return;
             }
 
-            const bounds = getMonthBounds(timeViewMonth);
+            const bounds = getWeekBounds(timeViewWeekStart || new Date());
             buildReportScopeOptions();
             let ref = db.collection('clients')
                 .doc(currentClientId)
@@ -4478,83 +4550,71 @@
         function renderTimeTracking() {
             const view = document.getElementById('timeView');
             if (!view) return;
-            renderTimeCalendar();
+            renderTimeWeek();
             renderTimeSummary();
+            buildReportScopeOptions();
             renderTimeReportTable();
-            const dateInput = document.getElementById('timeEntryDate');
-            if (dateInput) {
-                if (timeSelectedDate) {
-                    dateInput.value = timeSelectedDate;
-                } else if (!dateInput.value) {
-                    dateInput.value = formatDateKey(new Date());
-                }
-            }
             applyRolePermissions();
         }
 
-        function renderTimeCalendar() {
+        function getTimeSelectionRange() {
+            if (!timeSelectionStart) return null;
+            if (!timeSelectionActive && !isTimeSelecting) return null;
+            const start = timeSelectionStart;
+            const end = timeSelectionEnd || timeSelectionStart;
+            return start <= end ? { start, end } : { start: end, end: start };
+        }
+
+        function renderTimeWeek() {
             const titleEl = document.getElementById('timeCalendarTitle');
             const weekdayGrid = document.getElementById('timeCalendarWeekdays');
             const grid = document.getElementById('timeCalendarGrid');
             if (!titleEl || !weekdayGrid || !grid) return;
 
-            if (!currentClientId) {
-                titleEl.textContent = 'Vyberte klienta';
-                weekdayGrid.innerHTML = '';
-                grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">Nejprve vyberte klienta.</div>';
-                return;
-            }
-
-            const monthLabel = timeViewMonth.toLocaleString('cs-CZ', { month: 'long', year: 'numeric' });
-            titleEl.textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+            const weekStart = timeViewWeekStart || getWeekStart(new Date());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            const formatShort = (date) => date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
+            titleEl.textContent = `Tyden ${formatShort(weekStart)} - ${formatShort(weekEnd)}`;
 
             const weekdays = ['Po', 'Ut', 'St', 'Ct', 'Pa', 'So', 'Ne'];
             weekdayGrid.innerHTML = weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join('');
 
-            const year = timeViewMonth.getFullYear();
-            const month = timeViewMonth.getMonth();
-            const firstDay = new Date(year, month, 1);
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const prevDays = new Date(year, month, 0).getDate();
-            const startIndex = (firstDay.getDay() + 6) % 7;
+            const selection = getTimeSelectionRange();
             const todayKey = formatDateKey(new Date());
+            const canSelect = canManageTimeEntries();
 
             let cells = '';
-            for (let i = 0; i < 42; i++) {
-                const dayNum = i - startIndex + 1;
-                let dateKey = '';
-                let isMuted = false;
-                if (dayNum < 1) {
-                    dateKey = formatDateKey(new Date(year, month - 1, prevDays + dayNum));
-                    isMuted = true;
-                } else if (dayNum > daysInMonth) {
-                    dateKey = formatDateKey(new Date(year, month + 1, dayNum - daysInMonth));
-                    isMuted = true;
-                } else {
-                    dateKey = formatDateKey(new Date(year, month, dayNum));
-                }
-
+            for (let i = 0; i < 7; i++) {
+                const dayDate = new Date(weekStart);
+                dayDate.setDate(weekStart.getDate() + i);
+                const dateKey = formatDateKey(dayDate);
                 const dayEntries = timeEntries.filter(entry => entry.date === dateKey);
                 const totalHours = dayEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
                 const hasHours = totalHours > 0;
-                const selected = !isMuted && timeSelectedDate === dateKey;
                 const isToday = dateKey === todayKey;
+
+                const inRange = selection && dateKey >= selection.start && dateKey <= selection.end;
+                const isStart = selection && dateKey === selection.start;
+                const isEnd = selection && dateKey === selection.end;
 
                 const classes = [
                     'calendar-day',
-                    isMuted ? 'muted' : '',
                     hasHours ? 'has-hours' : '',
-                    selected ? 'selected' : '',
-                    isToday ? 'today' : ''
+                    isToday ? 'today' : '',
+                    inRange ? 'in-range' : '',
+                    isStart ? 'range-start' : '',
+                    isEnd ? 'range-end' : ''
                 ].filter(Boolean).join(' ');
 
-                const click = !isMuted ? `onclick="selectTimeDay('${dateKey}')"` : '';
-                const hoursLabel = hasHours ? `<div class="day-hours">${totalHours} h</div>` : '';
-                const dayLabel = isMuted ? (dateKey.split('-')[2]) : dayNum;
+                const handlers = canSelect
+                    ? `onmousedown="startTimeSelection('${dateKey}')" onmouseenter="updateTimeSelection('${dateKey}')" onmouseup="finishTimeSelection('${dateKey}')"`
+                    : '';
 
+                const hoursLabel = hasHours ? `<div class="day-hours">${totalHours} h</div>` : '';
                 cells += `
-                    <div class="${classes}" ${click}>
-                        <div class="day-number">${dayLabel}</div>
+                    <div class="${classes}" ${handlers}>
+                        <div class="day-number">${dateKey.split('-')[2]}</div>
                         ${hoursLabel}
                     </div>
                 `;
@@ -4563,13 +4623,113 @@
             grid.innerHTML = cells;
         }
 
-        function selectTimeDay(dateKey) {
-            timeSelectedDate = dateKey;
-            const input = document.getElementById('timeEntryDate');
-            if (input) {
-                input.value = dateKey;
-            }
+        function startTimeSelection(dateKey) {
+            if (!canManageTimeEntries()) return;
+            isTimeSelecting = true;
+            timeSelectionActive = true;
+            timeSelectionStart = dateKey;
+            timeSelectionEnd = dateKey;
             renderTimeTracking();
+        }
+
+        function updateTimeSelection(dateKey) {
+            if (!isTimeSelecting) return;
+            timeSelectionEnd = dateKey;
+            renderTimeTracking();
+        }
+
+        function finishTimeSelection(dateKey) {
+            if (!isTimeSelecting) return;
+            timeSelectionEnd = dateKey;
+            isTimeSelecting = false;
+            openTimeEntryModal();
+        }
+
+        function openTimeEntryModal() {
+            if (!canManageTimeEntries()) {
+                alert('Nemate opravneni zapisovat hodiny');
+                return;
+            }
+            if (!clients.length) {
+                alert('Nejprve vytvorte klienta');
+                return;
+            }
+            const modal = document.getElementById('timeEntryModal');
+            if (!modal) return;
+            buildTimeClientOptions();
+            buildTimeActivityOptions();
+            fillTimeEntryModal();
+            modal.classList.add('active');
+        }
+
+        function closeTimeEntryModal() {
+            const modal = document.getElementById('timeEntryModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function buildTimeClientOptions() {
+            const select = document.getElementById('timeEntryClient');
+            if (!select) return;
+            select.innerHTML = clients.map(client =>
+                `<option value="${client.id}">${client.name}</option>`
+            ).join('');
+            if (currentClientId && clients.some(c => c.id === currentClientId)) {
+                select.value = currentClientId;
+            }
+        }
+
+        function buildTimeActivityOptions() {
+            const list = document.getElementById('timeActivityOptions');
+            if (!list) return;
+            list.innerHTML = DEFAULT_TIME_ACTIVITIES.map(item => `<option value="${item}"></option>`).join('');
+        }
+
+        function fillTimeEntryModal() {
+            const range = getTimeSelectionRange();
+            const start = range ? range.start : formatDateKey(new Date());
+            const end = range ? range.end : start;
+
+            const startInput = document.getElementById('timeEntryStart');
+            const endInput = document.getElementById('timeEntryEnd');
+            const hoursInput = document.getElementById('timeEntryHours');
+            const descInput = document.getElementById('timeEntryDesc');
+            const activityInput = document.getElementById('timeEntryActivity');
+            const billableInput = document.getElementById('timeEntryBillable');
+
+            if (startInput) startInput.value = start;
+            if (endInput) endInput.value = end;
+            if (hoursInput && !hoursInput.value) hoursInput.value = '1';
+            if (descInput) descInput.value = '';
+            if (activityInput) activityInput.value = '';
+            if (billableInput) billableInput.checked = false;
+            updateTimeEntrySummary();
+        }
+
+        function updateTimeEntrySummary() {
+            const startInput = document.getElementById('timeEntryStart');
+            const endInput = document.getElementById('timeEntryEnd');
+            const hoursInput = document.getElementById('timeEntryHours');
+            const summary = document.getElementById('timeEntrySummary');
+            if (!summary) return;
+
+            const start = startInput ? startInput.value : '';
+            const end = endInput ? endInput.value : '';
+            const hours = hoursInput ? parseFloat(hoursInput.value) || 0 : 0;
+            if (!start || !end) {
+                summary.textContent = '';
+                return;
+            }
+
+            const startDate = parseDateKey(start);
+            const endDate = parseDateKey(end);
+            if (!startDate || !endDate) return;
+
+            const min = startDate <= endDate ? startDate : endDate;
+            const max = startDate <= endDate ? endDate : startDate;
+            const days = Math.floor((max - min) / (1000 * 60 * 60 * 24)) + 1;
+            summary.textContent = `Pocet dni: ${days}, celkem: ${days * hours} h`;
         }
 
         function renderTimeSummary() {
@@ -4580,47 +4740,31 @@
                 return;
             }
 
-            const monthTotal = timeEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+            const weekTotal = timeEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
             const todayKey = formatDateKey(new Date());
             const todayTotal = timeEntries
                 .filter(entry => entry.date === todayKey)
                 .reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
 
-            const now = new Date();
-            const day = now.getDay();
-            const diff = (day + 6) % 7;
-            const weekStart = new Date(now);
-            weekStart.setDate(now.getDate() - diff);
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6);
-
-            const weekTotal = timeEntries.filter(entry => {
-                const date = parseDateKey(entry.date);
-                return date && date >= weekStart && date <= weekEnd;
-            }).reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
-
-            const selectedTotal = timeSelectedDate
-                ? timeEntries.filter(entry => entry.date === timeSelectedDate)
+            const range = getTimeSelectionRange();
+            const rangeTotal = range
+                ? timeEntries.filter(entry => entry.date >= range.start && entry.date <= range.end)
                     .reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0)
                 : null;
 
             summary.innerHTML = `
                 <div class="summary-card">
-                    <div class="summary-value">${monthTotal} h</div>
-                    <div class="summary-label">Mesic</div>
-                </div>
-                <div class="summary-card">
                     <div class="summary-value">${weekTotal} h</div>
-                    <div class="summary-label">Tento tyden</div>
+                    <div class="summary-label">Tyden</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-value">${todayTotal} h</div>
                     <div class="summary-label">Dnes</div>
                 </div>
-                ${selectedTotal !== null ? `
+                ${rangeTotal !== null ? `
                     <div class="summary-card">
-                        <div class="summary-value">${selectedTotal} h</div>
-                        <div class="summary-label">Vybrany den</div>
+                        <div class="summary-value">${rangeTotal} h</div>
+                        <div class="summary-label">Vybrany rozsah</div>
                     </div>
                 ` : ''}
             `;
@@ -4649,8 +4793,9 @@
             if (scopeSelect && scopeSelect.value === 'mine') {
                 entries = entries.filter(entry => entry.userId === (auth && auth.currentUser ? auth.currentUser.uid : ''));
             }
-            if (timeSelectedDate) {
-                entries = entries.filter(entry => entry.date === timeSelectedDate);
+            const range = getTimeSelectionRange();
+            if (range) {
+                entries = entries.filter(entry => entry.date >= range.start && entry.date <= range.end);
             }
             return entries;
         }
@@ -4675,7 +4820,7 @@
                 <th>Datum</th>
                 <th>Hodiny</th>
                 ${showUser ? '<th>Uzivatel</th>' : ''}
-                <th>Kategorie</th>
+                <th>Cinnost</th>
                 <th>Popis</th>
                 <th>Billable</th>
                 <th>Akce</th>
@@ -4706,57 +4851,79 @@
             `;
         }
 
-        async function addTimeEntry() {
-            if (!currentClientId) {
-                alert('Nejprve vyberte klienta');
-                return;
-            }
+        async function saveTimeEntryRange() {
             if (!canManageTimeEntries()) {
                 alert('Nemate opravneni zapisovat hodiny');
                 return;
             }
             const user = requireAuth();
-            const dateInput = document.getElementById('timeEntryDate');
+            const clientSelect = document.getElementById('timeEntryClient');
+            const activityInput = document.getElementById('timeEntryActivity');
+            const startInput = document.getElementById('timeEntryStart');
+            const endInput = document.getElementById('timeEntryEnd');
             const hoursInput = document.getElementById('timeEntryHours');
             const descInput = document.getElementById('timeEntryDesc');
-            const catInput = document.getElementById('timeEntryCategory');
             const billableInput = document.getElementById('timeEntryBillable');
 
-            const date = dateInput ? dateInput.value : '';
+            const clientId = clientSelect ? clientSelect.value : currentClientId;
+            const activity = activityInput ? activityInput.value.trim() : '';
+            const start = startInput ? startInput.value : '';
+            const end = endInput ? endInput.value : '';
             const hours = hoursInput ? parseFloat(hoursInput.value) : 0;
             const description = descInput ? descInput.value.trim() : '';
-            const category = catInput ? catInput.value.trim() : '';
             const billable = billableInput ? billableInput.checked : false;
 
-            if (!date || !hours) {
-                alert('Vyplnte datum a hodiny');
+            if (!clientId) {
+                alert('Vyberte klienta');
+                return;
+            }
+            if (!start || !end || !hours) {
+                alert('Vyplnte rozsah a hodiny');
                 return;
             }
 
-            const payload = {
-                date,
-                hours,
-                description,
-                category,
-                billable,
-                userId: user.uid,
-                userEmail: user.email || '',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
+            const startDate = parseDateKey(start);
+            const endDate = parseDateKey(end);
+            if (!startDate || !endDate) {
+                alert('Neplatny rozsah dat');
+                return;
+            }
+
+            const min = startDate <= endDate ? startDate : endDate;
+            const max = startDate <= endDate ? endDate : startDate;
+            const days = Math.floor((max - min) / (1000 * 60 * 60 * 24)) + 1;
+
+            const batch = db.batch();
+            for (let i = 0; i < days; i++) {
+                const day = new Date(min);
+                day.setDate(min.getDate() + i);
+                const dateKey = formatDateKey(day);
+                const docRef = db.collection('clients')
+                    .doc(clientId)
+                    .collection('timeEntries')
+                    .doc();
+                batch.set(docRef, {
+                    date: dateKey,
+                    hours,
+                    description,
+                    category: activity,
+                    billable,
+                    userId: user.uid,
+                    userEmail: user.email || '',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
 
             try {
-                await db.collection('clients')
-                    .doc(currentClientId)
-                    .collection('timeEntries')
-                    .add(payload);
-
-                if (hoursInput) hoursInput.value = '';
-                if (descInput) descInput.value = '';
-                if (catInput) catInput.value = '';
-                if (billableInput) billableInput.checked = false;
-
-                timeSelectedDate = date;
-                loadTimeEntriesForMonth();
+                await batch.commit();
+                closeTimeEntryModal();
+                timeSelectionStart = start;
+                timeSelectionEnd = end;
+                if (clientId === currentClientId) {
+                    loadTimeEntriesForWeek();
+                } else {
+                    alert('Zapis ulozen. Pro zobrazeni prepnout na vybraneho klienta.');
+                }
             } catch (err) {
                 console.error('Time entry save failed:', err);
                 alert('Chyba pri ukladani hodin: ' + err.message);
@@ -4772,7 +4939,7 @@
                     .collection('timeEntries')
                     .doc(entryId)
                     .delete();
-                loadTimeEntriesForMonth();
+                loadTimeEntriesForWeek();
             } catch (err) {
                 console.error('Time entry delete failed:', err);
                 alert('Chyba pri mazani: ' + err.message);
@@ -4785,7 +4952,7 @@
                 return;
             }
             const entries = getFilteredTimeEntries();
-            const monthLabel = document.getElementById('timeCalendarTitle')?.textContent || '';
+            const weekLabel = document.getElementById('timeCalendarTitle')?.textContent || '';
             const tableRows = entries.map(entry => `
                 <tr>
                     <td>${entry.date || '-'}</td>
@@ -4798,7 +4965,7 @@
             `).join('');
 
             const reportHtml = `
-                <h1>Vykaz hodin - ${monthLabel}</h1>
+                <h1>Vykaz hodin - ${weekLabel}</h1>
                 <p>Klient: ${clients.find(c => c.id === currentClientId)?.name || '-'}</p>
                 <table>
                     <thead>
@@ -4806,7 +4973,7 @@
                             <th>Datum</th>
                             <th>Hodiny</th>
                             <th>Uzivatel</th>
-                            <th>Kategorie</th>
+                            <th>Cinnost</th>
                             <th>Popis</th>
                             <th>Billable</th>
                         </tr>
