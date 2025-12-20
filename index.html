@@ -1440,32 +1440,6 @@
     </style>
 </head>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // ⛓ Wrapper funkce místo localStorage
-  window.saveClientDataToDb = async (clientName, data) => {
-    const ref = doc(db, "clients", clientName);
-    await setDoc(ref, { rackData: data }, { merge: true });
-  };
-
-  window.loadClientDataFromDb = async (clientName) => {
-    const ref = doc(db, "clients", clientName);
-    const snap = await getDoc(ref);
-    return snap.exists() ? snap.data().rackData : null;
-  };
-
-  window.updateClientDataInDb = async (clientName, data) => {
-    const ref = doc(db, "clients", clientName);
-    await updateDoc(ref, { rackData: data });
-  };
-
-  console.log("🔥 Firebase DB ready for cxtechrack!");
-</script>
 
 <body class="auth-locked">
     <div id="authOverlay" class="auth-overlay">
@@ -4041,100 +4015,110 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-  // Firebase Configuration - CX.TECH Rack Manager
-  // ⚠️ DŮLEŽITÉ: Nahraďte těmito hodnotami z Firebase Console → Project Settings
-  var firebaseConfig = {
-    apiKey: "YOUR_API_KEY_HERE",  // ← Vložte váš API klíč (začíná AIzaSy...)
-    authDomain: "cxtechrackmanager.firebaseapp.com",
-    databaseURL: "https://cxtechrackmanager-default-rtdb.europe-west1.firebasedatabase.app", // Pro EU region
-    projectId: "cxtechrackmanager",
-    storageBucket: "cxtechrackmanager.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID_HERE",  // ← Vložte vaše Sender ID (12 číslic)
-    appId: "YOUR_APP_ID_HERE"  // ← Vložte vaše App ID (formát 1:xxx:web:xxx)
-  };
+  var auth;
+  var db;
 
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  console.log("🔥 Firebase initialized for CX.TECH Rack Manager");
+  // Load Firebase config from /api/config (Vercel env)
+  async function loadFirebaseConfig() {
+    var res = await fetch('/api/config');
+    if (!res.ok) {
+      throw new Error('Firebase config load failed');
+    }
+    return await res.json();
+  }
 
-  var auth = firebase.auth();
-  var db = firebase.database();   // 🔁 Realtime DB
-  
-  // Monitor Firebase connection status
-  db.ref('.info/connected').on('value', function(snapshot) {
-    var connected = snapshot.val();
-    var statusElem = document.getElementById('firebaseStatus');
-    if (statusElem) {
-      if (connected) {
-        statusElem.innerHTML = '🟢 Online';
-        statusElem.style.color = '#4ade80';
+  loadFirebaseConfig().then(function(firebaseConfig) {
+    firebase.initializeApp(firebaseConfig);
+    console.log('Firebase initialized for CX.TECH Rack Manager');
+
+    auth = firebase.auth();
+    db = firebase.database();
+    window.auth = auth;
+    window.db = db;
+
+    // Monitor Firebase connection status
+    db.ref('.info/connected').on('value', function(snapshot) {
+      var connected = snapshot.val();
+      var statusElem = document.getElementById('firebaseStatus');
+      if (statusElem) {
+        if (connected) {
+          statusElem.innerHTML = 'Online';
+          statusElem.style.color = '#4ade80';
+        } else {
+          statusElem.innerHTML = 'Offline';
+          statusElem.style.color = '#f87171';
+        }
+      }
+      console.log('Firebase connection:', connected ? 'Online' : 'Offline');
+    });
+
+    // --- UI pro prihlaseni ---
+    function updateAuthUI(user) {
+      var statusEl = document.getElementById('authStatus');
+      var loginBtn = document.getElementById('loginBtn');
+      var logoutBtn = document.getElementById('logoutBtn');
+      var overlay = document.getElementById('authOverlay');
+
+      if (!statusEl || !loginBtn || !logoutBtn) return;
+
+      if (user) {
+        statusEl.textContent = 'Prihlasen: ' + (user.email || user.uid);
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+        if (overlay) overlay.classList.add('hidden');
+        document.body.classList.remove('auth-locked');
       } else {
-        statusElem.innerHTML = '🔴 Offline';
-        statusElem.style.color = '#f87171';
+        statusEl.textContent = 'Neprihlasen';
+        loginBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+        if (overlay) overlay.classList.remove('hidden');
+        document.body.classList.add('auth-locked');
+      }
+      if (window.applyRolePermissions) {
+        window.applyRolePermissions();
       }
     }
-    console.log('Firebase connection:', connected ? 'Online' : 'Offline');
+
+    function loginWithGoogle() {
+      var provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(function (error) {
+        console.error('Auth error:', error);
+        alert('Chyba pri prihlaseni: ' + error.message);
+      });
+    }
+
+    function logout() {
+      auth.signOut().catch(function (error) {
+        console.error('Sign-out error:', error);
+        alert('Chyba pri odhlaseni: ' + error.message);
+      });
+    }
+
+    auth.onAuthStateChanged(function (user) {
+      updateAuthUI(user);
+      if (window.onAuthRoleChanged) {
+        window.onAuthRoleChanged(user);
+      }
+    });
+
+    function requireAuth() {
+      var user = auth.currentUser;
+      if (!user) {
+        alert('Nejprve se prihlaste.');
+        throw new Error('NOT_AUTHENTICATED');
+      }
+      return user;
+    }
+
+    window.loginWithGoogle = loginWithGoogle;
+    window.logout = logout;
+    window.requireAuth = requireAuth;
+  }).catch(function(err) {
+    console.error('Firebase config error:', err);
+    alert('Firebase config error: ' + err.message);
   });
 
-  // --- UI pro přihlášení ---
-  function updateAuthUI(user) {
-    var statusEl = document.getElementById('authStatus');
-    var loginBtn = document.getElementById('loginBtn');
-    var logoutBtn = document.getElementById('logoutBtn');
-    var overlay = document.getElementById('authOverlay');
-
-    if (!statusEl || !loginBtn || !logoutBtn) return;
-
-    if (user) {
-      statusEl.textContent = "Prihlasen: " + (user.email || user.uid);
-      loginBtn.style.display = 'none';
-      logoutBtn.style.display = 'inline-block';
-      if (overlay) overlay.classList.add('hidden');
-      document.body.classList.remove('auth-locked');
-    } else {
-      statusEl.textContent = "Neprihlasen";
-      loginBtn.style.display = 'inline-block';
-      logoutBtn.style.display = 'none';
-      if (overlay) overlay.classList.remove('hidden');
-      document.body.classList.add('auth-locked');
-    }
-    if (window.applyRolePermissions) {
-      window.applyRolePermissions();
-    }
-  }
-
-  function loginWithGoogle() {
-    var provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(function (error) {
-      console.error("Auth error:", error);
-      alert("Chyba při přihlášení: " + error.message);
-    });
-  }
-
-  function logout() {
-    auth.signOut().catch(function (error) {
-      console.error("Sign-out error:", error);
-      alert("Chyba při odhlášení: " + error.message);
-    });
-  }
-
-  auth.onAuthStateChanged(function (user) {
-    updateAuthUI(user);
-    if (window.onAuthRoleChanged) {
-      window.onAuthRoleChanged(user);
-    }
-  });
-
-  function requireAuth() {
-    var user = auth.currentUser;
-    if (!user) {
-      alert("Nejprve se přihlaste (Google účet @cxtech.cz).");
-      throw new Error("NOT_AUTHENTICATED");
-    }
-    return user;
-  }
-
-  // --- Cesta v Realtime DB, kde budeme držet data ---
+  // --- Cesta v Realtime DB, kde budeme drzet data ---
   var GLOBAL_PATH = "rackManager/global";
 
   // ☁ Uložit všechna data z localStorage do Realtime DB
