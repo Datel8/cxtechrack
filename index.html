@@ -545,6 +545,12 @@
             background: var(--device-gradient, var(--bg-tertiary));
             border-color: var(--device-color, var(--border-color));
             color: var(--device-text, var(--text-primary));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem;
+            padding: 0 0.5rem;
+            text-align: left;
         }
         
         .rack-unit.occupied.switch {
@@ -575,6 +581,53 @@
             transform: scaleX(1.05);
             z-index: 10;
             box-shadow: 0 0 20px currentColor;
+        }
+
+        .rack-unit-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.2rem;
+            min-width: 0;
+        }
+
+        .rack-unit-name {
+            font-weight: 600;
+            font-size: 0.65rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
+        }
+
+        .rack-unit-ports {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.55rem;
+            color: var(--text-secondary);
+        }
+
+        .ports-count {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .ports-dots {
+            display: inline-flex;
+            gap: 2px;
+        }
+
+        .ports-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .ports-overflow {
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         /* Device info tooltip */
@@ -1981,6 +2034,7 @@
         <div class="tooltip-detail" id="tooltipPosition"></div>
         <div class="tooltip-detail" id="tooltipIP"></div>
         <div class="tooltip-detail" id="tooltipModel"></div>
+        <div class="tooltip-detail" id="tooltipPorts"></div>
         <div class="tooltip-detail" id="tooltipSerial"></div>
     </div>
     
@@ -3867,6 +3921,24 @@
             });
         }
         
+        function renderPortDots(portCount) {
+            const total = parseInt(portCount, 10) || 0;
+            if (total <= 0) {
+                return '';
+            }
+            const maxDots = 12;
+            const dots = Math.min(total, maxDots);
+            let html = '<span class="ports-dots">';
+            for (let i = 0; i < dots; i++) {
+                html += '<span class="ports-dot"></span>';
+            }
+            html += '</span>';
+            if (total > maxDots) {
+                html += `<span class="ports-overflow">+${total - maxDots}</span>`;
+            }
+            return html;
+        }
+
         // Generate rack units HTML
         function generateRackUnits(rack) {
             let html = '';
@@ -3880,6 +3952,8 @@
                 if (device) {
                     if (i === device.position) {
                         const moduleStyle = getModuleStyleVars(device.type);
+                        const portCount = device.ports || 0;
+                        const portDots = renderPortDots(portCount);
                         html += `<div class="rack-unit occupied ${device.type}" 
                                       data-device-id="${device.id}"
                                       data-device-name="${device.name}"
@@ -3888,8 +3962,15 @@
                                       data-device-ip="${device.ip || 'N/A'}"
                                       data-device-model="${device.model || 'N/A'}"
                                       data-device-serial="${device.serial || 'N/A'}"
+                                      data-device-ports="${portCount}"
                                       style="${moduleStyle} height: ${20 * device.height + 2 * (device.height - 1)}px;">
-                                    ${device.name}
+                                    <div class="rack-unit-content">
+                                        <div class="rack-unit-name">${device.name}</div>
+                                        <div class="rack-unit-ports">
+                                            <span class="ports-count">${portCount}p</span>
+                                            ${portDots}
+                                        </div>
+                                    </div>
                                 </div>`;
                     }
                 } else {
@@ -3915,6 +3996,7 @@
             document.getElementById('tooltipPosition').textContent = `Pozice: ${unit.dataset.devicePosition}`;
             document.getElementById('tooltipIP').textContent = `IP: ${getSensitiveValue(unit.dataset.deviceIp)}`;
             document.getElementById('tooltipModel').textContent = `Model: ${unit.dataset.deviceModel}`;
+            document.getElementById('tooltipPorts').textContent = `Porty: ${unit.dataset.devicePorts || 'N/A'}`;
             document.getElementById('tooltipSerial').textContent = `S/N: ${getSensitiveValue(unit.dataset.deviceSerial)}`;
             
             tooltip.classList.add('active');
@@ -3947,7 +4029,7 @@
                 const ipValue = getSensitiveValue(device.ip || 'N/A');
                 const deleteDisabled = canManageDevices() ? '' : 'disabled';
                 return `
-                    <tr>
+                    <tr style="cursor: pointer;" onclick="openDeviceFromTable('${device.id}')">
                         <td>${device.name}</td>
                         <td><span class="device-type-badge ${device.type}" style="${badgeStyle}">${typeLabel}</span></td>
                         <td>${rack ? rack.name : 'N/A'}</td>
@@ -3955,11 +4037,25 @@
                         <td>${ipValue}</td>
                         <td>${device.model || 'N/A'}</td>
                         <td>
-                            <button class="delete-btn" onclick="deleteDevice('${device.id}')" ${deleteDisabled}>Smazat</button>
+                            <button class="delete-btn" onclick="deleteDeviceFromTable(event, '${device.id}')" ${deleteDisabled}>Smazat</button>
                         </td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        function openDeviceFromTable(deviceId) {
+            const device = devices.find(d => d.id === deviceId);
+            if (device) {
+                showPortDetails(device);
+            }
+        }
+
+        function deleteDeviceFromTable(event, deviceId) {
+            if (event) {
+                event.stopPropagation();
+            }
+            deleteDevice(deviceId);
         }
         
         // Render connections
