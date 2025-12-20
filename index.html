@@ -1268,6 +1268,49 @@
             color: var(--text-secondary);
             margin-bottom: 0.75rem;
         }
+
+        .port-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .port-filter-input {
+            flex: 1 1 200px;
+            padding: 0.5rem 0.6rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .port-device-select {
+            min-width: 220px;
+            padding: 0.5rem 0.6rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .port-filter-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .port-filter-toggle input {
+            accent-color: var(--accent-primary);
+        }
         
         .port-item {
             background: var(--bg-tertiary);
@@ -1284,7 +1327,12 @@
             transform: scale(1.05);
             z-index: 10;
         }
-        
+
+        .port-item.pending {
+            border-color: var(--warning);
+            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.35);
+        }
+
         .port-item.connected {
             border-color: var(--success);
             background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.05));
@@ -1315,6 +1363,11 @@
         .port-item.uplink {
             border-color: var(--accent-cyan);
             background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+        }
+
+        .port-item.conflict {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.35);
         }
         
         .port-item.disabled {
@@ -2853,6 +2906,7 @@
         let isDragging = false;
         let dragNode = null;
         let offsetX, offsetY;
+        let networkLinkDraft = null;
         
         function initNetworkVisualization() {
             if (!currentClientId) return;
@@ -2956,6 +3010,17 @@
                     edge.connection.speed + 'M';
                 networkCtx.fillText(speed, midX, midY - 5);
             });
+
+            if (networkLinkDraft) {
+                networkCtx.beginPath();
+                networkCtx.setLineDash([6, 6]);
+                networkCtx.moveTo(networkLinkDraft.from.x, networkLinkDraft.from.y);
+                networkCtx.lineTo(networkLinkDraft.x, networkLinkDraft.y);
+                networkCtx.strokeStyle = '#fbbf24';
+                networkCtx.lineWidth = 2;
+                networkCtx.stroke();
+                networkCtx.setLineDash([]);
+            }
             
             // Draw nodes
             networkNodes.forEach(node => {
@@ -2982,41 +3047,98 @@
                 networkCtx.fillText(node.ports + ' ports', node.x, node.y + 45);
             });
         }
-        
-        function handleNetworkMouseDown(e) {
-            if (!canEditTopology()) {
-                return;
-            }
-            const rect = networkCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            // Check if clicking on a node
-            networkNodes.forEach(node => {
+
+        function getNodeAtPosition(x, y) {
+            return networkNodes.find(node => {
                 const dx = x - node.x;
                 const dy = y - node.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance <= 30) {
-                    isDragging = true;
-                    dragNode = node;
-                    offsetX = dx;
-                    offsetY = dy;
-                    networkCanvas.style.cursor = 'grabbing';
-                }
+                return distance <= 30;
             });
         }
         
+        function handleNetworkMouseDown(e) {
+            const rect = networkCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const node = getNodeAtPosition(x, y);
+
+            if (networkLinkDraft) {
+                if (!node) {
+                    networkLinkDraft = null;
+                    drawNetwork();
+                }
+                return;
+            }
+
+            if (e.shiftKey && node) {
+                if (!canEditTopology()) {
+                    return;
+                }
+                networkLinkDraft = {
+                    from: node,
+                    x,
+                    y
+                };
+                networkCanvas.style.cursor = 'crosshair';
+                drawNetwork();
+                return;
+            }
+
+            if (!canEditTopology()) {
+                return;
+            }
+
+            if (node) {
+                const dx = x - node.x;
+                const dy = y - node.y;
+                isDragging = true;
+                dragNode = node;
+                offsetX = dx;
+                offsetY = dy;
+                networkCanvas.style.cursor = 'grabbing';
+            }
+        }
+        
         function handleNetworkMouseMove(e) {
+            const rect = networkCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (networkLinkDraft) {
+                networkLinkDraft.x = x;
+                networkLinkDraft.y = y;
+                drawNetwork();
+                return;
+            }
+
             if (isDragging && dragNode) {
-                const rect = networkCanvas.getBoundingClientRect();
-                dragNode.x = e.clientX - rect.left - offsetX;
-                dragNode.y = e.clientY - rect.top - offsetY;
+                dragNode.x = x - offsetX;
+                dragNode.y = y - offsetY;
                 drawNetwork();
             }
         }
         
-        function handleNetworkMouseUp() {
+        function handleNetworkMouseUp(e) {
+            const rect = networkCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (networkLinkDraft) {
+                const targetNode = getNodeAtPosition(x, y);
+                if (targetNode && targetNode.id !== networkLinkDraft.from.id) {
+                    openConnectionModal({
+                        fromDevice: networkLinkDraft.from.id,
+                        toDevice: targetNode.id
+                    });
+                }
+                networkLinkDraft = null;
+                networkCanvas.style.cursor = 'grab';
+                drawNetwork();
+                return;
+            }
+
             isDragging = false;
             dragNode = null;
             networkCanvas.style.cursor = 'grab';
@@ -3028,15 +3150,10 @@
             const y = e.clientY - rect.top;
             
             // Check if double-clicking on a node
-            networkNodes.forEach(node => {
-                const dx = x - node.x;
-                const dy = y - node.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance <= 30) {
-                    showPortDetails(node.device);
-                }
-            });
+            const node = getNodeAtPosition(x, y);
+            if (node) {
+                showPortDetails(node.device);
+            }
         }
         
         function resetNetworkView() {
@@ -3063,6 +3180,16 @@
         }
         
         // Port Management
+        let currentPortDeviceId = null;
+        let pendingPortSelection = null;
+        let portFilterState = {
+            query: '',
+            showFree: true,
+            showConnected: true,
+            showTrunk: true,
+            showUplink: true
+        };
+
         function findPortConnection(deviceId, portNumber) {
             return connections.find(c =>
                 (c.fromDevice === deviceId && c.fromPort === portNumber) ||
@@ -3070,9 +3197,43 @@
             );
         }
 
+        function getPortConnections(deviceId, portNumber) {
+            return connections.filter(c =>
+                (c.fromDevice === deviceId && c.fromPort === portNumber) ||
+                (c.toDevice === deviceId && c.toPort === portNumber)
+            );
+        }
+
+        function isPortUsed(deviceId, portNumber) {
+            return getPortConnections(deviceId, portNumber).length > 0;
+        }
+
+        function setPortFilter(key, value) {
+            portFilterState[key] = value;
+            renderPortDetails();
+        }
+
+        function renderPortDetails() {
+            if (!currentPortDeviceId) return;
+            const device = devices.find(d => d.id === currentPortDeviceId);
+            if (!device) return;
+            document.getElementById('portDetailsTitle').textContent = device.name + ' - Port Management';
+            renderPortDetailsContent(device);
+        }
+
         function showPortDetails(device) {
+            currentPortDeviceId = device.id;
             document.getElementById('portDetailsOverlay').classList.add('active');
             document.getElementById('portDetailsTitle').textContent = device.name + ' - Port Management';
+            renderPortDetailsContent(device);
+        }
+
+        function switchPortDevice(deviceId) {
+            currentPortDeviceId = deviceId;
+            renderPortDetails();
+        }
+
+        function renderPortDetailsContent(device) {
             
             const content = document.getElementById('portDetailsContent');
             const portCount = device.ports || 24;
@@ -3085,24 +3246,51 @@
                 c.fromDevice === device.id || c.toDevice === device.id
             );
             
+            const pendingDevice = pendingPortSelection
+                ? devices.find(d => d.id === pendingPortSelection.deviceId)
+                : null;
+            const pendingLabel = pendingPortSelection
+                ? `Vybrano: ${(pendingDevice ? pendingDevice.name : 'Zarizeni')}:${pendingPortSelection.portNumber}`
+                : '';
+
+            const deviceOptions = devices.map(d =>
+                `<option value="${d.id}" ${d.id === device.id ? 'selected' : ''}>${d.name}</option>`
+            ).join('');
+
             let html = `
-                <div class="port-hint">${hint}</div>
+                <div class="port-hint">${hint}${pendingLabel ? ' | ' + pendingLabel : ''}</div>
+                <div class="port-filters">
+                    <select class="port-device-select" onchange="switchPortDevice(this.value)">
+                        ${deviceOptions}
+                    </select>
+                    <input class="port-filter-input" type="text" placeholder="Filtr portu (cislo / nazev)" value="${portFilterState.query}" oninput="setPortFilter('query', this.value)">
+                    <label class="port-filter-toggle"><input type="checkbox" ${portFilterState.showFree ? 'checked' : ''} onchange="setPortFilter('showFree', this.checked)">Volne</label>
+                    <label class="port-filter-toggle"><input type="checkbox" ${portFilterState.showConnected ? 'checked' : ''} onchange="setPortFilter('showConnected', this.checked)">Obsazene</label>
+                    <label class="port-filter-toggle"><input type="checkbox" ${portFilterState.showTrunk ? 'checked' : ''} onchange="setPortFilter('showTrunk', this.checked)">Trunk</label>
+                    <label class="port-filter-toggle"><input type="checkbox" ${portFilterState.showUplink ? 'checked' : ''} onchange="setPortFilter('showUplink', this.checked)">Uplink</label>
+                </div>
                 <div class="port-grid">
             `;
             
             for (let i = 1; i <= portCount; i++) {
-                const conn = deviceConnections.find(c =>
+                const portConnections = deviceConnections.filter(c =>
                     (c.fromDevice === device.id && c.fromPort === i) ||
                     (c.toDevice === device.id && c.toPort === i)
                 );
+                const conn = portConnections[0];
                 
                 let portClass = 'port-item';
                 let portLabel = '';
+                const isConnected = portConnections.length > 0;
+                const isTrunk = portConnections.some(c => c.type === 'trunk');
+                const isUplink = portConnections.some(c => c.type === 'uplink');
+                const isConflict = portConnections.length > 1;
                 
-                if (conn) {
+                if (isConnected) {
                     portClass += ' connected';
-                    if (conn.type === 'trunk') portClass += ' trunk';
-                    if (conn.type === 'uplink') portClass += ' uplink';
+                    if (isTrunk) portClass += ' trunk';
+                    if (isUplink) portClass += ' uplink';
+                    if (isConflict) portClass += ' conflict';
                     
                     // Find connected device
                     const connectedDeviceId = conn.fromDevice === device.id ? 
@@ -3110,11 +3298,26 @@
                     const connectedDevice = devices.find(d => d.id === connectedDeviceId);
                     portLabel = connectedDevice ? connectedDevice.name : 'Connected';
                 }
+
+                if (pendingPortSelection && pendingPortSelection.deviceId === device.id && pendingPortSelection.portNumber === i) {
+                    portClass += ' pending';
+                }
+
+                const searchValue = `${i} ${portLabel} ${isTrunk ? 'trunk' : ''} ${isUplink ? 'uplink' : ''}`.toLowerCase();
+                const query = (portFilterState.query || '').trim().toLowerCase();
+                if (query && !searchValue.includes(query)) {
+                    continue;
+                }
+                if (!isConnected && !portFilterState.showFree) continue;
+                if (isConnected && !portFilterState.showConnected) continue;
+                if (isTrunk && !portFilterState.showTrunk) continue;
+                if (isUplink && !portFilterState.showUplink) continue;
                 
                 html += `
                     <div class="${portClass}" onclick="configurePort('${device.id}', ${i})">
                         <div class="port-number">${i}</div>
                         ${portLabel ? `<div class="port-label">${portLabel}</div>` : ''}
+                        ${isConflict ? `<div class="port-label" style="color: var(--danger);">Konflikt</div>` : ''}
                         ${conn && conn.vlans ? `<div class="vlan-tag">VLAN ${conn.vlans}</div>` : ''}
                     </div>
                 `;
@@ -3159,6 +3362,8 @@
         
         function closePortDetails() {
             document.getElementById('portDetailsOverlay').classList.remove('active');
+            pendingPortSelection = null;
+            currentPortDeviceId = null;
         }
         
         function configurePort(deviceId, portNumber) {
@@ -3167,16 +3372,63 @@
                 return;
             }
 
-            const existing = findPortConnection(deviceId, portNumber);
-            if (existing) {
+            if (isPortUsed(deviceId, portNumber)) {
                 alert('Port je uz obsazeny.');
                 return;
             }
 
-            openConnectionModal({
-                fromDevice: deviceId,
-                fromPort: portNumber
-            });
+            if (!pendingPortSelection) {
+                pendingPortSelection = { deviceId, portNumber };
+                renderPortDetails();
+                return;
+            }
+
+            if (pendingPortSelection.deviceId === deviceId && pendingPortSelection.portNumber === portNumber) {
+                pendingPortSelection = null;
+                renderPortDetails();
+                return;
+            }
+
+            if (pendingPortSelection.deviceId === deviceId) {
+                alert('Nelze propojit porty na stejnem zarizeni.');
+                return;
+            }
+
+            createQuickConnection(pendingPortSelection.deviceId, pendingPortSelection.portNumber, deviceId, portNumber);
+            pendingPortSelection = null;
+            renderPortDetails();
+        }
+
+        function createQuickConnection(fromDevice, fromPort, toDevice, toPort) {
+            if (!canEditTopology()) {
+                alert('Nemate opravneni upravovat topologii');
+                return;
+            }
+            if (fromDevice === toDevice) {
+                alert('Nelze propojit zarizeni samo se sebou');
+                return;
+            }
+            if (isPortUsed(fromDevice, fromPort) || isPortUsed(toDevice, toPort)) {
+                alert('Jeden z portu je uz obsazeny');
+                return;
+            }
+
+            const connection = {
+                id: Date.now().toString(),
+                fromDevice: fromDevice,
+                fromPort: parseInt(fromPort, 10),
+                toDevice: toDevice,
+                toPort: parseInt(toPort, 10),
+                type: 'access',
+                vlans: '',
+                speed: 1000,
+                description: 'Quick link',
+                createdAt: new Date().toISOString()
+            };
+
+            connections.push(connection);
+            saveData();
+            render();
         }
         
         // Connection Management
