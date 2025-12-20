@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CX.TECH Rack Manager Pro</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
         
         * {
             margin: 0;
@@ -40,15 +40,26 @@
             --accent-yellow: var(--accent-tertiary);
             --rack-bg: #0f0f0f;
             --rack-border: rgba(248, 154, 85, 0.3);
+            --sidebar-bg: #0c0c0c;
+            --panel-surface: #151515;
+            --panel-surface-2: #1f1f1f;
+            --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.45);
         }
         
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Space Grotesk', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+        }
+
+        body.auth-locked .app-shell {
+            pointer-events: none;
+            user-select: none;
+            filter: blur(2px);
+            opacity: 0.6;
         }
         
         /* Animated background with CX.TECH orange accents */
@@ -73,87 +84,262 @@
             50% { opacity: 0.06; }
         }
         
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, #1f1f1f 100%);
+        /* MSP layout */
+        .app-shell {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--sidebar-bg), #121212 80%);
+            border-right: none;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            position: relative;
+            overflow: visible;
+        }
+
+        .sidebar-brand {
+            margin-bottom: 2rem;
+        }
+
+        .brand-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .brand-title .cx,
+        .brand-title .tech {
+            color: var(--cx-white);
+        }
+
+        .brand-title .dot {
+            color: var(--cx-orange);
+        }
+
+        .brand-subtitle {
+            margin-top: 0.35rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .sidebar-section {
+            margin-bottom: 1.75rem;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sidebar-nav {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            text-align: left;
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--panel-surface);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .nav-btn.active {
+            border-color: var(--cx-orange);
+            box-shadow: 0 0 0 1px rgba(248, 154, 85, 0.4);
+            background: linear-gradient(135deg, rgba(248, 154, 85, 0.25), rgba(20, 20, 20, 0.8));
+        }
+
+        .nav-btn:hover:not(.active) {
+            transform: translateX(6px);
+            border-color: rgba(248, 154, 85, 0.5);
+        }
+
+        .main-content {
             padding: 2rem;
-            border-bottom: 3px solid var(--cx-orange);
+        }
+
+        .topbar {
+            background: linear-gradient(120deg, #1b1b1b, #101010);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 1.5rem;
             position: relative;
             overflow: hidden;
         }
-        
-        .header::after {
+
+        .topbar::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, 
-                var(--cx-orange) 0%, 
-                transparent 50%, 
-                var(--cx-orange) 100%);
-            animation: borderGlow 3s linear infinite;
+            top: 0;
+            right: 0;
+            width: 40%;
+            height: 100%;
+            background: radial-gradient(circle at right, rgba(248, 154, 85, 0.2), transparent 70%);
+            opacity: 0.8;
         }
-        
-        @keyframes borderGlow {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+
+        .topbar-title {
+            font-size: 1.5rem;
+            font-weight: 700;
         }
-        
-        .header-brand h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
-        
-        .header-brand .cx {
-            color: var(--cx-white);
-            font-weight: 800;
-        }
-        
-        .header-brand .dot {
-            color: var(--cx-orange);
-            font-weight: 800;
-        }
-        
-        .header-brand .tech {
-            color: var(--cx-white);
-            font-weight: 800;
-        }
-        
-        .header-brand .separator {
-            color: var(--cx-orange);
-            margin: 0 0.5rem;
-        }
-        
-        .header-brand .tagline {
+
+        .topbar-subtitle {
             color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.35rem;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 1;
+        }
+
+        .auth-status {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 8, 8, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 4000;
+        }
+
+        .auth-overlay.hidden {
+            display: none;
+        }
+
+        .auth-card {
+            background: var(--panel-surface-2);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 2rem;
+            width: min(420px, 90vw);
+            box-shadow: var(--shadow-soft);
+            text-align: left;
+        }
+
+        .auth-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .role-manager-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .role-manager-table th,
+        .role-manager-table td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
             font-size: 0.875rem;
-            font-weight: 400;
+        }
+
+        .role-manager-table th {
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+        }
+
+        .role-select {
+            width: 100%;
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .role-note {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
             margin-top: 0.5rem;
         }
-        
-        /* Main container */
-        .container {
+
+        .role-invite-form {
             display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 2rem;
-            padding: 2rem;
-            max-width: 1600px;
-            margin: 0 auto;
+            grid-template-columns: 1fr 160px 140px;
+            gap: 0.75rem;
+            margin-top: 1rem;
         }
-        
-        /* Control panel */
-        .control-panel {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 1.5rem;
+
+        .role-invite-form input {
+            width: 100%;
+            padding: 0.5rem 0.6rem;
+            background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
-            height: fit-content;
-            position: sticky;
-            top: 2rem;
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .role-invite-list {
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 1100px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                height: auto;
+            }
+
+            .main-content {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                padding: 1.5rem 1rem;
+            }
+
+            .topbar {
+                padding: 1rem 1.25rem;
+            }
         }
         
         .control-section {
@@ -176,7 +362,7 @@
             color: var(--cx-white);
             border: none;
             border-radius: 8px;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Space Grotesk', sans-serif;
             font-weight: 600;
             font-size: 0.875rem;
             cursor: pointer;
@@ -194,6 +380,14 @@
         
         .btn:active {
             transform: translateY(0);
+        }
+
+        .btn:disabled,
+        .btn-small:disabled,
+        .delete-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
         }
         
         .btn-secondary {
@@ -218,7 +412,7 @@
             font-size: 0.875rem;
             color: var(--text-secondary);
             margin-bottom: 0.5rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         }
         
         .form-group input,
@@ -229,7 +423,7 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.875rem;
             transition: all 0.3s;
         }
@@ -273,7 +467,7 @@
         .stat-value {
             font-size: 1.5rem;
             font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             color: var(--accent-cyan);
         }
         
@@ -309,7 +503,7 @@
             font-size: 1.125rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             color: var(--accent-cyan);
         }
         
@@ -333,11 +527,14 @@
             justify-content: center;
             font-size: 0.625rem;
             color: var(--text-secondary);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         }
         
         .rack-unit.occupied {
             cursor: pointer;
+            background: var(--device-gradient, var(--bg-tertiary));
+            border-color: var(--device-color, var(--border-color));
+            color: var(--device-text, var(--text-primary));
         }
         
         .rack-unit.occupied.switch {
@@ -403,7 +600,7 @@
             font-weight: 600;
             margin-bottom: 0.5rem;
             color: var(--accent-cyan);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         }
         
         .tooltip-detail {
@@ -444,7 +641,7 @@
         .device-table td {
             padding: 0.75rem;
             border-bottom: 1px solid var(--border-color);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.875rem;
         }
         
@@ -459,6 +656,9 @@
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
+            background: var(--badge-bg, rgba(248, 154, 85, 0.15));
+            color: var(--badge-color, var(--text-primary));
+            border: 1px solid var(--badge-border, transparent);
         }
         
         .device-type-badge.switch {
@@ -495,6 +695,161 @@
         .delete-btn:hover {
             background: var(--danger);
             color: var(--text-primary);
+        }
+
+        /* Module management */
+        .module-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .module-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .module-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        .module-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .module-id {
+            color: var(--text-secondary);
+        }
+
+        /* MSP modules */
+        .msp-modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .msp-module-card {
+            background: var(--panel-surface-2);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 160px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.25);
+            transition: transform 0.25s ease, border-color 0.25s ease;
+        }
+
+        .msp-module-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(248, 154, 85, 0.6);
+        }
+
+        .msp-module-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .msp-module-meta {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+        }
+
+        .msp-module-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .msp-module-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--cx-orange);
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .overview-card {
+            background: linear-gradient(135deg, rgba(248, 154, 85, 0.15), rgba(20, 20, 20, 0.9));
+            border: 1px solid rgba(248, 154, 85, 0.4);
+            border-radius: 14px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .overview-card-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-secondary);
+        }
+
+        .overview-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 0.35rem;
+        }
+
+        .overview-card-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .overview-section {
+            margin-top: 2rem;
+        }
+
+        .overview-section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .topology-group {
+            background: var(--bg-tertiary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+        }
+
+        .topology-group-grid {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
         
         /* Modal */
@@ -596,7 +951,7 @@
         
         .connection-from, .connection-to {
             flex: 1;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         }
         
         .connection-arrow {
@@ -608,25 +963,25 @@
         
         /* Client selector */
         .client-selector-container {
-            display: flex;
-            gap: 1rem;
+            display: grid;
+            gap: 0.75rem;
             align-items: center;
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: rgba(0, 255, 255, 0.05);
-            border-radius: 8px;
-            border: 1px solid var(--accent-cyan);
+            margin: 0 0 1rem;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+            border: none;
         }
         
         .client-selector {
-            flex: 1;
-            max-width: 300px;
+            width: 100%;
+            max-width: none;
             padding: 0.75rem;
-            background: var(--bg-tertiary);
-            border: 2px solid var(--accent-cyan);
+            background: var(--panel-surface-2);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 1rem;
             font-weight: 600;
             transition: all 0.3s;
@@ -634,16 +989,17 @@
         
         .client-selector:focus {
             outline: none;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 20px rgba(248, 154, 85, 0.35);
+            border-color: rgba(248, 154, 85, 0.6);
         }
         
         .btn-small {
             padding: 0.75rem 1rem;
-            background: linear-gradient(135deg, var(--accent-magenta), var(--accent-cyan));
-            color: var(--bg-primary);
+            background: linear-gradient(135deg, var(--cx-orange), #ff6a25);
+            color: #101010;
             border: none;
             border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-weight: 600;
             font-size: 0.875rem;
             cursor: pointer;
@@ -653,13 +1009,13 @@
         
         .btn-small:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255, 0, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(248, 154, 85, 0.3);
         }
         
         /* Client info panel */
         .client-info {
-            background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
-            border: 1px solid var(--accent-cyan);
+            background: linear-gradient(135deg, rgba(248, 154, 85, 0.15), rgba(40, 40, 40, 0.4));
+            border: 1px solid rgba(248, 154, 85, 0.4);
             border-radius: 8px;
             padding: 1rem;
             margin-bottom: 2rem;
@@ -669,7 +1025,7 @@
             font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: var(--accent-magenta);
+            color: var(--cx-orange);
             margin-bottom: 0.5rem;
         }
         
@@ -677,14 +1033,14 @@
             font-size: 0.875rem;
             color: var(--text-secondary);
             margin-bottom: 0.25rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         }
         
         .client-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
-            background: linear-gradient(135deg, var(--accent-magenta), var(--accent-cyan));
-            color: var(--bg-primary);
+            background: linear-gradient(135deg, var(--cx-orange), #ff6a25);
+            color: #0b0b0b;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
@@ -734,7 +1090,7 @@
         .client-card-name {
             font-weight: 600;
             color: var(--accent-cyan);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         }
         
         .client-card-stats {
@@ -792,36 +1148,32 @@
         
         /* Network Visualization */
         .view-toggle {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            padding: 0.5rem;
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            width: fit-content;
+            display: none;
         }
         
         .view-toggle-btn {
-            padding: 0.5rem 1rem;
-            background: transparent;
+            text-align: left;
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            border-radius: 10px;
             border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            border-radius: 6px;
+            background: var(--panel-surface);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.875rem;
-            transition: all 0.3s;
+            transition: all 0.25s ease;
         }
         
         .view-toggle-btn.active {
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
-            color: var(--bg-primary);
-            border-color: var(--accent-cyan);
+            border-color: var(--cx-orange);
+            box-shadow: 0 0 0 1px rgba(248, 154, 85, 0.4);
+            background: linear-gradient(135deg, rgba(248, 154, 85, 0.25), rgba(20, 20, 20, 0.8));
         }
         
         .view-toggle-btn:hover:not(.active) {
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
+            transform: translateX(6px);
+            border-color: rgba(248, 154, 85, 0.5);
         }
         
         /* Network Map Container */
@@ -891,7 +1243,7 @@
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--accent-cyan);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         }
         
         .port-grid {
@@ -957,7 +1309,7 @@
         .port-number {
             font-size: 0.75rem;
             font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             color: var(--text-primary);
         }
         
@@ -1031,7 +1383,7 @@
             background: var(--bg-tertiary);
             border-radius: 8px;
             margin-bottom: 1rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.875rem;
         }
         
@@ -1072,10 +1424,9 @@
         .network-stat-value {
             font-size: 1.5rem;
             font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
             -webkit-background-clip: text;
-            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
@@ -1086,409 +1437,143 @@
             letter-spacing: 0.1em;
             margin-top: 0.25rem;
         }
-
-        /* Login gate */
-        .login-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.85);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        .login-box {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 2rem;
-            width: 320px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-            text-align: center;
-        }
-        .login-box h2 {
-            margin-bottom: 0.5rem;
-            font-size: 1.25rem;
-        }
-        .login-box p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-        }
-        .login-input {
-            width: 100%;
-            padding: 0.75rem 0.9rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-        }
-        .login-error {
-            color: var(--danger);
-            font-size: 0.875rem;
-            min-height: 1.2rem;
-            margin-bottom: 0.5rem;
-        }
     </style>
 </head>
 
 <script type="module">
-  import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // Debug logging helper - funguje jak lokálně, tak na Vercelu
-  function debugLog(location, message, data, hypothesisId) {
-    const logData = {location, message, data, timestamp:Date.now(), sessionId:'debug-session', runId:'run1', hypothesisId};
-    console.log(`[DEBUG] ${message}`, logData);
-    // Pokus o odeslání na lokální endpoint (funguje jen lokálně)
-    fetch('http://127.0.0.1:7242/ingest/00ee88d1-14ae-4d07-8b44-58e5233ba85e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData)}).catch(()=>{});
-  }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-  // Načtení Firebase config z API endpointu
-  async function loadFirebaseConfig() {
-    // #region agent log
-    debugLog('index.html:1097', 'loadFirebaseConfig ENTRY', {}, 'A');
-    // #endregion
-    try {
-      const response = await fetch('/api/config');
-      if (!response.ok) {
-        // #region agent log
-        debugLog('index.html:1101', 'loadFirebaseConfig response NOT OK', {status:response.status,statusText:response.statusText}, 'A');
-        // #endregion
-        throw new Error('Failed to load Firebase config');
-      }
-      const config = await response.json();
-      // #region agent log
-      debugLog('index.html:1103', 'loadFirebaseConfig SUCCESS', {hasApiKey:!!config.apiKey,hasProjectId:!!config.projectId}, 'A');
-      // #endregion
-      return config;
-    } catch (error) {
-      // #region agent log
-      debugLog('index.html:1105', 'loadFirebaseConfig ERROR', {errorMessage:error.message,hasFallback:!!window.firebaseConfig}, 'A');
-      // #endregion
-      console.error('❌ Error loading Firebase config:', error);
-      // Fallback na window.firebaseConfig pokud existuje (pro lokální vývoj)
-      if (window.firebaseConfig) {
-        console.warn('⚠️ Using fallback config from window.firebaseConfig');
-        return window.firebaseConfig;
-      }
-      throw error;
-    }
-  }
+  // ⛓ Wrapper funkce místo localStorage
+  window.saveClientDataToDb = async (clientName, data) => {
+    const ref = doc(db, "clients", clientName);
+    await setDoc(ref, { rackData: data }, { merge: true });
+  };
 
-  // Funkce pro aktualizaci statusu v UI
-  function updateFirestoreStatus(status, color, message) {
-    // Zkusit najít status element - může být v headeru nebo jinde
-    let statusEl = document.getElementById('firebaseStatus');
-    if (!statusEl) {
-      // Pokud neexistuje, vytvořit ho
-      const header = document.querySelector('.header');
-      if (header) {
-        statusEl = document.createElement('div');
-        statusEl.id = 'firebaseStatus';
-        statusEl.style.cssText = 'position: absolute; top: 1rem; right: 1rem; font-size: 0.875rem; font-weight: 600; cursor: pointer;';
-        statusEl.title = message || '';
-        header.appendChild(statusEl);
-      }
-    }
-    
-    if (statusEl) {
-      statusEl.innerHTML = status;
-      statusEl.style.color = color;
-      statusEl.title = message || '';
-      
-      // Přidat click handler pro zobrazení detailů
-      statusEl.onclick = function() {
-        console.log('Firestore Status:', {
-          ready: window.firestoreReady,
-          functions: {
-            saveClientDataToDb: typeof window.saveClientDataToDb,
-            loadClientDataFromDb: typeof window.loadClientDataFromDb
-          },
-          message: message
-        });
-      };
-    }
-    
-    // Také zobrazit v konzoli
-    console.log('🔥 Firestore Status:', status, message || '');
-  }
+  window.loadClientDataFromDb = async (clientName) => {
+    const ref = doc(db, "clients", clientName);
+    const snap = await getDoc(ref);
+    return snap.exists() ? snap.data().rackData : null;
+  };
 
-  // Inicializace Firestore
-  let firestoreApp, firestoreDb;
-  window.firestoreReady = false;
-  window.firestoreReadyCallbacks = window.firestoreReadyCallbacks || [];
+  window.updateClientDataInDb = async (clientName, data) => {
+    const ref = doc(db, "clients", clientName);
+    await updateDoc(ref, { rackData: data });
+  };
 
-  function notifyFirestoreReady() {
-    window.firestoreReadyCallbacks.forEach(cb => {
-      try {
-        cb();
-      } catch (err) {
-        console.warn('⚠️ Firestore ready callback failed:', err.message);
-      }
-    });
-  }
-  
-  // Zobrazit loading status
-  updateFirestoreStatus('⏳ Loading...', '#fbbf24', 'Načítání Firebase konfigurace...');
-  
-  // Uložit promise pro inicializaci Firestore, aby na ni ostatní části aplikace mohly počkat
-  window.firestoreInitPromise = loadFirebaseConfig().then(config => {
-    // #region agent log
-    debugLog('index.html:1160', 'Firestore init START', {hasApiKey:!!config.apiKey,hasProjectId:!!config.projectId}, 'B');
-    // #endregion
-    console.log('✅ Firebase config loaded:', config);
-    
-    // Validace configu
-    if (!config.apiKey || !config.projectId) {
-      // #region agent log
-      debugLog('index.html:1164', 'Firestore init VALIDATION FAILED', {hasApiKey:!!config.apiKey,hasProjectId:!!config.projectId}, 'B');
-      // #endregion
-      throw new Error('Neplatná Firebase konfigurace - chybí apiKey nebo projectId');
-    }
-    
-    // Kontrola, jestli už není Firebase app inicializovaný
-    try {
-      firestoreApp = initializeApp(config);
-    } catch (e) {
-      if (e.code === 'app/duplicate-app') {
-        // Pokud už existuje, použijeme existující
-        firestoreApp = getApp();
-        console.log('⚠️ Using existing Firebase app');
-      } else {
-        throw e;
-      }
-    }
-    firestoreDb = getFirestore(firestoreApp);
-    // #region agent log
-    debugLog('index.html:1207', 'Firestore DB initialized', {
-      projectId: firestoreApp.options.projectId,
-      hasDb: !!firestoreDb,
-      dbType: typeof firestoreDb
-    }, 'B');
-    // #endregion
-
-    // ⛓ Wrapper funkce místo localStorage
-    window.saveClientDataToDb = async (clientName, data) => {
-      // #region agent log
-      const dataStr = JSON.stringify(data||{});
-      debugLog('index.html:1210', 'saveClientDataToDb ENTRY', {
-        clientName:clientName,
-        dataSize:dataStr.length,
-        dataKeys:data?Object.keys(data):[],
-        hasFirestoreDb:!!firestoreDb,
-        collectionPath:`clients/${clientName}`
-      }, 'E');
-      // #endregion
-      try {
-        // Validace dat - odstranit undefined hodnoty
-        const cleanData = JSON.parse(JSON.stringify(data || {}));
-        const ref = doc(firestoreDb, "clients", clientName);
-        // #region agent log
-        debugLog('index.html:1215', 'saveClientDataToDb BEFORE setDoc', {
-          clientName:clientName,
-          refPath:ref.path,
-          refId:ref.id,
-          refParent:ref.parent?.path,
-          dataType:typeof cleanData,
-          dataKeys:Object.keys(cleanData||{}),
-          projectId:firestoreApp?.options?.projectId,
-          databaseId:firestoreDb?._delegate?._databaseId?.databaseId
-        }, 'E');
-        // #endregion
-        // Zkusit také bez merge pro test
-        await setDoc(ref, { rackData: cleanData }, { merge: true });
-        // #region agent log
-        debugLog('index.html:1217', 'saveClientDataToDb SUCCESS', {clientName:clientName,refPath:ref.path}, 'E');
-        // #endregion
-        } catch (err) {
-        // #region agent log
-        debugLog('index.html:1220', 'saveClientDataToDb ERROR', {
-          clientName:clientName,
-          errorMessage:err.message,
-          errorCode:err.code,
-          errorStack:err.stack?.substring(0,300),
-          errorName:err.name
-        }, 'E');
-        // #endregion
-        
-        // Lepší error handling pro API key chyby
-        if (err.code === 'permission-denied' || err.message?.includes('API key')) {
-          console.error('❌ Firestore save error - API key problem:', {
-            code: err.code,
-            message: err.message,
-            tip: 'Zkontrolujte API klíč v Firebase Console a restrictions v Google Cloud Console'
-          });
-          
-          // Zobrazit uživatelsky přívětivou chybu
-          updateFirestoreStatus('🔴 API Key Error', '#f87171', 
-            'API klíč není platný. Zkontrolujte nastavení v Firebase Console.');
-        } else {
-          console.error('❌ Firestore save error details:', {
-            code: err.code,
-            message: err.message,
-            clientName: clientName,
-            dataPreview: JSON.stringify(data).substring(0, 200)
-          });
-          throw err;
-        }
-      }
-    };
-
-    window.loadClientDataFromDb = async (clientName) => {
-      const ref = doc(firestoreDb, "clients", clientName);
-      const snap = await getDoc(ref);
-      return snap.exists() ? snap.data().rackData : null;
-    };
-
-    window.updateClientDataInDb = async (clientName, data) => {
-      const ref = doc(firestoreDb, "clients", clientName);
-      await updateDoc(ref, { rackData: data });
-    };
-
-    window.firestoreReady = true;
-    // #region agent log
-    debugLog('index.html:1188', 'Firestore init SUCCESS', {firestoreReady:window.firestoreReady,hasSaveFunc:typeof window.saveClientDataToDb==='function'}, 'B');
-    // #endregion
-    console.log("🔥 Firebase Firestore ready for cxtechrack!");
-
-    // Zobrazit úspěšný status
-    updateFirestoreStatus('🟢 Firestore Ready', '#4ade80', 'Firestore je připraven k použití');
-
-    notifyFirestoreReady();
-  }).catch(error => {
-    // #region agent log
-    debugLog('index.html:1193', 'Firestore init ERROR', {errorMessage:error.message,firestoreReady:window.firestoreReady}, 'B');
-    // #endregion
-    console.error('❌ Firebase Firestore initialization failed:', error);
-    window.firestoreReady = false;
-    
-    // Zjistit příčinu chyby
-    let errorMessage = 'Firestore inicializace selhala';
-    if (error.message.includes('Failed to load Firebase config')) {
-      errorMessage = 'API endpoint /api/config nefunguje. Zkontrolujte environment variables v Vercelu.';
-    } else if (error.message.includes('apiKey') || error.message.includes('projectId')) {
-      errorMessage = 'Neplatná Firebase konfigurace. Zkontrolujte environment variables.';
-    } else {
-      errorMessage = error.message || 'Neznámá chyba';
-    }
-    
-    // Zobrazit chybu v UI
-    updateFirestoreStatus('🔴 Firestore Error', '#f87171', errorMessage);
-    
-    // Zobrazit detailní chybu v konzoli
-    console.error('Detail chyby:', {
-      message: error.message,
-      stack: error.stack,
-      apiEndpoint: '/api/config',
-      tip: 'Otevřete /api/config v prohlížeči pro kontrolu'
-    });
-    
-    // Zkusit načíst config přímo pro diagnostiku
-    fetch('/api/config')
-      .then(r => {
-        console.log('API Response status:', r.status);
-        return r.json();
-      })
-      .then(data => {
-        console.log('API Response data:', data);
-      })
-      .catch(err => {
-        console.error('API Request failed:', err);
-      });
-  });
+  console.log("🔥 Firebase DB ready for cxtechrack!");
 </script>
 
-<body>
-    <div id="loginOverlay" class="login-overlay">
-        <div class="login-box">
-            <h2>Restricted Access</h2>
-            <p>Zadejte dočasný přístupový kód</p>
-            <form id="loginForm">
-                <input id="accessCodeInput" class="login-input" type="password" placeholder="Access code" autocomplete="off">
-                <div id="loginError" class="login-error"></div>
-                <button class="btn" type="submit">Odblokovat</button>
-            </form>
+<body class="auth-locked">
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-card">
+            <h2>Prihlaseni</h2>
+            <p>Pro pristup do MSP konzole se prihlaste pres Google ucet.</p>
+            <button class="btn" onclick="loginWithGoogle()">Prihlasit pres Google</button>
         </div>
     </div>
-    <div class="header">
-        <div class="header-brand">
-            <h1><span class="cx">CX</span><span class="dot">.</span><span class="tech">TECH</span> <span class="separator">></span> Rack Manager Pro</h1>
-            <p class="tagline">komplexní IT • Multi-tenant správa infrastruktury • MSP Edition</p>
-        </div>
-        <div class="client-selector-container">
-            <select id="clientSelector" class="client-selector" onchange="switchClient()">
-                <option value="">-- Vyberte klienta --</option>
-            </select>
-            <button class="btn-small" onclick="openClientModal()">+ Nový klient</button>
-        </div>
-    </div>
-    
-    <div class="container">
-        <div class="control-panel">
-            <div class="client-info" id="clientInfo" style="display: none;">
-                <h4>Aktivní klient</h4>
-                <div class="client-info-detail" id="clientName"></div>
-                <div class="client-info-detail" id="clientContact"></div>
-                <div class="client-info-detail" id="clientLocation"></div>
-                <div style="margin-top: 0.5rem;">
-                    <span class="client-badge" id="clientType"></span>
-                </div>
-            </div>
-            
-            <div class="control-section">
-                <h3>Správa klientů</h3>
-                <button class="btn" onclick="openClientManagerModal()">👥 Spravovat klienty</button>
-            </div>
-            
-            <div class="control-section">
-                <h3>Správa racků</h3>
-                <button class="btn" onclick="openRackModal()" id="addRackBtn" disabled>+ Přidat rack</button>
-                <button class="btn btn-secondary" onclick="clearAllRacks()" id="clearRacksBtn" disabled>Vymazat vše</button>
-            </div>
-            
-            <div class="control-section">
-                <h3>Správa zařízení</h3>
-                <button class="btn" onclick="openDeviceModal()" id="addDeviceBtn" disabled>+ Přidat zařízení</button>
-                <button class="btn" onclick="openConnectionModal()" id="addConnectionBtn" disabled>🔗 Přidat propojení</button>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-title"><span class="cx">CX</span><span class="dot">.</span><span class="tech">TECH</span></div>
+                <div class="brand-subtitle">Rack Manager - MSP Console</div>
             </div>
 
-            <div class="control-section">
-                <h3>Statistiky</h3>
+            <div class="sidebar-section">
+                <div class="section-title">Klient</div>
+                <div class="client-selector-container">
+                    <select id="clientSelector" class="client-selector" onchange="switchClient()">
+                        <option value="">-- Vyberte klienta --</option>
+                    </select>
+                    <button class="btn-small" onclick="openClientModal()">+ Novy klient</button>
+                </div>
+                <div class="client-info" id="clientInfo" style="display: none;">
+                    <h4>Aktivni klient</h4>
+                    <div class="client-info-detail" id="clientName"></div>
+                    <div class="client-info-detail" id="userRole"></div>
+                    <div class="client-info-detail" id="clientContact"></div>
+                    <div class="client-info-detail" id="clientLocation"></div>
+                    <div style="margin-top: 0.5rem;">
+                        <span class="client-badge" id="clientType"></span>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="openClientManagerModal()">Spravovat klienty</button>
+                <button class="btn btn-secondary" id="roleManagerBtn" onclick="openRoleManagerModal()">Sprava roli</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Navigace</div>
+                <div class="sidebar-nav">
+                    <button class="view-toggle-btn nav-btn active" data-view="racks" onclick="switchView('racks', this)">Racky</button>
+                    <button class="view-toggle-btn nav-btn" data-view="network" onclick="switchView('network', this)">Sitova mapa</button>
+                    <button class="view-toggle-btn nav-btn" data-view="topology" onclick="switchView('topology', this)">Topologie</button>
+                    <button class="view-toggle-btn nav-btn" data-view="overview" onclick="switchView('overview', this)">Prehled klienta</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Racky</div>
+                <button class="btn" onclick="openRackModal()" id="addRackBtn" disabled>Pridat rack</button>
+                <button class="btn btn-secondary" onclick="clearAllRacks()" id="clearRacksBtn" disabled>Vymazat vse</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Zarizeni</div>
+                <button class="btn" onclick="openDeviceModal()" id="addDeviceBtn" disabled>Pridat zarizeni</button>
+                <button class="btn" onclick="openConnectionModal()" id="addConnectionBtn" disabled>Pridat propojeni</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Kategorie zarizeni</div>
+                <button class="btn btn-secondary" onclick="openModuleModal()">Sprava kategorii</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Statistiky</div>
                 <div class="stat">
                     <div class="stat-value" id="totalDevices">0</div>
-                    <div class="stat-label">Celkem zařízení</div>
+                    <div class="stat-label">Celkem zarizeni</div>
                 </div>
                 <div class="stat" style="margin-top: 1rem;">
                     <div class="stat-value" id="totalRacks">0</div>
-                    <div class="stat-label">Celkem racků</div>
+                    <div class="stat-label">Celkem racku</div>
                 </div>
             </div>
-            
-            <div class="control-section">
-                <h3>Export / Import</h3>
-                <button class="btn btn-secondary" onclick="exportData()">📥 Export JSON</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 Import JSON</button>
-                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <div>
+                    <div class="topbar-title">MSP Operations Desk</div>
+                    <div class="topbar-subtitle">Multi-tenant sprava infrastruktury</div>
+                </div>
+                <div class="topbar-actions">
+                    <div id="authStatus" class="auth-status">Neprihlasen</div>
+                    <button class="btn-small" id="loginBtn" onclick="loginWithGoogle()">Prihlasit</button>
+                    <button class="btn btn-secondary" id="logoutBtn" onclick="logout()" style="display: none;">Odhlasit</button>
+                </div>
             </div>
-            
-            <div class="control-section">
-                <h3>🔐 Autentizace</h3>
-                <div id="authStatus" style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Nepřihlášen</div>
-                <button id="loginBtnGoogle" class="btn btn-secondary" onclick="loginWithGoogle()" style="margin-bottom: 0.5rem; width: 100%;">🔵 Přihlásit se (Google)</button>
-                <button id="loginBtnMicrosoft" class="btn btn-secondary" onclick="loginWithMicrosoft()" style="margin-bottom: 0.5rem; width: 100%;">🔷 Přihlásit se (Microsoft 365)</button>
-                <button id="logoutBtn" class="btn btn-secondary" onclick="logout()" style="display: none; width: 100%;">Odhlásit se</button>
-            </div>
-            
-        </div>
-        
-        <div class="main-content">
-            <div class="view-toggle">
-                <button class="view-toggle-btn active" onclick="switchView('racks')">📦 Racky</button>
-                <button class="view-toggle-btn" onclick="switchView('network')">🌐 Síťová mapa</button>
-                <button class="view-toggle-btn" onclick="switchView('topology')">🔗 Topologie</button>
+
+            <div id="overviewView" class="rack-container" style="display: none;">
+                <div class="rack-header">
+                    <h2>Prehled klienta</h2>
+                    <div class="rack-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="overviewClientName">-</div>
+                            <div class="stat-label">Aktivni klient</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="msp-module-desc">Kliknete na karty pro rychly prechod do detailu racku, zarizeni nebo site.</p>
+                <div id="overviewGrid" class="overview-grid"></div>
+
+                <div class="overview-section">
+                    <div class="overview-section-title">MSP sluzby</div>
+                    <div id="mspModulesGrid" class="msp-modules-grid"></div>
+                </div>
             </div>
             
             <div id="racksView" class="rack-container">
@@ -1570,9 +1655,9 @@
                 <div id="connectionsList">
                 </div>
             </div>
-        </div>
+        </main>
     </div>
-    
+
     <!-- Port Details Overlay -->
     <div id="portDetailsOverlay" class="port-details-overlay">
         <div class="port-details-container">
@@ -1683,7 +1768,7 @@
             </div>
             <div class="form-group">
                 <label>Poznámky</label>
-                <textarea id="newClientNotes" rows="3" style="width: 100%; padding: 0.5rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem;"></textarea>
+                <textarea id="newClientNotes" rows="3" style="width: 100%; padding: 0.5rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; font-size: 0.875rem;"></textarea>
             </div>
             <button class="btn" onclick="addClient()">Vytvořit klienta</button>
         </div>
@@ -1706,6 +1791,28 @@
         </div>
     </div>
     
+    <!-- Role Manager Modal -->
+    <div id="roleManagerModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Sprava roli</h2>
+                <button class="modal-close" onclick="closeRoleManagerModal()">X</button>
+            </div>
+            <div class="role-note">Role jsou nacitane z Firebase cesty clients/{id}/users.</div>
+            <div class="role-invite-form">
+                <input type="email" id="roleInviteEmail" placeholder="email@firma.cz">
+                <select id="roleInviteRole" class="role-select">
+                    <option value="admin">Admin</option>
+                    <option value="technician">Technik</option>
+                    <option value="readonly">Read-only</option>
+                    <option value="auditor">Auditor</option>
+                </select>
+                <button class="btn btn-secondary" onclick="addRoleInvite()">Pozvat</button>
+            </div>
+            <div id="roleManagerList"></div>
+        </div>
+    </div>
+
     <!-- Rack Modal -->
     <div id="rackModal" class="modal">
         <div class="modal-content">
@@ -1742,12 +1849,10 @@
             </div>
             <div class="form-group">
                 <label>Typ zařízení</label>
-                <select id="deviceType">
-                    <option value="switch">Switch</option>
-                    <option value="router">Router</option>
-                    <option value="server">Server</option>
-                    <option value="patch">Patch panel</option>
-                </select>
+                <select id="deviceType"></select>
+                <div style="margin-top: 0.5rem; text-align: right;">
+                    <button class="btn-small" onclick="openModuleModal()">Sprava kategorii</button>
+                </div>
             </div>
             <div class="form-group">
                 <label>Rack</label>
@@ -1777,10 +1882,49 @@
                 <label>Počet portů</label>
                 <input type="number" id="devicePorts" value="24" min="1" max="48" placeholder="např. 24">
             </div>
-            <button class="btn" onclick="addDevice()">Přidat zařízení</button>
+    <button class="btn" onclick="addDevice()">Přidat zařízení</button>
         </div>
     </div>
-    
+
+    <!-- Module Modal -->
+    <div id="moduleModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>Kategorie zarizeni</h2>
+                <button class="modal-close" onclick="closeModuleModal()">X</button>
+            </div>
+            <div class="form-group">
+                <label>Nazev kategorie</label>
+                <input type="text" id="moduleName" placeholder="napr. Firewall">
+            </div>
+            <div class="form-group">
+                <label>ID kategorie (volitelne)</label>
+                <input type="text" id="moduleId" placeholder="napr. firewall">
+            </div>
+            <div class="form-group">
+                <label>Kategorie</label>
+                <select id="moduleGroup">
+                    <option value="Network">Network</option>
+                    <option value="Compute">Compute</option>
+                    <option value="Storage">Storage</option>
+                    <option value="Security">Security</option>
+                    <option value="Cabling">Cabling</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Barva</label>
+                <input type="color" id="moduleColor" value="#00ff88">
+            </div>
+            <button class="btn" onclick="addModuleType()">Pridat kategorii</button>
+
+            <div style="margin-top: 1.5rem;">
+                <h3 style="margin-bottom: 0.75rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary);">Seznam kategorii</h3>
+                <div id="moduleList" class="module-list"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Device Tooltip -->
     <div id="deviceTooltip" class="device-tooltip">
         <div class="tooltip-header" id="tooltipName"></div>
@@ -1792,52 +1936,6 @@
     </div>
     
     <script>
-        // Jednoduchý lokální přístupový zámek (dočasný, bez M365)
-        const LOCAL_ACCESS_CODE = 'rack123'; // změňte podle potřeby
-        const ACCESS_FLAG_KEY = 'cxtechRackAccess';
-        let appBootstrapped = false;
-
-        function isAccessGranted() {
-            return sessionStorage.getItem(ACCESS_FLAG_KEY) === '1';
-        }
-
-        function showLoginOverlay() {
-            const overlay = document.getElementById('loginOverlay');
-            if (overlay) overlay.style.display = 'flex';
-        }
-
-        function hideLoginOverlay() {
-            const overlay = document.getElementById('loginOverlay');
-            if (overlay) overlay.style.display = 'none';
-        }
-
-        function handleLoginSubmit(event) {
-            event.preventDefault();
-            const input = document.getElementById('accessCodeInput');
-            const errorEl = document.getElementById('loginError');
-            const code = (input?.value || '').trim();
-            if (!code) {
-                if (errorEl) errorEl.textContent = 'Zadejte kód.';
-                return;
-            }
-            if (code !== LOCAL_ACCESS_CODE) {
-                if (errorEl) errorEl.textContent = 'Nesprávný kód.';
-                return;
-            }
-            sessionStorage.setItem(ACCESS_FLAG_KEY, '1');
-            if (errorEl) errorEl.textContent = '';
-            hideLoginOverlay();
-            bootstrapApp();
-        }
-
-        function bootstrapApp() {
-            if (appBootstrapped) return;
-            appBootstrapped = true;
-            init().catch(err => {
-                console.error('Error during initialization:', err);
-            });
-        }
-
         // Data storage - now with multi-tenant support
         let clients = [];
         let currentClientId = null;
@@ -1848,87 +1946,746 @@
         let devices = [];
         let connections = [];
 
-        function onFirestoreReady(cb) {
-            window.firestoreReadyCallbacks = window.firestoreReadyCallbacks || [];
-            window.firestoreReadyCallbacks.push(cb);
-            if (window.firestoreReady) {
-                try {
-                    cb();
-                } catch (err) {
-                    console.warn('⚠️ onFirestoreReady callback failed:', err.message);
-                }
+        // Module types
+        const DEFAULT_MODULE_TYPES = [
+            { id: 'switch', label: 'Switch', color: '#00ffff', gradient: ['#00ffff', '#0099ff'], text: '#000000', group: 'Network' },
+            { id: 'router', label: 'Router', color: '#ff00ff', gradient: ['#ff00ff', '#9900ff'], text: '#ffffff', group: 'Network' },
+            { id: 'server', label: 'Server', color: '#ffff00', gradient: ['#ffff00', '#ff9900'], text: '#000000', group: 'Compute' },
+            { id: 'patch', label: 'Patch panel', color: '#00ff88', gradient: ['#00ff88', '#00cc66'], text: '#000000', group: 'Cabling' }
+        ];
+        let moduleTypes = [];
+        let customModuleTypes = [];
+
+        const ROLE_PERMISSIONS = {
+            admin: {
+                deleteRacks: true,
+                editTopology: true,
+                viewSensitive: true,
+                manageRacks: true,
+                manageDevices: true,
+                manageCategories: true,
+                manageRoles: true
+            },
+            technician: {
+                deleteRacks: false,
+                editTopology: true,
+                viewSensitive: true,
+                manageRacks: true,
+                manageDevices: true,
+                manageCategories: false,
+                manageRoles: false
+            },
+            readonly: {
+                deleteRacks: false,
+                editTopology: false,
+                viewSensitive: false,
+                manageRacks: false,
+                manageDevices: false,
+                manageCategories: false,
+                manageRoles: false
+            },
+            auditor: {
+                deleteRacks: false,
+                editTopology: false,
+                viewSensitive: true,
+                manageRacks: false,
+                manageDevices: false,
+                manageCategories: false,
+                manageRoles: false
+            }
+        };
+
+        const ROLE_LABELS = {
+            admin: 'Admin',
+            technician: 'Technik',
+            readonly: 'Read-only',
+            auditor: 'Auditor'
+        };
+
+        let currentUserRole = 'readonly';
+
+        const mspModules = [
+            {
+                id: 'config-backup',
+                name: 'Zaloha konfiguraci',
+                category: 'Backup',
+                status: 'planned',
+                description: 'Automaticke ukladani konfiguraci sitovych zarizeni.'
+            },
+            {
+                id: 'compliance-audit',
+                name: 'Kontrola konfiguraci',
+                category: 'Security',
+                status: 'planned',
+                description: 'Kontrola odchylek od standardu a schvalenych sablon.'
+            },
+            {
+                id: 'patch-management',
+                name: 'Patch management',
+                category: 'Maintenance',
+                status: 'planned',
+                description: 'Planovani a evidovani aktualizaci firmware a OS.'
+            }
+        ];
+
+        function getRolePermissions(role) {
+            return ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.readonly;
+        }
+
+        function canViewSensitive() {
+            return getRolePermissions(currentUserRole).viewSensitive;
+        }
+
+        function getSensitiveValue(value) {
+            return canViewSensitive() ? value : 'Skryto';
+        }
+
+        function canEditTopology() {
+            return getRolePermissions(currentUserRole).editTopology;
+        }
+
+        function canManageRacks() {
+            return getRolePermissions(currentUserRole).manageRacks;
+        }
+
+        function canManageDevices() {
+            return getRolePermissions(currentUserRole).manageDevices;
+        }
+
+        function canManageCategories() {
+            return getRolePermissions(currentUserRole).manageCategories;
+        }
+
+        function canManageRoles() {
+            return getRolePermissions(currentUserRole).manageRoles;
+        }
+
+        function canDeleteRacks() {
+            return getRolePermissions(currentUserRole).deleteRacks;
+        }
+
+        function updateRoleLabel() {
+            const roleLabel = document.getElementById('userRole');
+            if (roleLabel) {
+                const label = ROLE_LABELS[currentUserRole] || ROLE_LABELS.readonly;
+                roleLabel.textContent = `Role: ${label}`;
             }
         }
-        
-        // Initialize from localStorage and auto-load from Firestore
-        async function init() {
-            // Počkat na dokončení inicializace Firestore, aby se data mohly načíst z cloudu
-            if (window.firestoreInitPromise) {
-                try {
-                    await window.firestoreInitPromise;
-                } catch (err) {
-                    console.warn('⚠️ Firestore initialization failed, falling back to localStorage:', err.message);
-                }
+
+        function normalizeEmailKey(email) {
+            return (email || '').trim().toLowerCase().replace(/\./g, '_');
+        }
+
+        function applyRolePermissions() {
+            const addRackBtn = document.getElementById('addRackBtn');
+            const clearRacksBtn = document.getElementById('clearRacksBtn');
+            const addDeviceBtn = document.getElementById('addDeviceBtn');
+            const addConnectionBtn = document.getElementById('addConnectionBtn');
+            const moduleButtons = document.querySelectorAll('[onclick="openModuleModal()"]');
+            const roleManagerBtn = document.getElementById('roleManagerBtn');
+
+            moduleButtons.forEach((button) => {
+                button.disabled = !canManageCategories();
+            });
+            if (roleManagerBtn) {
+                roleManagerBtn.disabled = !canManageRoles();
             }
 
-            // Nejdřív zkusit načíst z Firestore (pokud je dostupné)
-            if (window.firestoreReady && window.loadClientDataFromDb) {
-                try {
-                    const globalData = await window.loadClientDataFromDb('global');
-                    if (globalData && globalData.clients) {
-                        // Data z Firestore mají prioritu
-                        clients = globalData.clients || [];
-                        clientData = globalData.clientData || {};
-                        const lastClientId = globalData.lastClientId || null;
-                        
-                        if (lastClientId && clients.find(c => c.id === lastClientId)) {
-                            currentClientId = lastClientId;
-                            loadClientData(currentClientId);
-                        }
-                        
-                        // Uložit do localStorage jako backup
-                        localStorage.setItem('rackManagerClients', JSON.stringify(clients));
-                        localStorage.setItem('rackManagerClientData', JSON.stringify(clientData));
-                        if (currentClientId) {
-                            localStorage.setItem('rackManagerLastClient', currentClientId);
-                        }
-                        
-                        console.log('✅ Data loaded from Firestore');
-                        updateClientSelector();
-                        render();
-                        return;
-                    }
-                } catch (error) {
-                    console.warn('⚠️ Failed to load from Firestore, using localStorage:', error.message);
-                }
+            if (!currentClientId) {
+                disableControls();
+                return;
             }
-            
-            // Fallback na localStorage
+
+            if (addRackBtn) addRackBtn.disabled = !canManageRacks();
+            if (clearRacksBtn) clearRacksBtn.disabled = !canDeleteRacks();
+            if (addDeviceBtn) addDeviceBtn.disabled = !canManageDevices();
+            if (addConnectionBtn) addConnectionBtn.disabled = !canEditTopology();
+        }
+
+        function setCurrentRole(role) {
+            currentUserRole = ROLE_PERMISSIONS[role] ? role : 'readonly';
+            updateRoleLabel();
+            applyRolePermissions();
+        }
+
+        async function fetchUserRole() {
+            if (!currentClientId || !window.auth || !window.db || !auth.currentUser) {
+                setCurrentRole('readonly');
+                return;
+            }
+
+            try {
+                const uid = auth.currentUser.uid;
+                const userRef = db.ref(`clients/${currentClientId}/users/${uid}`);
+                const usersRef = db.ref(`clients/${currentClientId}/users`);
+                const [userSnap, usersSnap] = await Promise.all([
+                    userRef.once('value'),
+                    usersRef.once('value')
+                ]);
+
+                const existing = userSnap.exists() ? userSnap.val() : {};
+                let role = existing && existing.role ? existing.role : 'readonly';
+
+                if (!usersSnap.exists()) {
+                    role = 'admin';
+                }
+
+                if ((!existing || !existing.role) && auth.currentUser.email) {
+                    const emailKey = normalizeEmailKey(auth.currentUser.email);
+                    const inviteSnap = await db.ref(`clients/${currentClientId}/roleInvites/${emailKey}`).once('value');
+                    if (inviteSnap.exists() && inviteSnap.val().role) {
+                        role = inviteSnap.val().role;
+                    }
+                }
+
+                await userRef.update({
+                    role: role,
+                    email: auth.currentUser.email || '',
+                    name: auth.currentUser.displayName || '',
+                    updatedAt: new Date().toISOString()
+                });
+
+                setCurrentRole(role);
+            } catch (err) {
+                console.warn('Role fetch failed:', err);
+                setCurrentRole('readonly');
+            }
+        }
+
+        window.onAuthRoleChanged = function (user) {
+            if (user && currentClientId) {
+                fetchUserRole();
+            } else {
+                setCurrentRole('readonly');
+            }
+        };
+
+        async function openRoleManagerModal() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat role');
+                return;
+            }
+            await loadRoleManagerList();
+            document.getElementById('roleManagerModal').classList.add('active');
+        }
+
+        function closeRoleManagerModal() {
+            document.getElementById('roleManagerModal').classList.remove('active');
+        }
+
+        async function loadRoleManagerList() {
+            if (!window.db || !currentClientId) return;
+            try {
+                const [usersSnap, invitesSnap] = await Promise.all([
+                    db.ref(`clients/${currentClientId}/users`).once('value'),
+                    db.ref(`clients/${currentClientId}/roleInvites`).once('value')
+                ]);
+                const users = usersSnap.exists() ? usersSnap.val() : {};
+                const invites = invitesSnap.exists() ? invitesSnap.val() : {};
+                renderRoleManagerList(users, invites);
+            } catch (err) {
+                console.warn('Role list load failed:', err);
+            }
+        }
+
+        async function addRoleInvite() {
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat role');
+                return;
+            }
+            if (!window.db || !currentClientId) return;
+
+            const emailInput = document.getElementById('roleInviteEmail');
+            const roleSelect = document.getElementById('roleInviteRole');
+            const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+            const role = roleSelect ? roleSelect.value : 'readonly';
+
+            if (!email || !email.includes('@')) {
+                alert('Zadejte platny email');
+                return;
+            }
+
+            const safeRole = ROLE_PERMISSIONS[role] ? role : 'readonly';
+            const emailKey = normalizeEmailKey(email);
+
+            try {
+                await db.ref(`clients/${currentClientId}/roleInvites/${emailKey}`).set({
+                    email: email,
+                    role: safeRole,
+                    invitedAt: new Date().toISOString()
+                });
+                if (emailInput) emailInput.value = '';
+                await loadRoleManagerList();
+            } catch (err) {
+                console.warn('Role invite failed:', err);
+            }
+        }
+
+        async function removeRoleInvite(emailKey) {
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat role');
+                return;
+            }
+            if (!window.db || !currentClientId) return;
+            try {
+                await db.ref(`clients/${currentClientId}/roleInvites/${emailKey}`).remove();
+                await loadRoleManagerList();
+            } catch (err) {
+                console.warn('Role invite remove failed:', err);
+            }
+        }
+
+        function renderRoleManagerList(users, invites) {
+            const container = document.getElementById('roleManagerList');
+            if (!container) return;
+            const entries = Object.entries(users || {});
+            const inviteEntries = Object.entries(invites || {});
+
+            const roleOptions = Object.keys(ROLE_LABELS)
+                .map((role) => `<option value="${role}">${ROLE_LABELS[role]}</option>`)
+                .join('');
+
+            const userRows = entries.map(([uid, user]) => {
+                const email = user.email || uid;
+                const name = user.name || '';
+                return `
+                    <tr>
+                        <td>${name || '-'}</td>
+                        <td>${email}</td>
+                        <td>
+                            <select class="role-select" onchange="updateUserRole('${uid}', this.value)">
+                                ${roleOptions}
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            const inviteRows = inviteEntries.map(([emailKey, invite]) => {
+                return `
+                    <tr>
+                        <td>${invite.email || emailKey}</td>
+                        <td>${ROLE_LABELS[invite.role] || invite.role || 'Read-only'}</td>
+                        <td>
+                            <button class="delete-btn" onclick="removeRoleInvite('${emailKey}')">Odebrat</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            const userTable = entries.length
+                ? `
+                    <table class="role-manager-table">
+                        <thead>
+                            <tr>
+                                <th>Uzivatel</th>
+                                <th>Email / UID</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${userRows.join('')}
+                        </tbody>
+                    </table>
+                `
+                : '<div class="empty-state"><p>Zadni uzivatele</p></div>';
+
+            const inviteTable = inviteEntries.length
+                ? `
+                    <div class="role-invite-list">
+                        <div class="role-note">Pozvanky</div>
+                        <table class="role-manager-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Akce</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${inviteRows.join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `
+                : '';
+
+            container.innerHTML = userTable + inviteTable;
+
+            entries.forEach(([uid, user], index) => {
+                const select = container.querySelectorAll('.role-select')[index];
+                if (select) {
+                    select.value = user.role || 'readonly';
+                }
+            });
+        }
+
+        async function updateUserRole(uid, role) {
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat role');
+                return;
+            }
+            if (!window.db || !currentClientId) return;
+            try {
+                const safeRole = ROLE_PERMISSIONS[role] ? role : 'readonly';
+                await db.ref(`clients/${currentClientId}/users/${uid}`).update({
+                    role: safeRole,
+                    updatedAt: new Date().toISOString()
+                });
+                if (auth && auth.currentUser && uid === auth.currentUser.uid) {
+                    setCurrentRole(safeRole);
+                }
+            } catch (err) {
+                console.warn('Role update failed:', err);
+            }
+        }
+
+        function renderMspModules() {
+            const grid = document.getElementById('mspModulesGrid');
+            if (!grid) return;
+
+            const cards = mspModules.map((module) => {
+                const statusLabel = module.status === 'active' ? 'Active' : 'Planned';
+                return `
+                    <div class="msp-module-card">
+                        <div class="msp-module-meta">${module.category}</div>
+                        <div class="msp-module-title">${module.name}</div>
+                        <div class="msp-module-desc">${module.description}</div>
+                        <div class="msp-module-status">${statusLabel}</div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = cards.join('');
+        }
+
+        function renderClientOverview() {
+            const grid = document.getElementById('overviewGrid');
+            const name = document.getElementById('overviewClientName');
+            if (!grid) return;
+
+            const client = clients.find((c) => c.id === currentClientId);
+            if (name) {
+                name.textContent = client ? client.name : '-';
+            }
+
+            const totalUnits = racks.reduce((sum, rack) => sum + rack.units, 0);
+            const usedUnits = devices.reduce((sum, device) => sum + device.height, 0);
+            const freeUnits = Math.max(totalUnits - usedUnits, 0);
+
+            const cards = [
+                {
+                    title: 'Racky',
+                    value: racks.length,
+                    desc: 'Sprava fyzickych racku',
+                    view: 'racks'
+                },
+                {
+                    title: 'Zarizeni',
+                    value: devices.length,
+                    desc: 'Aktivni inventar zarizeni',
+                    view: 'racks'
+                },
+                {
+                    title: 'Propojeni',
+                    value: connections.length,
+                    desc: 'Topologie a linky',
+                    view: 'network'
+                },
+                {
+                    title: 'Volne U',
+                    value: freeUnits,
+                    desc: 'Kapacita pro rozsireni',
+                    view: 'racks'
+                }
+            ];
+
+            grid.innerHTML = cards.map((card) => `
+                <div class="overview-card" onclick="switchView('${card.view}')">
+                    <div class="overview-card-title">${card.title}</div>
+                    <div class="overview-card-value">${card.value}</div>
+                    <div class="overview-card-desc">${card.desc}</div>
+                </div>
+            `).join('');
+
+            renderMspModules();
+        }
+
+        async function syncZabbixClients() {
+            try {
+                const response = await fetch('/api/zabbix-hostgroups');
+                if (!response.ok) {
+                    console.warn('Zabbix sync failed:', response.status);
+                    return;
+                }
+                const data = await response.json();
+                if (!data || !Array.isArray(data.groups)) return;
+
+                const zabbixClients = data.groups.map((group) => ({
+                    id: `zbx-${group.id}`,
+                    name: group.name,
+                    type: 'zabbix',
+                    source: 'zabbix',
+                    createdAt: new Date().toISOString()
+                }));
+
+                const manualClients = clients.filter((client) => client.source !== 'zabbix');
+                clients = [...manualClients, ...zabbixClients].sort((a, b) =>
+                    a.name.localeCompare(b.name, 'cs', { sensitivity: 'base' })
+                );
+            } catch (err) {
+                console.warn('Zabbix sync failed:', err);
+            }
+        }
+
+        function normalizeModuleId(value) {
+            if (!value) return '';
+            return value
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+        }
+
+        function hexToRgb(hex) {
+            if (!hex) return null;
+            let clean = hex.replace('#', '').trim();
+            if (clean.length === 3) {
+                clean = clean.split('').map((c) => c + c).join('');
+            }
+            if (clean.length !== 6) return null;
+            const num = parseInt(clean, 16);
+            if (Number.isNaN(num)) return null;
+            return {
+                r: (num >> 16) & 255,
+                g: (num >> 8) & 255,
+                b: num & 255
+            };
+        }
+
+        function hexToRgba(hex, alpha) {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return `rgba(248, 154, 85, ${alpha})`;
+            return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+        }
+
+        function darkenColor(hex, percent) {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return '#64748b';
+            const factor = Math.max(0, Math.min(1, 1 - percent / 100));
+            const r = Math.round(rgb.r * factor);
+            const g = Math.round(rgb.g * factor);
+            const b = Math.round(rgb.b * factor);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function getContrastColor(hex) {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return '#000000';
+            const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+            return brightness > 160 ? '#000000' : '#ffffff';
+        }
+
+        function loadModuleTypes() {
+            const saved = localStorage.getItem('rackManagerModuleTypes');
+            customModuleTypes = saved ? JSON.parse(saved) : [];
+            const merged = [...DEFAULT_MODULE_TYPES, ...customModuleTypes];
+            const seen = new Set();
+            moduleTypes = merged.filter((type) => {
+                if (!type || !type.id || seen.has(type.id)) return false;
+                seen.add(type.id);
+                return true;
+            });
+        }
+
+        function saveModuleTypes() {
+            localStorage.setItem('rackManagerModuleTypes', JSON.stringify(customModuleTypes));
+        }
+
+        function getModuleType(typeId) {
+            return moduleTypes.find((type) => type.id === typeId) || null;
+        }
+
+        function getModuleTypeLabel(typeId) {
+            const type = getModuleType(typeId);
+            return type ? type.label : typeId;
+        }
+
+        function getModuleTypeColors(typeId) {
+            const type = getModuleType(typeId);
+            const base = type && type.color ? type.color : '#94a3b8';
+            const gradient = type && type.gradient ? type.gradient : [base, darkenColor(base, 30)];
+            const text = type && type.text ? type.text : getContrastColor(base);
+            const label = type && type.label ? type.label : typeId;
+            const group = type && type.group ? type.group : 'Other';
+            return { base, gradient, text, label, group };
+        }
+
+        function getModuleStyleVars(typeId) {
+            const colors = getModuleTypeColors(typeId);
+            return `--device-color: ${colors.base}; --device-gradient: linear-gradient(90deg, ${colors.gradient[0]}, ${colors.gradient[1]}); --device-text: ${colors.text};`;
+        }
+
+        function getModuleBadgeVars(typeId) {
+            const colors = getModuleTypeColors(typeId);
+            return `--badge-bg: ${hexToRgba(colors.base, 0.2)}; --badge-border: ${hexToRgba(colors.base, 0.5)}; --badge-color: ${colors.base};`;
+        }
+
+        function renderDeviceTypeOptions(selectedId) {
+            const select = document.getElementById('deviceType');
+            if (!select) return;
+            const current = selectedId || select.value;
+            if (!moduleTypes.length) {
+                select.innerHTML = '<option value="">Zadne kategorie</option>';
+                return;
+            }
+            select.innerHTML = moduleTypes.map((type) => {
+                return `<option value="${type.id}">${type.label}</option>`;
+            }).join('');
+            const fallback = moduleTypes[0].id;
+            select.value = moduleTypes.some((type) => type.id === current) ? current : fallback;
+        }
+
+        function renderModuleList() {
+            const list = document.getElementById('moduleList');
+            if (!list) return;
+            const customIds = new Set(customModuleTypes.map((type) => type.id));
+            const items = moduleTypes.map((type) => {
+                const colors = getModuleTypeColors(type.id);
+                const isCustom = customIds.has(type.id);
+                const action = isCustom
+                    ? `<button class="delete-btn" onclick="deleteModuleType('${type.id}')">Smazat</button>`
+                    : `<span class="module-id">system</span>`;
+                return `
+                    <div class="module-item">
+                        <div class="module-meta">
+                            <span class="module-color" style="background: ${colors.base};"></span>
+                            <span>${type.label}</span>
+                            <span class="module-id">${type.id}</span>
+                            <span class="module-id">${type.group || 'Other'}</span>
+                        </div>
+                        ${action}
+                    </div>
+                `;
+            });
+            list.innerHTML = items.join('') || '<div class="empty-state"><p>Zadne kategorie</p></div>';
+        }
+
+        function clearModuleForm() {
+            document.getElementById('moduleName').value = '';
+            document.getElementById('moduleId').value = '';
+            document.getElementById('moduleGroup').value = 'Network';
+            document.getElementById('moduleColor').value = '#00ff88';
+        }
+
+        function openModuleModal() {
+            if (!canManageCategories()) {
+                alert('Nemate opravneni spravovat kategorie');
+                return;
+            }
+            loadModuleTypes();
+            renderModuleList();
+            renderDeviceTypeOptions();
+            document.getElementById('moduleModal').classList.add('active');
+        }
+
+        function closeModuleModal() {
+            document.getElementById('moduleModal').classList.remove('active');
+            clearModuleForm();
+        }
+
+        function addModuleType() {
+            if (!canManageCategories()) {
+                alert('Nemate opravneni spravovat kategorie');
+                return;
+            }
+            const name = document.getElementById('moduleName').value.trim();
+            const rawId = document.getElementById('moduleId').value.trim();
+            const group = document.getElementById('moduleGroup').value;
+            const color = document.getElementById('moduleColor').value || '#00ff88';
+
+            if (!name) {
+                alert('Nazev kategorie je povinny');
+                return;
+            }
+
+            const id = normalizeModuleId(rawId || name);
+            if (!id) {
+                alert('ID kategorie je neplatne');
+                return;
+            }
+
+            if (moduleTypes.some((type) => type.id === id)) {
+                alert('Kategorie s timto ID uz existuje');
+                return;
+            }
+
+            customModuleTypes.push({
+                id,
+                label: name,
+                color,
+                gradient: [color, darkenColor(color, 30)],
+                text: getContrastColor(color),
+                group
+            });
+
+            saveModuleTypes();
+            loadModuleTypes();
+            renderDeviceTypeOptions(id);
+            renderModuleList();
+            clearModuleForm();
+        }
+
+        function deleteModuleType(id) {
+            if (!canManageCategories()) {
+                alert('Nemate opravneni spravovat kategorie');
+                return;
+            }
+            const inUse = devices.some((device) => device.type === id);
+            if (inUse && !confirm('Kategorie je pouzita v zarizenich. Pokracovat?')) {
+                return;
+            }
+            customModuleTypes = customModuleTypes.filter((type) => type.id !== id);
+            saveModuleTypes();
+            loadModuleTypes();
+            renderDeviceTypeOptions();
+            renderModuleList();
+        }
+        
+        // Initialize from localStorage
+        async function init() {
+            // Load clients
             const savedClients = localStorage.getItem('rackManagerClients');
             if (savedClients) {
                 clients = JSON.parse(savedClients);
             }
             
+            // Load all client data
             const savedClientData = localStorage.getItem('rackManagerClientData');
             if (savedClientData) {
                 clientData = JSON.parse(savedClientData);
             }
             
+            // Check if there was a previously selected client
             const lastClientId = localStorage.getItem('rackManagerLastClient');
             if (lastClientId && clients.find(c => c.id === lastClientId)) {
                 currentClientId = lastClientId;
                 loadClientData(currentClientId);
             }
             
+            loadModuleTypes();
+            renderDeviceTypeOptions();
+            await syncZabbixClients();
             updateClientSelector();
             render();
+            fetchUserRole();
         }
         
-        // Save data to localStorage and auto-sync to Firestore
+        // Save data to localStorage
         function saveData() {
-            // #region agent log
-            if (typeof debugLog !== 'undefined') debugLog('index.html:1679', 'saveData ENTRY', {hasCurrentClient:!!currentClientId,clientsCount:clients.length}, 'C');
-            // #endregion
             // Save current client's data
             if (currentClientId) {
                 clientData[currentClientId] = {
@@ -1943,73 +2700,8 @@
             if (currentClientId) {
                 localStorage.setItem('rackManagerLastClient', currentClientId);
             }
-            
-            // Automatický sync do Firestore (pokud je dostupné)
-            autoSyncToFirestore();
         }
         
-        // Automatický sync do Firestore
-        async function autoSyncToFirestore() {
-            // #region agent log
-            if (typeof debugLog !== 'undefined') debugLog('index.html:1700', 'autoSyncToFirestore ENTRY', {firestoreReady:window.firestoreReady,hasSaveFunc:typeof window.saveClientDataToDb,currentClientId:currentClientId}, 'C');
-            // #endregion
-            // Kontrola, zda je Firestore připraven
-            if (!window.firestoreReady || !window.saveClientDataToDb) {
-                // #region agent log
-                if (typeof debugLog !== 'undefined') debugLog('index.html:1702', 'autoSyncToFirestore EARLY RETURN', {firestoreReady:window.firestoreReady,hasSaveFunc:typeof window.saveClientDataToDb}, 'D');
-                // #endregion
-                return; // Firestore není připraven, sync přeskočíme
-            }
-            
-            try {
-                // #region agent log
-                if (typeof debugLog !== 'undefined') debugLog('index.html:1706', 'autoSyncToFirestore BEFORE SAVE', {currentClientId:currentClientId,hasClientData:!!(currentClientId&&clientData[currentClientId])}, 'E');
-                // #endregion
-                // Uložit globální data
-                const globalData = {
-                    clients: clients,
-                    clientData: clientData,
-                    lastClientId: currentClientId,
-                    updatedAt: new Date().toISOString()
-                };
-                
-                await window.saveClientDataToDb('global', globalData);
-                
-                // Uložit data aktuálního klienta (pokud je vybraný)
-                if (currentClientId && clientData[currentClientId]) {
-                    await window.saveClientDataToDb(currentClientId, clientData[currentClientId]);
-                }
-                
-                // #region agent log
-                if (typeof debugLog !== 'undefined') debugLog('index.html:1722', 'autoSyncToFirestore SUCCESS', {savedGlobal:true,savedClient:!!(currentClientId&&clientData[currentClientId])}, 'E');
-                // #endregion
-                console.log('✅ Auto-sync to Firestore successful');
-            } catch (error) {
-                // #region agent log
-                if (typeof debugLog !== 'undefined') debugLog('index.html:1723', 'autoSyncToFirestore ERROR', {errorMessage:error.message,errorCode:error.code,errorStack:error.stack?.substring(0,200)}, 'E');
-                // #endregion
-                
-                // Zobrazit chybu v UI, pokud je to API key problém
-                if (error.message?.includes('API key') || error.code === 'permission-denied') {
-                    updateFirestoreStatus('🔴 Save Error', '#f87171', 
-                        'Chyba při ukládání: ' + error.message + '. Zkontrolujte API klíč v Firebase Console.');
-                }
-                
-                // Tichá chyba - nechceme rušit uživatele při každém uložení
-                console.warn('⚠️ Auto-sync to Firestore failed:', error.message);
-                console.warn('Error code:', error.code);
-                console.warn('Tip: Zkontrolujte API klíč v Firebase Console a restrictions v Google Cloud Console');
-            }
-        }
-
-        onFirestoreReady(() => {
-            if (clients.length || Object.keys(clientData).length) {
-                autoSyncToFirestore().catch(err => {
-                    console.warn('⚠️ Initial auto-sync after Firestore ready failed:', err.message);
-                });
-            }
-        });
-
         // Load data for specific client
         function loadClientData(clientId) {
             if (clientData[clientId]) {
@@ -2035,14 +2727,17 @@
                 connections = [];
                 document.getElementById('clientInfo').style.display = 'none';
                 disableControls();
+                render();
+                return;
             } else {
                 currentClientId = clientId;
                 loadClientData(clientId);
                 updateClientInfo();
                 enableControls();
             }
-            
             render();
+            fetchUserRole();
+            switchView('overview');
         }
         
         // Update client selector
@@ -2059,9 +2754,10 @@
             const client = clients.find(c => c.id === currentClientId);
             if (client) {
                 document.getElementById('clientInfo').style.display = 'block';
-                document.getElementById('clientName').textContent = client.name + (client.ico ? ` (IČO: ${client.ico})` : '');
-                document.getElementById('clientContact').textContent = client.contact ? `👤 ${client.contact}` : '';
-                document.getElementById('clientLocation').textContent = client.address ? `📍 ${client.address}` : '';
+                document.getElementById('clientName').textContent = client.name + (client.ico ? ` (ICO: ${client.ico})` : '');
+                updateRoleLabel();
+                document.getElementById('clientContact').textContent = client.contact ? `Kontakt: ${client.contact}` : '';
+                document.getElementById('clientLocation').textContent = client.address ? `Adresa: ${client.address}` : '';
                 document.getElementById('clientType').textContent = client.type.toUpperCase();
             } else {
                 document.getElementById('clientInfo').style.display = 'none';
@@ -2070,10 +2766,7 @@
         
         // Enable/disable controls
         function enableControls() {
-            document.getElementById('addRackBtn').disabled = false;
-            document.getElementById('clearRacksBtn').disabled = false;
-            document.getElementById('addDeviceBtn').disabled = false;
-            document.getElementById('addConnectionBtn').disabled = false;
+            applyRolePermissions();
         }
         
         function disableControls() {
@@ -2084,17 +2777,21 @@
         }
         
         // View switching
-        function switchView(view) {
+        function switchView(view, button) {
             // Update toggle buttons
             document.querySelectorAll('.view-toggle-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            const activeButton = button || document.querySelector(`.view-toggle-btn[data-view="${view}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
             
             // Hide all views
             document.getElementById('racksView').style.display = 'none';
             document.getElementById('networkView').style.display = 'none';
             document.getElementById('topologyView').style.display = 'none';
+            document.getElementById('overviewView').style.display = 'none';
             
             // Show selected view
             switch(view) {
@@ -2108,6 +2805,10 @@
                 case 'topology':
                     document.getElementById('topologyView').style.display = 'block';
                     renderTopologyView();
+                    break;
+                case 'overview':
+                    document.getElementById('overviewView').style.display = 'block';
+                    renderClientOverview();
                     break;
             }
         }
@@ -2215,7 +2916,7 @@
                 const midX = (edge.from.x + edge.to.x) / 2;
                 const midY = (edge.from.y + edge.to.y) / 2;
                 networkCtx.fillStyle = '#ffffff';
-                networkCtx.font = '10px JetBrains Mono';
+                networkCtx.font = '10px IBM Plex Mono';
                 networkCtx.textAlign = 'center';
                 const speed = edge.connection.speed >= 1000 ? 
                     (edge.connection.speed / 1000) + 'G' : 
@@ -2225,40 +2926,34 @@
             
             // Draw nodes
             networkNodes.forEach(node => {
+                const nodeColors = getModuleTypeColors(node.type);
+
                 // Node circle
                 networkCtx.beginPath();
                 networkCtx.arc(node.x, node.y, 30, 0, Math.PI * 2);
-                
-                // Fill based on type
-                if (node.type === 'switch') {
-                    networkCtx.fillStyle = '#00ffff';
-                } else if (node.type === 'router') {
-                    networkCtx.fillStyle = '#ff00ff';
-                } else if (node.type === 'server') {
-                    networkCtx.fillStyle = '#ffff00';
-                } else {
-                    networkCtx.fillStyle = '#00ff88';
-                }
-                
+                networkCtx.fillStyle = nodeColors.base;
                 networkCtx.fill();
                 networkCtx.strokeStyle = '#ffffff';
                 networkCtx.lineWidth = 2;
                 networkCtx.stroke();
                 
                 // Node label
-                networkCtx.fillStyle = '#000000';
-                networkCtx.font = 'bold 12px JetBrains Mono';
+                networkCtx.fillStyle = nodeColors.text;
+                networkCtx.font = 'bold 12px IBM Plex Mono';
                 networkCtx.textAlign = 'center';
                 networkCtx.fillText(node.name, node.x, node.y + 5);
                 
                 // Port count
-                networkCtx.fillStyle = '#ffffff';
-                networkCtx.font = '10px JetBrains Mono';
+                networkCtx.fillStyle = nodeColors.text;
+                networkCtx.font = '10px IBM Plex Mono';
                 networkCtx.fillText(node.ports + ' ports', node.x, node.y + 45);
             });
         }
         
         function handleNetworkMouseDown(e) {
+            if (!canEditTopology()) {
+                return;
+            }
             const rect = networkCanvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -2433,24 +3128,25 @@
                 alert('Nejprve vyberte klienta');
                 return;
             }
-            
-            if (devices.length < 2) {
-                alert('Pro vytvoření propojení potřebujete alespoň 2 zařízení');
+            if (!canEditTopology()) {
+                alert('Nemate opravneni upravovat topologii');
                 return;
             }
-            
-            // Populate device selects
+            if (devices.length < 2) {
+                alert('Pro vytvoreni propojeni potrebujete alespon 2 zarizeni');
+                return;
+            }
+
             const deviceOptions = devices.map(d => 
                 `<option value="${d.id}">${d.name} (${d.type})</option>`
             ).join('');
-            
+
             document.getElementById('connFromDevice').innerHTML = deviceOptions;
             document.getElementById('connToDevice').innerHTML = deviceOptions;
-            
-            // Update port lists
+
             updateFromPorts();
             updateToPorts();
-            
+
             document.getElementById('connectionModal').classList.add('active');
         }
         
@@ -2502,6 +3198,10 @@
         }
         
         function addConnection() {
+            if (!canEditTopology()) {
+                alert('Nemate opravneni upravovat topologii');
+                return;
+            }
             const fromDevice = document.getElementById('connFromDevice').value;
             const fromPort = parseInt(document.getElementById('connFromPort').value);
             const toDevice = document.getElementById('connToDevice').value;
@@ -2510,17 +3210,17 @@
             const vlans = document.getElementById('connVlans').value;
             const speed = parseInt(document.getElementById('connSpeed').value);
             const description = document.getElementById('connDescription').value;
-            
+
             if (!fromDevice || !toDevice || !fromPort || !toPort) {
-                alert('Vyplňte všechny povinné údaje');
+                alert('Vyplnte vsechny povinne udaje');
                 return;
             }
-            
+
             if (fromDevice === toDevice) {
-                alert('Nelze propojit zařízení samo se sebou');
+                alert('Nelze propojit zarizeni samo se sebou');
                 return;
             }
-            
+
             const connection = {
                 id: Date.now().toString(),
                 fromDevice,
@@ -2533,7 +3233,7 @@
                 description,
                 createdAt: new Date().toISOString()
             };
-            
+
             connections.push(connection);
             saveData();
             render();
@@ -2576,78 +3276,62 @@
                 return;
             }
             
-            // Group devices by type
-            const switches = devices.filter(d => d.type === 'switch');
-            const routers = devices.filter(d => d.type === 'router');
-            const servers = devices.filter(d => d.type === 'server');
-            const others = devices.filter(d => d.type === 'patch');
-            
+            // Group devices by module type
+            const groups = moduleTypes.map((type) => ({
+                type,
+                devices: devices.filter((device) => device.type === type.id)
+            })).filter((group) => group.devices.length > 0);
+
+            const unknownDevices = devices.filter((device) =>
+                !moduleTypes.some((type) => type.id === device.type)
+            );
+            if (unknownDevices.length > 0) {
+                groups.push({
+                    type: { id: 'other', label: 'Other', color: '#94a3b8', group: 'Other' },
+                    devices: unknownDevices
+                });
+            }
+
             let html = `
                 <div class="rack-container">
-                    <h2>Síťová topologie</h2>
+                    <h2>Sitova topologie</h2>
                     <div style="display: grid; gap: 2rem; margin-top: 2rem;">
             `;
-            
-            // Layer 3 - Routers
-            if (routers.length > 0) {
+
+            groups.forEach((group) => {
+                const colors = getModuleTypeColors(group.type.id);
+                const heading = group.type.group ? `${group.type.group} - ${group.type.label}` : group.type.label;
+
                 html += `
-                    <div style="background: var(--bg-tertiary); padding: 1.5rem; border-radius: 8px; border: 2px solid var(--accent-magenta);">
-                        <h3 style="color: var(--accent-magenta); margin-bottom: 1rem;">Layer 3 - Routers</h3>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div class="topology-group" style="border-color: ${colors.base};">
+                        <h3 style="color: ${colors.base}; margin-bottom: 1rem;">${heading}</h3>
+                        <div class="topology-group-grid">
                 `;
-                routers.forEach(router => {
+
+                group.devices.forEach((device) => {
+                    const label = getModuleTypeLabel(device.type);
                     html += `
-                        <div class="client-card" style="cursor: pointer;" onclick="showPortDetails(devices.find(d => d.id === '${router.id}'))">
-                            <div style="font-weight: 600; color: var(--accent-magenta);">${router.name}</div>
+                        <div class="client-card" style="cursor: pointer;" onclick="showPortDetails(devices.find(d => d.id === '${device.id}'))">
+                            <div style="font-weight: 600; color: ${colors.base};">${device.name}</div>
                             <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                                ${router.ip || 'No IP'} | ${router.ports || 24} ports
+                                ${getSensitiveValue(device.ip || 'No IP')} | ${device.ports || 24} ports
                             </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: ${colors.base};">${label}</div>
                         </div>
                     `;
                 });
+
                 html += '</div></div>';
-            }
-            
-            // Layer 2 - Switches
-            if (switches.length > 0) {
+            });
+
+            if (groups.length === 0) {
                 html += `
-                    <div style="background: var(--bg-tertiary); padding: 1.5rem; border-radius: 8px; border: 2px solid var(--accent-cyan);">
-                        <h3 style="color: var(--accent-cyan); margin-bottom: 1rem;">Layer 2 - Switches</h3>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div class="topology-group">
+                        <p>No devices to display</p>
+                    </div>
                 `;
-                switches.forEach(sw => {
-                    html += `
-                        <div class="client-card" style="cursor: pointer;" onclick="showPortDetails(devices.find(d => d.id === '${sw.id}'))">
-                            <div style="font-weight: 600; color: var(--accent-cyan);">${sw.name}</div>
-                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                                ${sw.ip || 'No IP'} | ${sw.ports || 24} ports
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div></div>';
             }
-            
-            // Servers
-            if (servers.length > 0) {
-                html += `
-                    <div style="background: var(--bg-tertiary); padding: 1.5rem; border-radius: 8px; border: 2px solid var(--accent-yellow);">
-                        <h3 style="color: var(--accent-yellow); margin-bottom: 1rem;">Servers</h3>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                `;
-                servers.forEach(server => {
-                    html += `
-                        <div class="client-card" style="cursor: pointer;" onclick="showPortDetails(devices.find(d => d.id === '${server.id}'))">
-                            <div style="font-weight: 600; color: var(--accent-yellow);">${server.name}</div>
-                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                                ${server.ip || 'No IP'} | ${server.model || 'Unknown model'}
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div></div>';
-            }
-            
+
             html += '</div></div>';
             container.innerHTML = html;
         }
@@ -2865,6 +3549,7 @@
                 
                 if (device) {
                     if (i === device.position) {
+                        const moduleStyle = getModuleStyleVars(device.type);
                         html += `<div class="rack-unit occupied ${device.type}" 
                                       data-device-id="${device.id}"
                                       data-device-name="${device.name}"
@@ -2873,7 +3558,7 @@
                                       data-device-ip="${device.ip || 'N/A'}"
                                       data-device-model="${device.model || 'N/A'}"
                                       data-device-serial="${device.serial || 'N/A'}"
-                                      style="height: ${20 * device.height + 2 * (device.height - 1)}px;">
+                                      style="${moduleStyle} height: ${20 * device.height + 2 * (device.height - 1)}px;">
                                     ${device.name}
                                 </div>`;
                     }
@@ -2896,11 +3581,11 @@
             const unit = e.target;
             
             document.getElementById('tooltipName').textContent = unit.dataset.deviceName;
-            document.getElementById('tooltipType').textContent = `Typ: ${unit.dataset.deviceType}`;
+            document.getElementById('tooltipType').textContent = `Typ: ${getModuleTypeLabel(unit.dataset.deviceType)}`;
             document.getElementById('tooltipPosition').textContent = `Pozice: ${unit.dataset.devicePosition}`;
-            document.getElementById('tooltipIP').textContent = `IP: ${unit.dataset.deviceIp}`;
+            document.getElementById('tooltipIP').textContent = `IP: ${getSensitiveValue(unit.dataset.deviceIp)}`;
             document.getElementById('tooltipModel').textContent = `Model: ${unit.dataset.deviceModel}`;
-            document.getElementById('tooltipSerial').textContent = `S/N: ${unit.dataset.deviceSerial}`;
+            document.getElementById('tooltipSerial').textContent = `S/N: ${getSensitiveValue(unit.dataset.deviceSerial)}`;
             
             tooltip.classList.add('active');
             
@@ -2927,16 +3612,20 @@
             container.style.display = 'block';
             tbody.innerHTML = devices.map(device => {
                 const rack = racks.find(r => r.id === device.rack);
+                const typeLabel = getModuleTypeLabel(device.type);
+                const badgeStyle = getModuleBadgeVars(device.type);
+                const ipValue = getSensitiveValue(device.ip || 'N/A');
+                const deleteDisabled = canManageDevices() ? '' : 'disabled';
                 return `
                     <tr>
                         <td>${device.name}</td>
-                        <td><span class="device-type-badge ${device.type}">${device.type}</span></td>
+                        <td><span class="device-type-badge ${device.type}" style="${badgeStyle}">${typeLabel}</span></td>
                         <td>${rack ? rack.name : 'N/A'}</td>
                         <td>U${device.position}</td>
-                        <td>${device.ip || 'N/A'}</td>
+                        <td>${ipValue}</td>
                         <td>${device.model || 'N/A'}</td>
                         <td>
-                            <button class="delete-btn" onclick="deleteDevice('${device.id}')">Smazat</button>
+                            <button class="delete-btn" onclick="deleteDevice('${device.id}')" ${deleteDisabled}>Smazat</button>
                         </td>
                     </tr>
                 `;
@@ -2981,6 +3670,10 @@
                 alert('Nejprve vyberte klienta');
                 return;
             }
+            if (!canManageRacks()) {
+                alert('Nemate opravneni spravovat racky');
+                return;
+            }
             document.getElementById('rackModal').classList.add('active');
         }
         
@@ -2994,17 +3687,21 @@
                 alert('Nejprve vyberte klienta');
                 return;
             }
-            
-            if (racks.length === 0) {
-                alert('Nejprve vytvořte rack');
+            if (!canManageDevices()) {
+                alert('Nemate opravneni spravovat zarizeni');
                 return;
             }
-            
+            if (racks.length === 0) {
+                alert('Nejprve vytvorte rack');
+                return;
+            }
+
             const select = document.getElementById('deviceRack');
             select.innerHTML = racks.map(rack => 
                 `<option value="${rack.id}">${rack.name}</option>`
             ).join('');
-            
+
+            renderDeviceTypeOptions();
             document.getElementById('deviceModal').classList.add('active');
         }
         
@@ -3015,6 +3712,10 @@
         
         // Add rack
         function addRack() {
+            if (!canManageRacks()) {
+                alert('Nemate opravneni spravovat racky');
+                return;
+            }
             const name = document.getElementById('rackName').value;
             const units = parseInt(document.getElementById('rackUnits').value);
             const location = document.getElementById('rackLocation').value;
@@ -3039,6 +3740,10 @@
         
         // Add device
         function addDevice() {
+            if (!canManageDevices()) {
+                alert('Nemate opravneni spravovat zarizeni');
+                return;
+            }
             const name = document.getElementById('deviceName').value;
             const type = document.getElementById('deviceType').value;
             const rack = document.getElementById('deviceRack').value;
@@ -3091,6 +3796,10 @@
         
         // Delete device
         function deleteDevice(id) {
+            if (!canManageDevices()) {
+                alert('Nemate opravneni spravovat zarizeni');
+                return;
+            }
             if (confirm('Opravdu chcete smazat toto zařízení?')) {
                 devices = devices.filter(d => d.id !== id);
                 connections = connections.filter(c => c.fromDevice !== id && c.toDevice !== id);
@@ -3108,7 +3817,7 @@
         
         function clearDeviceForm() {
             document.getElementById('deviceName').value = '';
-            document.getElementById('deviceType').value = 'switch';
+            document.getElementById('deviceType').value = moduleTypes.length ? moduleTypes[0].id : '';
             document.getElementById('devicePosition').value = '';
             document.getElementById('deviceHeight').value = '1';
             document.getElementById('deviceIP').value = '';
@@ -3123,9 +3832,13 @@
                 alert('Nejprve vyberte klienta');
                 return;
             }
-            
+            if (!canDeleteRacks()) {
+                alert('Nemate opravneni mazat racky');
+                return;
+            }
+
             const client = clients.find(c => c.id === currentClientId);
-            if (confirm(`Opravdu chcete smazat všechna data klienta "${client.name}"? Tato akce je nevratná.`)) {
+            if (confirm(`Opravdu chcete smazat vsechna data klienta "${client.name}"? Tato akce je nevratna.`)) {
                 racks = [];
                 devices = [];
                 connections = [];
@@ -3194,199 +3907,207 @@
             reader.readAsText(file);
         }
         
-        // Initialize on load (async) - gated behind access code
-        window.addEventListener('load', () => {
-            const form = document.getElementById('loginForm');
-            if (form) {
-                form.addEventListener('submit', handleLoginSubmit);
+        // ==========================================
+        // Firebase Realtime Database Functions
+        // ==========================================
+        
+        // Save to Firebase Realtime Database
+        function saveToFirebase() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
             }
-            if (isAccessGranted()) {
-                hideLoginOverlay();
-                bootstrapApp();
-            } else {
-                showLoginOverlay();
+            
+            const client = clients.find(c => c.id === currentClientId);
+            if (!client) return;
+            
+            // Prepare data for Firebase
+            const dataToSave = {
+                client: client,
+                racks: racks,
+                devices: devices,
+                connections: connections,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                savedBy: auth.currentUser ? auth.currentUser.email : 'anonymous'
+            };
+            
+            // Save to Firebase Realtime Database
+            const clientRef = db.ref('clients/' + currentClientId);
+            
+            clientRef.set(dataToSave)
+                .then(() => {
+                    console.log('✅ Data saved to Firebase');
+                    alert('Data úspěšně uložena do Firebase!');
+                    
+                    // Also save to localStorage as backup
+                    saveData();
+                })
+                .catch((error) => {
+                    console.error('❌ Firebase save error:', error);
+                    alert('Chyba při ukládání do Firebase: ' + error.message);
+                });
+        }
+        
+        // Load from Firebase Realtime Database
+        function loadFromFirebase() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
             }
-        });
-
+            
+            const clientRef = db.ref('clients/' + currentClientId);
+            
+            clientRef.once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    
+                    if (data) {
+                        // Load data from Firebase
+                        if (data.racks) racks = data.racks;
+                        if (data.devices) devices = data.devices;
+                        if (data.connections) connections = data.connections;
+                        
+                        // Save to localStorage too
+                        saveData();
+                        
+                        // Re-render
+                        render();
+                        
+                        console.log('✅ Data loaded from Firebase');
+                        alert('Data načtena z Firebase!');
+                    } else {
+                        alert('Pro tohoto klienta nejsou v Firebase žádná data');
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ Firebase load error:', error);
+                    alert('Chyba při načítání z Firebase: ' + error.message);
+                });
+        }
+        
+        // Setup realtime sync for current client
+        function setupRealtimeSync() {
+            if (!currentClientId) return;
+            
+            // Remove previous listener if exists
+            if (window.firebaseListener) {
+                db.ref('clients/' + window.lastSyncedClient).off('value', window.firebaseListener);
+            }
+            
+            // Setup new listener
+            const clientRef = db.ref('clients/' + currentClientId);
+            
+            window.firebaseListener = clientRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.timestamp) {
+                    // Check if this is newer than our local data
+                    const localTimestamp = localStorage.getItem('cxtech_lastUpdate_' + currentClientId);
+                    
+                    if (!localTimestamp || data.timestamp > parseInt(localTimestamp)) {
+                        // Update from Firebase
+                        if (data.racks) racks = data.racks;
+                        if (data.devices) devices = data.devices;
+                        if (data.connections) connections = data.connections;
+                        
+                        saveData();
+                        render();
+                        
+                        console.log('🔄 Data synced from Firebase');
+                    }
+                }
+            });
+            
+            window.lastSyncedClient = currentClientId;
+        }
+        
+        // Add Firebase status indicator to UI
+        function addFirebaseStatusIndicator() {
+            const header = document.querySelector('.topbar');
+            if (header && !document.getElementById('firebaseStatus')) {
+                const statusDiv = document.createElement('div');
+                statusDiv.id = 'firebaseStatus';
+                statusDiv.style.cssText = 'font-size: 0.85rem; font-weight: 600; color: #b0b0b0;';
+                statusDiv.innerHTML = 'Connecting...';
+                header.appendChild(statusDiv);
+            }
+        }
+        
+        // Call on init
+        addFirebaseStatusIndicator();
+        window.addEventListener('load', init);
     </script>
    <!-- Firebase Auth + Realtime Database -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-  // Firebase Configuration - načítá se z API endpointu
-  var firebaseConfig = null;
-  var auth = null;
-  var db = null;
+  // Firebase Configuration - CX.TECH Rack Manager
+  // ⚠️ DŮLEŽITÉ: Nahraďte těmito hodnotami z Firebase Console → Project Settings
+  var firebaseConfig = {
+    apiKey: "YOUR_API_KEY_HERE",  // ← Vložte váš API klíč (začíná AIzaSy...)
+    authDomain: "cxtechrackmanager.firebaseapp.com",
+    databaseURL: "https://cxtechrackmanager-default-rtdb.europe-west1.firebasedatabase.app", // Pro EU region
+    projectId: "cxtechrackmanager",
+    storageBucket: "cxtechrackmanager.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID_HERE",  // ← Vložte vaše Sender ID (12 číslic)
+    appId: "YOUR_APP_ID_HERE"  // ← Vložte vaše App ID (formát 1:xxx:web:xxx)
+  };
 
-  // Asynchronní načtení konfigurace z API
-  async function initializeFirebase() {
-    try {
-      const response = await fetch('/api/config');
-      if (!response.ok) {
-        throw new Error('Failed to load Firebase config from API');
-      }
-      firebaseConfig = await response.json();
-      
-      // Initialize Firebase - kontrola, jestli už není inicializovaný
-      try {
-        firebase.initializeApp(firebaseConfig);
-        console.log("🔥 Firebase initialized for CX.TECH Rack Manager");
-      } catch (e) {
-        if (e.code === 'app/duplicate-app') {
-          console.log("⚠️ Firebase app already exists, using existing instance");
-        } else {
-          throw e;
-        }
-      }
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  console.log("🔥 Firebase initialized for CX.TECH Rack Manager");
 
-      auth = firebase.auth();
-      // Realtime DB pouze pokud je k dispozici databaseURL v configu
-      if (firebaseConfig.databaseURL) {
-        db = firebase.database();
+  var auth = firebase.auth();
+  var db = firebase.database();   // 🔁 Realtime DB
+  
+  // Monitor Firebase connection status
+  db.ref('.info/connected').on('value', function(snapshot) {
+    var connected = snapshot.val();
+    var statusElem = document.getElementById('firebaseStatus');
+    if (statusElem) {
+      if (connected) {
+        statusElem.innerHTML = '🟢 Online';
+        statusElem.style.color = '#4ade80';
       } else {
-        db = null;
-        console.warn("⚠️ Skipping Realtime Database init because databaseURL is missing");
-      }
-      
-      // Spustit další inicializaci po načtení
-      setupFirebaseListeners();
-    } catch (error) {
-      console.error('❌ Error loading Firebase config:', error);
-      // Fallback pro lokální vývoj
-      if (window.firebaseConfig) {
-        console.warn('⚠️ Using fallback config from window.firebaseConfig');
-        firebaseConfig = window.firebaseConfig;
-        try {
-          firebase.initializeApp(firebaseConfig);
-        } catch (e) {
-          if (e.code === 'app/duplicate-app') {
-            console.log("⚠️ Firebase app already exists, using existing instance");
-          } else {
-            throw e;
-          }
-        }
-        auth = firebase.auth();
-        if (firebaseConfig.databaseURL) {
-          db = firebase.database();
-        } else {
-          db = null;
-          console.warn("⚠️ Skipping Realtime Database init because databaseURL is missing (fallback config)");
-        }
-        setupFirebaseListeners();
-      } else {
-        console.error('❌ No Firebase config available. Please set environment variables in Vercel.');
+        statusElem.innerHTML = '🔴 Offline';
+        statusElem.style.color = '#f87171';
       }
     }
-  }
-
-  function setupFirebaseListeners() {
-  
-    if (!db) return;
-    
-    // Monitor Firebase connection status
-    db.ref('.info/connected').on('value', function(snapshot) {
-      var connected = snapshot.val();
-      var statusElem = document.getElementById('firebaseStatus');
-      if (statusElem) {
-        if (connected) {
-          statusElem.innerHTML = '🟢 Online';
-          statusElem.style.color = '#4ade80';
-        } else {
-          statusElem.innerHTML = '🔴 Offline';
-          statusElem.style.color = '#f87171';
-        }
-      }
-      console.log('Firebase connection:', connected ? 'Online' : 'Offline');
-    });
-  }
-
-  // Spustit inicializaci při načtení stránky
-  initializeFirebase();
+    console.log('Firebase connection:', connected ? 'Online' : 'Offline');
+  });
 
   // --- UI pro přihlášení ---
   function updateAuthUI(user) {
     var statusEl = document.getElementById('authStatus');
-    var loginBtnGoogle = document.getElementById('loginBtnGoogle');
-    var loginBtnMicrosoft = document.getElementById('loginBtnMicrosoft');
+    var loginBtn = document.getElementById('loginBtn');
     var logoutBtn = document.getElementById('logoutBtn');
+    var overlay = document.getElementById('authOverlay');
 
-    if (!statusEl || !loginBtnGoogle || !loginBtnMicrosoft || !logoutBtn) return;
+    if (!statusEl || !loginBtn || !logoutBtn) return;
 
     if (user) {
-      var provider = user.providerData && user.providerData[0] ? user.providerData[0].providerId : 'unknown';
-      var providerName = provider === 'microsoft.com' ? 'Microsoft 365' : provider === 'google.com' ? 'Google' : 'Neznámý';
-      statusEl.textContent = "Přihlášen: " + (user.email || user.uid) + " (" + providerName + ")";
-      statusEl.style.color = 'var(--success)';
-      loginBtnGoogle.style.display = 'none';
-      loginBtnMicrosoft.style.display = 'none';
+      statusEl.textContent = "Prihlasen: " + (user.email || user.uid);
+      loginBtn.style.display = 'none';
       logoutBtn.style.display = 'inline-block';
+      if (overlay) overlay.classList.add('hidden');
+      document.body.classList.remove('auth-locked');
     } else {
-      statusEl.textContent = "Nepřihlášen";
-      statusEl.style.color = 'var(--text-secondary)';
-      loginBtnGoogle.style.display = 'inline-block';
-      loginBtnMicrosoft.style.display = 'inline-block';
+      statusEl.textContent = "Neprihlasen";
+      loginBtn.style.display = 'inline-block';
       logoutBtn.style.display = 'none';
+      if (overlay) overlay.classList.remove('hidden');
+      document.body.classList.add('auth-locked');
+    }
+    if (window.applyRolePermissions) {
+      window.applyRolePermissions();
     }
   }
 
   function loginWithGoogle() {
-    if (!auth) {
-      alert('Firebase Auth není inicializováno. Zkontrolujte konfiguraci.');
-      return;
-    }
-    
     var provider = new firebase.auth.GoogleAuthProvider();
-    // Nastavit doménu pro organizaci (volitelné)
-    provider.setCustomParameters({
-      hd: 'cxtech.cz' // Omezit na doménu cxtech.cz
-    });
-    
     auth.signInWithPopup(provider).catch(function (error) {
       console.error("Auth error:", error);
       alert("Chyba při přihlášení: " + error.message);
-    });
-  }
-
-  function loginWithMicrosoft() {
-    if (!auth) {
-      alert('Firebase Auth není inicializováno. Zkontrolujte konfiguraci.');
-      return;
-    }
-    
-    var provider = new firebase.auth.OAuthProvider('microsoft.com');
-    
-    // Nastavit tenant ID pro organizaci (pokud máte specifický tenant)
-    // provider.setCustomParameters({
-    //   tenant: 'your-tenant-id'
-    // });
-    
-    // Nebo použít common pro multi-tenant
-    provider.setCustomParameters({
-      prompt: 'select_account' // Zobrazit výběr účtu
-    });
-    
-    // Přidat scope pro Microsoft Graph API (volitelné)
-    provider.addScope('openid');
-    provider.addScope('email');
-    provider.addScope('profile');
-    
-    auth.signInWithPopup(provider).then(function(result) {
-      console.log('✅ Microsoft login successful:', result.user);
-    }).catch(function (error) {
-      console.error("Microsoft Auth error:", error);
-      
-      // Lepší error handling pro Microsoft
-      let errorMessage = "Chyba při přihlášení přes Microsoft 365";
-      if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = "Přihlášení bylo zrušeno";
-      } else if (error.code === 'auth/popup-blocked') {
-        errorMessage = "Popup byl zablokován. Povolte popupy pro tuto stránku.";
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      alert(errorMessage);
     });
   }
 
@@ -3397,47 +4118,87 @@
     });
   }
 
-  // Inicializace auth state listener (počkat až je auth připraven)
-  if (auth) {
-    auth.onAuthStateChanged(function (user) {
-      updateAuthUI(user);
-    });
-  } else {
-    // Pokud auth ještě není připraven, počkat na inicializaci
-    setTimeout(function() {
-      if (auth) {
-        auth.onAuthStateChanged(function (user) {
-          updateAuthUI(user);
-        });
-      } else {
-        console.warn('Auth not initialized, UI will not update');
-      }
-    }, 1000);
-  }
+  auth.onAuthStateChanged(function (user) {
+    updateAuthUI(user);
+    if (window.onAuthRoleChanged) {
+      window.onAuthRoleChanged(user);
+    }
+  });
 
   function requireAuth() {
     var user = auth.currentUser;
     if (!user) {
-      alert("Nejprve se přihlaste (Google nebo Microsoft 365 účet).");
+      alert("Nejprve se přihlaste (Google účet @cxtech.cz).");
       throw new Error("NOT_AUTHENTICATED");
     }
-    
-    // Volitelně: kontrola domény
-    var email = user.email || '';
-    var allowedDomains = ['cxtech.cz']; // Přidejte další povolené domény
-    
-    if (allowedDomains.length > 0 && !allowedDomains.some(domain => email.endsWith('@' + domain))) {
-      alert("Pouze účty z povolených domén mohou přistupovat k aplikaci.");
-      logout();
-      throw new Error("UNAUTHORIZED_DOMAIN");
-    }
-    
     return user;
   }
 
   // --- Cesta v Realtime DB, kde budeme držet data ---
   var GLOBAL_PATH = "rackManager/global";
 
+  // ☁ Uložit všechna data z localStorage do Realtime DB
+  async function saveToCloud() {
+    try {
+      var user = requireAuth();
+
+      var clients = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
+      var clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
+      var lastClientId = localStorage.getItem('rackManagerLastClient') || null;
+
+      var payload = {
+        clients: clients,
+        clientData: clientData,
+        lastClientId: lastClientId,
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.email || user.uid
+      };
+
+      await db.ref(GLOBAL_PATH).set(payload);
+      alert("✅ Data byla uložena do Realtime DB");
+    } catch (err) {
+      if (err.message === "NOT_AUTHENTICATED") return;
+      console.error("Chyba při ukládání:", err);
+      alert("❌ Chyba při ukládání do cloudu: " + err.message);
+    }
+  }
+
+  // ☁ Načíst všechna data z Realtime DB do localStorage
+  async function loadFromCloud() {
+    try {
+      requireAuth();
+
+      var snap = await db.ref(GLOBAL_PATH).once("value");
+      if (!snap.exists()) {
+        alert("⚠ V cloudu zatím nejsou žádná data");
+        return;
+      }
+
+      var data = snap.val() || {};
+      var clients = data.clients || [];
+      var clientData = data.clientData || {};
+      var lastClientId = data.lastClientId || null;
+
+      localStorage.setItem('rackManagerClients', JSON.stringify(clients));
+      localStorage.setItem('rackManagerClientData', JSON.stringify(clientData));
+      if (lastClientId) {
+        localStorage.setItem('rackManagerLastClient', lastClientId);
+      } else {
+        localStorage.removeItem('rackManagerLastClient');
+      }
+
+      // přerenderovat UI podle nových dat
+      if (typeof init === "function") {
+        init();
+      }
+
+      alert("✅ Data byla načtena z Realtime DB");
+    } catch (err) {
+      if (err.message === "NOT_AUTHENTICATED") return;
+      console.error("Chyba při načítání:", err);
+      alert("❌ Chyba při načítání z cloudu: " + err.message);
+    }
+  }
 </script>
 </body>
 </html>
