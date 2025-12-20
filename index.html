@@ -1992,6 +1992,10 @@
             auditor: 'Auditor'
         };
 
+        const BOOTSTRAP_ADMINS = [
+            'ondrej.hriadel@cxtech.cz'
+        ];
+
         let currentUserRole = 'readonly';
 
         const mspModules = [
@@ -2106,6 +2110,8 @@
 
             try {
                 const uid = auth.currentUser.uid;
+                const email = (auth.currentUser.email || '').toLowerCase();
+                const isBootstrapAdmin = BOOTSTRAP_ADMINS.includes(email);
                 const clientDoc = db.collection('clients').doc(currentClientId);
                 const usersRef = clientDoc.collection('users');
                 const userRef = usersRef.doc(uid);
@@ -2116,7 +2122,7 @@
                 ]);
 
                 const existing = userSnap.exists ? userSnap.data() : {};
-                let role = existing && existing.role ? existing.role : 'readonly';
+                let role = existing && existing.role ? existing.role : 'technician';
 
                 if (usersSnap.empty) {
                     role = 'admin';
@@ -2131,6 +2137,10 @@
                             role = invite.role;
                         }
                     }
+                }
+
+                if (isBootstrapAdmin) {
+                    role = 'admin';
                 }
 
                 await userRef.set({
@@ -2207,7 +2217,7 @@
             const emailInput = document.getElementById('roleInviteEmail');
             const roleSelect = document.getElementById('roleInviteRole');
             const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
-            const role = roleSelect ? roleSelect.value : 'readonly';
+            const role = roleSelect ? roleSelect.value : 'technician';
 
             if (!email || !email.includes('@')) {
                 alert('Zadejte platny email');
