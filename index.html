@@ -1788,7 +1788,7 @@
                 <h2>Sprava roli</h2>
                 <button class="modal-close" onclick="closeRoleManagerModal()">X</button>
             </div>
-            <div class="role-note">Role jsou nacitane z Firebase cesty clients/{id}/users.</div>
+            <div class="role-note">Role jsou nacitane z Firestore cesty clients/{id}/users.</div>
             <div class="role-invite-form">
                 <input type="email" id="roleInviteEmail" placeholder="email@firma.cz">
                 <select id="roleInviteRole" class="role-select">
@@ -2106,34 +2106,39 @@
 
             try {
                 const uid = auth.currentUser.uid;
-                const userRef = db.ref(`clients/${currentClientId}/users/${uid}`);
-                const usersRef = db.ref(`clients/${currentClientId}/users`);
+                const clientDoc = db.collection('clients').doc(currentClientId);
+                const usersRef = clientDoc.collection('users');
+                const userRef = usersRef.doc(uid);
+
                 const [userSnap, usersSnap] = await Promise.all([
-                    userRef.once('value'),
-                    usersRef.once('value')
+                    userRef.get(),
+                    usersRef.limit(1).get()
                 ]);
 
-                const existing = userSnap.exists() ? userSnap.val() : {};
+                const existing = userSnap.exists ? userSnap.data() : {};
                 let role = existing && existing.role ? existing.role : 'readonly';
 
-                if (!usersSnap.exists()) {
+                if (usersSnap.empty) {
                     role = 'admin';
                 }
 
                 if ((!existing || !existing.role) && auth.currentUser.email) {
                     const emailKey = normalizeEmailKey(auth.currentUser.email);
-                    const inviteSnap = await db.ref(`clients/${currentClientId}/roleInvites/${emailKey}`).once('value');
-                    if (inviteSnap.exists() && inviteSnap.val().role) {
-                        role = inviteSnap.val().role;
+                    const inviteSnap = await clientDoc.collection('roleInvites').doc(emailKey).get();
+                    if (inviteSnap.exists) {
+                        const invite = inviteSnap.data();
+                        if (invite && invite.role) {
+                            role = invite.role;
+                        }
                     }
                 }
 
-                await userRef.update({
+                await userRef.set({
                     role: role,
                     email: auth.currentUser.email || '',
                     name: auth.currentUser.displayName || '',
-                    updatedAt: new Date().toISOString()
-                });
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
 
                 setCurrentRole(role);
             } catch (err) {
@@ -2170,12 +2175,22 @@
         async function loadRoleManagerList() {
             if (!window.db || !currentClientId) return;
             try {
+                const clientDoc = db.collection('clients').doc(currentClientId);
                 const [usersSnap, invitesSnap] = await Promise.all([
-                    db.ref(`clients/${currentClientId}/users`).once('value'),
-                    db.ref(`clients/${currentClientId}/roleInvites`).once('value')
+                    clientDoc.collection('users').get(),
+                    clientDoc.collection('roleInvites').get()
                 ]);
-                const users = usersSnap.exists() ? usersSnap.val() : {};
-                const invites = invitesSnap.exists() ? invitesSnap.val() : {};
+
+                const users = {};
+                usersSnap.forEach((doc) => {
+                    users[doc.id] = doc.data();
+                });
+
+                const invites = {};
+                invitesSnap.forEach((doc) => {
+                    invites[doc.id] = doc.data();
+                });
+
                 renderRoleManagerList(users, invites);
             } catch (err) {
                 console.warn('Role list load failed:', err);
@@ -2203,11 +2218,15 @@
             const emailKey = normalizeEmailKey(email);
 
             try {
-                await db.ref(`clients/${currentClientId}/roleInvites/${emailKey}`).set({
-                    email: email,
-                    role: safeRole,
-                    invitedAt: new Date().toISOString()
-                });
+                await db.collection('clients')
+                    .doc(currentClientId)
+                    .collection('roleInvites')
+                    .doc(emailKey)
+                    .set({
+                        email: email,
+                        role: safeRole,
+                        invitedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 if (emailInput) emailInput.value = '';
                 await loadRoleManagerList();
             } catch (err) {
@@ -2222,7 +2241,11 @@
             }
             if (!window.db || !currentClientId) return;
             try {
-                await db.ref(`clients/${currentClientId}/roleInvites/${emailKey}`).remove();
+                await db.collection('clients')
+                    .doc(currentClientId)
+                    .collection('roleInvites')
+                    .doc(emailKey)
+                    .delete();
                 await loadRoleManagerList();
             } catch (err) {
                 console.warn('Role invite remove failed:', err);
@@ -2322,10 +2345,14 @@
             if (!window.db || !currentClientId) return;
             try {
                 const safeRole = ROLE_PERMISSIONS[role] ? role : 'readonly';
-                await db.ref(`clients/${currentClientId}/users/${uid}`).update({
-                    role: safeRole,
-                    updatedAt: new Date().toISOString()
-                });
+                await db.collection('clients')
+                    .doc(currentClientId)
+                    .collection('users')
+                    .doc(uid)
+                    .set({
+                        role: safeRole,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
                 if (auth && auth.currentUser && uid === auth.currentUser.uid) {
                     setCurrentRole(safeRole);
                 }
@@ -3898,10 +3925,10 @@
         }
         
         // ==========================================
-        // Firebase Realtime Database Functions
+        // Firestore Data Functions
         // ==========================================
         
-        // Save to Firebase Realtime Database
+        // Save to Firestore
         function saveToFirebase() {
             if (!currentClientId) {
                 alert('Nejprve vyberte klienta');
@@ -3911,103 +3938,69 @@
             const client = clients.find(c => c.id === currentClientId);
             if (!client) return;
             
-            // Prepare data for Firebase
             const dataToSave = {
                 client: client,
                 racks: racks,
                 devices: devices,
                 connections: connections,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                savedBy: auth.currentUser ? auth.currentUser.email : 'anonymous'
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAtMs: Date.now(),
+                savedBy: auth && auth.currentUser ? auth.currentUser.email : 'anonymous'
             };
             
-            // Save to Firebase Realtime Database
-            const clientRef = db.ref('clients/' + currentClientId);
+            const clientRef = db.collection('clients').doc(currentClientId);
             
-            clientRef.set(dataToSave)
+            clientRef.set(dataToSave, { merge: true })
                 .then(() => {
-                    console.log('✅ Data saved to Firebase');
-                    alert('Data úspěšně uložena do Firebase!');
-                    
-                    // Also save to localStorage as backup
+                    console.log('✅ Data saved to Firestore');
+                    alert('Data uspesne ulozena do Firestore!');
                     saveData();
+                    localStorage.setItem('cxtech_lastUpdate_' + currentClientId, String(Date.now()));
                 })
                 .catch((error) => {
-                    console.error('❌ Firebase save error:', error);
-                    alert('Chyba při ukládání do Firebase: ' + error.message);
+                    console.error('❌ Firestore save error:', error);
+                    alert('Chyba pri ukladani do Firestore: ' + error.message);
                 });
         }
         
-        // Load from Firebase Realtime Database
+        // Load from Firestore
         function loadFromFirebase() {
             if (!currentClientId) {
                 alert('Nejprve vyberte klienta');
                 return;
             }
             
-            const clientRef = db.ref('clients/' + currentClientId);
+            const clientRef = db.collection('clients').doc(currentClientId);
             
-            clientRef.once('value')
-                .then((snapshot) => {
-                    const data = snapshot.val();
-                    
-                    if (data) {
-                        // Load data from Firebase
-                        if (data.racks) racks = data.racks;
-                        if (data.devices) devices = data.devices;
-                        if (data.connections) connections = data.connections;
-                        
-                        // Save to localStorage too
-                        saveData();
-                        
-                        // Re-render
-                        render();
-                        
-                        console.log('✅ Data loaded from Firebase');
-                        alert('Data načtena z Firebase!');
-                    } else {
-                        alert('Pro tohoto klienta nejsou v Firebase žádná data');
+            clientRef.get()
+                .then((doc) => {
+                    if (!doc.exists) {
+                        alert('Pro tohoto klienta nejsou ve Firestore zadna data');
+                        return;
                     }
+
+                    const data = doc.data() || {};
+                    
+                    if (data.racks) racks = data.racks;
+                    if (data.devices) devices = data.devices;
+                    if (data.connections) connections = data.connections;
+                    
+                    saveData();
+                    render();
+                    localStorage.setItem('cxtech_lastUpdate_' + currentClientId, String(Date.now()));
+                    
+                    console.log('✅ Data loaded from Firestore');
+                    alert('Data nactena z Firestore!');
                 })
                 .catch((error) => {
-                    console.error('❌ Firebase load error:', error);
-                    alert('Chyba při načítání z Firebase: ' + error.message);
+                    console.error('❌ Firestore load error:', error);
+                    alert('Chyba pri nacitani z Firestore: ' + error.message);
                 });
         }
         
-        // Setup realtime sync for current client
+        // Firestore sync is intentionally disabled (manual save/load only)
         function setupRealtimeSync() {
-            if (!currentClientId) return;
-            
-            // Remove previous listener if exists
-            if (window.firebaseListener) {
-                db.ref('clients/' + window.lastSyncedClient).off('value', window.firebaseListener);
-            }
-            
-            // Setup new listener
-            const clientRef = db.ref('clients/' + currentClientId);
-            
-            window.firebaseListener = clientRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data && data.timestamp) {
-                    // Check if this is newer than our local data
-                    const localTimestamp = localStorage.getItem('cxtech_lastUpdate_' + currentClientId);
-                    
-                    if (!localTimestamp || data.timestamp > parseInt(localTimestamp)) {
-                        // Update from Firebase
-                        if (data.racks) racks = data.racks;
-                        if (data.devices) devices = data.devices;
-                        if (data.connections) connections = data.connections;
-                        
-                        saveData();
-                        render();
-                        
-                        console.log('🔄 Data synced from Firebase');
-                    }
-                }
-            });
-            
-            window.lastSyncedClient = currentClientId;
+            return;
         }
         
         // Add Firebase status indicator to UI
@@ -4026,10 +4019,10 @@
         addFirebaseStatusIndicator();
         window.addEventListener('load', init);
     </script>
-   <!-- Firebase Auth + Realtime Database -->
+   <!-- Firebase Auth + Firestore -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script>
   var auth;
   var db;
@@ -4048,7 +4041,7 @@
     console.log('Firebase initialized for CX.TECH Rack Manager');
 
     auth = firebase.auth();
-    db = firebase.database();
+    db = firebase.firestore();
     window.auth = auth;
     window.db = db;
 
@@ -4081,26 +4074,20 @@
       return isLocalHost() && localStorage.getItem('localAdmin') === 'true';
     }
 
+    if (isLocalHost() && localStorage.getItem('localAdmin') === null) {
+      localStorage.setItem('localAdmin', 'true');
+    }
+
     var localAdminBtn = document.getElementById('localAdminBtn');
     if (localAdminBtn && isLocalHost()) {
       localAdminBtn.style.display = 'inline-block';
     }
 
-    // Monitor Firebase connection status
-    db.ref('.info/connected').on('value', function(snapshot) {
-      var connected = snapshot.val();
-      var statusElem = document.getElementById('firebaseStatus');
-      if (statusElem) {
-        if (connected) {
-          statusElem.innerHTML = 'Online';
-          statusElem.style.color = '#4ade80';
-        } else {
-          statusElem.innerHTML = 'Offline';
-          statusElem.style.color = '#f87171';
-        }
-      }
-      console.log('Firebase connection:', connected ? 'Online' : 'Offline');
-    });
+    var statusElem = document.getElementById('firebaseStatus');
+    if (statusElem) {
+      statusElem.innerHTML = 'Ready';
+      statusElem.style.color = '#4ade80';
+    }
 
     // --- UI pro prihlaseni ---
     function updateAuthUI(user) {
@@ -4219,10 +4206,10 @@
     alert('Firebase config error: ' + err.message);
   });
 
-  // --- Cesta v Realtime DB, kde budeme drzet data ---
+  // --- Firestore doc, kde budeme drzet data ---
   var GLOBAL_PATH = "rackManager/global";
 
-  // ☁ Uložit všechna data z localStorage do Realtime DB
+  // ☁ Ulozit vsechna data z localStorage do Firestore
   async function saveToCloud() {
     try {
       var user = requireAuth();
@@ -4235,31 +4222,32 @@
         clients: clients,
         clientData: clientData,
         lastClientId: lastClientId,
-        updatedAt: new Date().toISOString(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAtMs: Date.now(),
         updatedBy: user.email || user.uid
       };
 
-      await db.ref(GLOBAL_PATH).set(payload);
-      alert("✅ Data byla uložena do Realtime DB");
+      await db.doc(GLOBAL_PATH).set(payload, { merge: true });
+      alert("✅ Data byla ulozena do Firestore");
     } catch (err) {
       if (err.message === "NOT_AUTHENTICATED") return;
       console.error("Chyba při ukládání:", err);
-      alert("❌ Chyba při ukládání do cloudu: " + err.message);
+      alert("❌ Chyba pri ukladani do cloudu: " + err.message);
     }
   }
 
-  // ☁ Načíst všechna data z Realtime DB do localStorage
+  // ☁ Nacist vsechna data z Firestore do localStorage
   async function loadFromCloud() {
     try {
       requireAuth();
 
-      var snap = await db.ref(GLOBAL_PATH).once("value");
-      if (!snap.exists()) {
-        alert("⚠ V cloudu zatím nejsou žádná data");
+      var snap = await db.doc(GLOBAL_PATH).get();
+      if (!snap.exists) {
+        alert("⚠ V cloudu zatim nejsou zadna data");
         return;
       }
 
-      var data = snap.val() || {};
+      var data = snap.data() || {};
       var clients = data.clients || [];
       var clientData = data.clientData || {};
       var lastClientId = data.lastClientId || null;
@@ -4277,11 +4265,11 @@
         init();
       }
 
-      alert("✅ Data byla načtena z Realtime DB");
+      alert("✅ Data byla nactena z Firestore");
     } catch (err) {
       if (err.message === "NOT_AUTHENTICATED") return;
       console.error("Chyba při načítání:", err);
-      alert("❌ Chyba při načítání z cloudu: " + err.message);
+      alert("❌ Chyba pri nacitani z cloudu: " + err.message);
     }
   }
 </script>
