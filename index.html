@@ -212,55 +212,74 @@
 
         .topbar-actions {
             display: grid;
-            gap: 0.6rem;
+            gap: 0.75rem;
             z-index: 1;
-            padding: 0.75rem 1rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: var(--panel-surface-2);
-            min-width: 240px;
+            padding: 0.9rem 1rem;
+            border-radius: 16px;
+            border: 1px solid rgba(248, 154, 85, 0.35);
+            background: linear-gradient(160deg, rgba(18, 18, 18, 0.95), rgba(10, 10, 10, 0.9));
+            min-width: 260px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .topbar-actions::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 80% 20%, rgba(248, 154, 85, 0.2), transparent 55%);
+            opacity: 0.7;
+        }
+
+        .topbar-actions > * {
+            position: relative;
+            z-index: 1;
         }
 
         .topbar-menu-title {
             font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.24em;
             color: var(--text-secondary);
             font-weight: 600;
         }
 
-        .topbar-menu-row {
-            display: flex;
+        .session-status {
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 0.75rem;
-            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.35rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: rgba(8, 8, 8, 0.7);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+
+        .topbar-actions .auth-status {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-secondary);
         }
 
         .topbar-menu-actions {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 0.5rem;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .auth-pill {
-            border: 1px solid var(--border-color);
-            border-radius: 999px;
-            padding: 0.35rem 0.6rem;
-            background: var(--panel-surface);
-            color: var(--text-secondary);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
         }
 
         .topbar-actions .btn,
         .topbar-actions .btn-small,
         .topbar-actions .btn-secondary {
-            width: auto;
-            padding: 0.45rem 0.8rem;
+            width: 100%;
+            padding: 0.5rem 0.8rem;
             font-size: 0.75rem;
         }
 
@@ -388,16 +407,12 @@
                 padding: 1.5rem;
             }
 
-            .dashboard-layout {
+            .dashboard-intro {
                 grid-template-columns: 1fr;
             }
 
-            .dashboard-hero {
-                grid-template-columns: 1fr;
-            }
-
-            .dashboard-hero-actions {
-                width: 100%;
+            .dashboard-command {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             }
         }
 
@@ -414,7 +429,16 @@
                 width: 100%;
             }
 
-            .dashboard-hero {
+            .dashboard-intro-card {
+                padding: 1.5rem;
+                min-height: auto;
+            }
+
+            .dashboard-command {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-section {
                 padding: 1.25rem;
             }
         }
@@ -941,142 +965,204 @@
             margin-bottom: 1rem;
         }
 
-        .dashboard-view .overview-section {
-            margin-top: 1.5rem;
+        .dashboard-view {
+            display: block;
+            background: transparent;
+            border: none;
+            padding: 0;
         }
 
-        .dashboard-view .overview-section:first-child {
-            margin-top: 0;
-        }
-
-        .dashboard-actions {
+        .dashboard-intro {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-intro-card {
+            background: linear-gradient(145deg, rgba(248, 154, 85, 0.22), rgba(12, 12, 12, 0.92));
+            border: 1px solid rgba(248, 154, 85, 0.45);
+            border-radius: 22px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            min-height: 260px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .dashboard-intro-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(248, 154, 85, 0.25), transparent 55%),
+                        radial-gradient(circle at 90% 10%, rgba(248, 154, 85, 0.15), transparent 50%);
+            opacity: 0.8;
+        }
+
+        .dashboard-intro-content {
+            position: relative;
+            z-index: 1;
+            display: grid;
             gap: 0.75rem;
         }
 
-        .dashboard-actions-stack {
-            grid-template-columns: 1fr;
+        .dashboard-kicker {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.28em;
+            color: var(--text-secondary);
         }
 
-        .dashboard-view {
-            display: block;
-        }
-
-        .dashboard-hero {
-            background: linear-gradient(140deg, rgba(248, 154, 85, 0.18), rgba(10, 10, 10, 0.85));
-            border: 1px solid rgba(248, 154, 85, 0.4);
-            border-radius: 18px;
-            padding: 1.75rem;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: 1.5rem;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 1.5rem;
-        }
-
-        .dashboard-hero::after {
-            content: '';
-            position: absolute;
-            right: -10%;
-            top: -20%;
-            width: 55%;
-            height: 140%;
-            background: radial-gradient(circle at center, rgba(248, 154, 85, 0.22), transparent 70%);
-            opacity: 0.6;
-        }
-
-        .dashboard-hero-main {
-            position: relative;
-            z-index: 1;
-        }
-
-        .dashboard-hero-actions {
-            position: relative;
-            z-index: 1;
-            display: grid;
-            gap: 0.6rem;
-            min-width: 220px;
-        }
-
-        .dashboard-title {
-            font-size: 1.75rem;
+        .dashboard-headline {
+            font-size: 2rem;
             font-weight: 700;
         }
 
-        .dashboard-subtitle {
+        .dashboard-lead {
             color: var(--text-secondary);
             font-size: 0.95rem;
-            margin-top: 0.35rem;
             max-width: 520px;
         }
 
-        .dashboard-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 1rem;
+        .dashboard-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.5rem;
         }
 
-        .dashboard-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 0.75rem;
-            border-radius: 999px;
-            border: 1px solid var(--border-color);
-            background: var(--panel-surface);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.7rem;
+        .dashboard-meta-card {
+            background: rgba(8, 8, 8, 0.6);
+            border: 1px solid rgba(248, 154, 85, 0.35);
+            border-radius: 14px;
+            padding: 0.85rem 1rem;
+        }
+
+        .dashboard-meta-label {
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 0.12em;
-        }
-
-        .dashboard-chip-label {
+            letter-spacing: 0.22em;
             color: var(--text-secondary);
         }
 
-        .dashboard-chip-value {
-            color: var(--cx-orange);
+        .dashboard-meta-value {
+            font-size: 1.1rem;
             font-weight: 600;
-            letter-spacing: 0;
-            text-transform: none;
+            margin-top: 0.45rem;
+            color: var(--cx-orange);
         }
 
-        .dashboard-layout {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 260px;
-            gap: 1.5rem;
-            align-items: start;
-        }
-
-        .dashboard-main {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .dashboard-menu {
+        .dashboard-command {
             display: grid;
             gap: 1rem;
         }
 
-        .dashboard-menu-card {
-            background: var(--panel-surface-2);
+        .dashboard-command-card {
+            background: linear-gradient(160deg, rgba(20, 20, 20, 0.95), rgba(8, 8, 8, 0.9));
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 1rem;
+            border-radius: 18px;
+            padding: 1.25rem;
             box-shadow: var(--shadow-soft);
         }
 
-        .dashboard-menu-title {
+        .dashboard-command-title {
             font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.18em;
+            letter-spacing: 0.2em;
             color: var(--text-secondary);
             margin-bottom: 0.75rem;
             font-weight: 600;
+        }
+
+        .dashboard-command-list {
+            display: grid;
+            gap: 0.6rem;
+        }
+
+        .dashboard-body {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .dashboard-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .dashboard-section-alt {
+            background: linear-gradient(160deg, rgba(248, 154, 85, 0.08), rgba(20, 20, 20, 0.92));
+            border-color: rgba(248, 154, 85, 0.25);
+        }
+
+        .dashboard-section-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-secondary);
+        }
+
+        .dashboard-section-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.35rem;
+        }
+
+        .dashboard-view .overview-grid {
+            margin-top: 0.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .dashboard-view .overview-card {
+            background: linear-gradient(140deg, rgba(16, 16, 16, 0.95), rgba(28, 28, 28, 0.9));
+            border: 1px solid rgba(248, 154, 85, 0.25);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-view .overview-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(248, 154, 85, 0.2), transparent 60%);
+            opacity: 0.9;
+        }
+
+        .dashboard-view .overview-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-view .overview-card-title {
+            font-size: 0.75rem;
+        }
+
+        .dashboard-view .overview-card-value {
+            font-size: 2.2rem;
+        }
+
+        .dashboard-view .msp-modules-grid {
+            margin-top: 0;
+        }
+
+        .dashboard-view .msp-module-card {
+            background: linear-gradient(160deg, rgba(18, 18, 18, 0.95), rgba(10, 10, 10, 0.9));
+            border: 1px solid rgba(248, 154, 85, 0.25);
+        }
+
+        .dashboard-view .msp-module-card:hover {
+            border-color: rgba(248, 154, 85, 0.6);
         }
 
         .dashboard-grid {
@@ -2150,58 +2236,73 @@
                 </div>
                 <div class="topbar-actions">
                     <div class="topbar-menu-title">Ucet</div>
-                    <div class="topbar-menu-row">
-                        <div id="authStatus" class="auth-status auth-pill">Neprihlasen</div>
-                        <div class="topbar-menu-actions">
-                            <button class="btn-small" id="loginBtn" onclick="loginWithGoogle()">Prihlasit</button>
-                            <button class="btn btn-secondary" id="logoutBtn" onclick="logout()" style="display: none;">Odhlasit</button>
-                        </div>
+                    <div class="session-status">
+                        <span class="status-dot" aria-hidden="true"></span>
+                        <div id="authStatus" class="auth-status">Neprihlasen</div>
+                    </div>
+                    <div class="topbar-menu-actions">
+                        <button class="btn-small" id="loginBtn" onclick="loginWithGoogle()">Prihlasit</button>
+                        <button class="btn btn-secondary" id="logoutBtn" onclick="logout()" style="display: none;">Odhlasit</button>
                     </div>
                 </div>
             </div>
 
             <div id="dashboardView" class="rack-container dashboard-view" style="display: none;">
-                <div class="dashboard-hero">
-                    <div class="dashboard-hero-main">
-                        <div class="dashboard-title">Dashboard</div>
-                        <div class="dashboard-subtitle">Rychly prehled po prihlaseni, stav klientu a vstup do agendy.</div>
-                        <div class="dashboard-meta">
-                            <div class="dashboard-chip">
-                                <span class="dashboard-chip-label">Role</span>
-                                <span class="dashboard-chip-value" id="dashboardRole">-</span>
+                <div class="dashboard-intro">
+                    <section class="dashboard-intro-card">
+                        <div class="dashboard-intro-content">
+                            <div class="dashboard-kicker">Uvodni panel</div>
+                            <h2 class="dashboard-headline">Dashboard</h2>
+                            <p class="dashboard-lead">Prehled klientu, role a rychly vstup do hlavni agendy.</p>
+                            <div class="dashboard-meta-grid">
+                                <div class="dashboard-meta-card">
+                                    <div class="dashboard-meta-label">Role</div>
+                                    <div class="dashboard-meta-value" id="dashboardRole">-</div>
+                                </div>
+                                <div class="dashboard-meta-card">
+                                    <div class="dashboard-meta-label">Aktivni klient</div>
+                                    <div class="dashboard-meta-value" id="dashboardClient">-</div>
+                                </div>
                             </div>
-                            <div class="dashboard-chip">
-                                <span class="dashboard-chip-label">Aktivni klient</span>
-                                <span class="dashboard-chip-value" id="dashboardClient">-</span>
+                        </div>
+                    </section>
+                    <aside class="dashboard-command">
+                        <div class="dashboard-command-card">
+                            <div class="dashboard-command-title">Klienti</div>
+                            <div class="dashboard-command-list">
+                                <button class="btn" onclick="openClientModal()">Novy klient</button>
+                                <button class="btn btn-secondary" onclick="openClientManagerModal()">Sprava klientu</button>
                             </div>
                         </div>
-                    </div>
-                    <div class="dashboard-hero-actions">
-                        <button class="btn" onclick="openClientModal()">Novy klient</button>
-                        <button class="btn btn-secondary" onclick="openClientManagerModal()">Sprava klientu</button>
-                    </div>
-                </div>
-
-                <div class="dashboard-layout">
-                    <div class="dashboard-main">
-                        <div class="overview-section">
-                            <div class="overview-section-title">Prehled</div>
-                            <div id="dashboardGrid" class="overview-grid dashboard-grid"></div>
-                        </div>
-                        <div class="overview-section">
-                            <div class="overview-section-title">MSP sluzby</div>
-                            <div id="dashboardModulesGrid" class="msp-modules-grid"></div>
-                        </div>
-                    </div>
-                    <aside class="dashboard-menu">
-                        <div class="dashboard-menu-card">
-                            <div class="dashboard-menu-title">Rychle akce</div>
-                            <div class="dashboard-actions dashboard-actions-stack">
+                        <div class="dashboard-command-card">
+                            <div class="dashboard-command-title">Agenda</div>
+                            <div class="dashboard-command-list">
                                 <button class="btn btn-secondary" onclick="switchView('time')">Vykazovani</button>
                                 <button class="btn btn-secondary" id="dashboardReportsBtn" onclick="switchView('reports')">Reporty</button>
                             </div>
                         </div>
                     </aside>
+                </div>
+
+                <div class="dashboard-body">
+                    <section class="dashboard-section">
+                        <div class="dashboard-section-head">
+                            <div>
+                                <div class="dashboard-section-title">Prehled</div>
+                                <div class="dashboard-section-subtitle">Stav klientu a rychly prechod do detailu.</div>
+                            </div>
+                        </div>
+                        <div id="dashboardGrid" class="overview-grid dashboard-grid"></div>
+                    </section>
+                    <section class="dashboard-section dashboard-section-alt">
+                        <div class="dashboard-section-head">
+                            <div>
+                                <div class="dashboard-section-title">MSP sluzby</div>
+                                <div class="dashboard-section-subtitle">Dostupne moduly a pripravene workflow.</div>
+                            </div>
+                        </div>
+                        <div id="dashboardModulesGrid" class="msp-modules-grid"></div>
+                    </section>
                 </div>
             </div>
 
