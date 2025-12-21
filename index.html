@@ -449,6 +449,14 @@
             .module-expansion-grid {
                 grid-template-columns: 1fr;
             }
+
+            .report-actions {
+                align-items: stretch;
+            }
+
+            .report-actions .btn-small {
+                width: 100%;
+            }
         }
         
         .control-section {
@@ -1308,6 +1316,19 @@
             align-items: center;
         }
 
+        .report-field {
+            display: grid;
+            gap: 0.25rem;
+            min-width: 150px;
+        }
+
+        .report-field label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-secondary);
+        }
+
         .report-filters select,
         .report-filters input {
             padding: 0.4rem 0.6rem;
@@ -1317,6 +1338,39 @@
             color: var(--text-primary);
             font-family: 'IBM Plex Mono', monospace;
             font-size: 0.75rem;
+        }
+
+        .report-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .report-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            flex: 1 1 auto;
+        }
+
+        .report-presets input,
+        .report-presets select {
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .report-share-link {
+            min-width: 240px;
+            flex: 1 1 240px;
         }
 
         .topology-group {
@@ -2602,6 +2656,7 @@
                     <h2>Live reporty</h2>
                     <div class="rack-stats">
                         <button class="btn-small" onclick="exportAdminReport()">Export PDF</button>
+                        <button class="btn-small" onclick="exportAllClientsReport()">Export vsechny klienty</button>
                     </div>
                 </div>
                 <div id="reportsAccessNote" class="empty-state" style="display: none;">
@@ -2611,12 +2666,44 @@
                     <div class="time-report-header">
                         <div class="section-title">Filtry reportu</div>
                         <div class="report-filters">
-                            <select id="reportClientFilter" onchange="onReportFilterChange()"></select>
-                            <select id="reportTechnicianFilter" onchange="onReportFilterChange()"></select>
-                            <input type="date" id="reportStartDate" onchange="onReportFilterChange()">
-                            <input type="date" id="reportEndDate" onchange="onReportFilterChange()">
-                            <button class="btn-small" onclick="loadReportEntries()">Nacist</button>
+                            <div class="report-field">
+                                <label for="reportClientFilter">Klient</label>
+                                <select id="reportClientFilter" onchange="onReportFilterChange()"></select>
+                            </div>
+                            <div class="report-field">
+                                <label for="reportTechnicianFilter">Technik</label>
+                                <select id="reportTechnicianFilter" onchange="onReportFilterChange()"></select>
+                            </div>
+                            <div class="report-field">
+                                <label for="reportRangePreset">Obdobi</label>
+                                <select id="reportRangePreset" onchange="onReportRangePresetChange()">
+                                    <option value="current-month">Soucasny mesic</option>
+                                    <option value="previous-month">Predchozi mesic</option>
+                                    <option value="year">Aktualni rok</option>
+                                    <option value="custom">Vlastni rozsah</option>
+                                </select>
+                            </div>
+                            <div class="report-field">
+                                <label for="reportStartDate">Od</label>
+                                <input type="date" id="reportStartDate" onchange="onReportDateChange()">
+                            </div>
+                            <div class="report-field">
+                                <label for="reportEndDate">Do</label>
+                                <input type="date" id="reportEndDate" onchange="onReportDateChange()">
+                            </div>
                         </div>
+                    </div>
+                    <div class="report-actions">
+                        <div class="report-presets">
+                            <input type="text" id="reportPresetName" placeholder="Nazev reportu">
+                            <button class="btn-small" onclick="saveReportPreset()">Ulozit report</button>
+                            <button class="btn-small" onclick="shareReportInternally()">Sdilet interne</button>
+                            <button class="btn-small" onclick="createReportShareLink()">Permanentni odkaz</button>
+                            <input type="text" id="reportShareLink" class="report-share-link" placeholder="Permanentni odkaz" readonly>
+                            <select id="reportPresetSelect" onchange="applyReportPreset()"></select>
+                            <select id="reportSharedSelect" onchange="applySharedReportPreset()"></select>
+                        </div>
+                        <button class="btn-small" onclick="loadReportEntries()">Nacist</button>
                     </div>
                     <div id="timeReportTable"></div>
                 </div>
@@ -2989,12 +3076,21 @@
         let connections = [];
         let timeEntries = [];
         let reportEntries = [];
+        let reportPresetsLoaded = false;
+        let reportSharedLoaded = false;
+        let sharedReportPresets = [];
+        let pendingReportShareId = null;
         let currentView = 'racks';
         let timeViewWeekStart = new Date();
         let timeSelectionStart = null;
         let timeSelectionEnd = null;
         let isTimeSelecting = false;
         let timeSelectionActive = false;
+        try {
+            pendingReportShareId = new URLSearchParams(window.location.search).get('reportShare');
+        } catch (err) {
+            pendingReportShareId = null;
+        }
 
         // Module types
         const DEFAULT_MODULE_TYPES = [
@@ -5382,6 +5478,45 @@
             }
         }
 
+        async function fetchReportEntries(filters) {
+            if (!canViewReports() || !window.db || !window.auth || !auth.currentUser) {
+                return [];
+            }
+            const startDate = filters.startDate;
+            const endDate = filters.endDate;
+            const clientIds = filters.clientId === 'all'
+                ? clients.map(c => c.id)
+                : [filters.clientId];
+
+            if (!startDate || !endDate || !clientIds.length) {
+                return [];
+            }
+
+            const results = await Promise.all(clientIds.map(async (clientId) => {
+                const clientName = clients.find(c => c.id === clientId)?.name || clientId;
+                let ref = db.collection('clients')
+                    .doc(clientId)
+                    .collection('timeEntries')
+                    .where('date', '>=', startDate)
+                    .where('date', '<=', endDate);
+
+                if (filters.technician && filters.technician !== 'all') {
+                    const field = filters.technician.includes('@') ? 'userEmail' : 'userId';
+                    ref = ref.where(field, '==', filters.technician);
+                }
+
+                const snapshot = await ref.get();
+                return snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    clientId,
+                    clientName,
+                    ...doc.data()
+                }));
+            }));
+
+            return results.flat().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        }
+
         async function loadReportEntries() {
             if (!canViewReports()) {
                 reportEntries = [];
@@ -5397,42 +5532,9 @@
             ensureReportFilterDefaults();
             buildReportClientOptions();
             const filters = getReportFilters();
-            const startDate = filters.startDate;
-            const endDate = filters.endDate;
-            const clientIds = filters.clientId === 'all'
-                ? clients.map(c => c.id)
-                : [filters.clientId];
-
-            if (!startDate || !endDate || !clientIds.length) {
-                reportEntries = [];
-                renderReportsView();
-                return;
-            }
 
             try {
-                const results = await Promise.all(clientIds.map(async (clientId) => {
-                    const clientName = clients.find(c => c.id === clientId)?.name || clientId;
-                    let ref = db.collection('clients')
-                        .doc(clientId)
-                        .collection('timeEntries')
-                        .where('date', '>=', startDate)
-                        .where('date', '<=', endDate);
-
-                    if (filters.technician && filters.technician !== 'all') {
-                        const field = filters.technician.includes('@') ? 'userEmail' : 'userId';
-                        ref = ref.where(field, '==', filters.technician);
-                    }
-
-                    const snapshot = await ref.get();
-                    return snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        clientId,
-                        clientName,
-                        ...doc.data()
-                    }));
-                }));
-
-                reportEntries = results.flat().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+                reportEntries = await fetchReportEntries(filters);
                 renderReportsView();
             } catch (err) {
                 console.warn('Report entries load failed:', err);
@@ -5455,18 +5557,25 @@
             if (!view) return;
             const accessNote = document.getElementById('reportsAccessNote');
             const filters = view.querySelector('.report-filters');
+            const actions = view.querySelector('.report-actions');
             if (!canViewReports()) {
                 if (accessNote) accessNote.style.display = 'block';
                 if (filters) filters.style.display = 'none';
+                if (actions) actions.style.display = 'none';
                 const table = document.getElementById('timeReportTable');
                 if (table) table.innerHTML = '';
                 return;
             }
             if (accessNote) accessNote.style.display = 'none';
             if (filters) filters.style.display = 'flex';
+            if (actions) actions.style.display = 'flex';
             ensureReportFilterDefaults();
             buildReportClientOptions();
             buildReportTechnicianOptions(reportEntries);
+            loadReportPresetsFromCloud();
+            loadSharedReportPresets(true);
+            buildReportPresetOptions();
+            buildSharedReportOptions();
             renderTimeReportTable();
         }
 
@@ -5785,15 +5894,85 @@
         }
 
         function ensureReportFilterDefaults() {
+            const presetSelect = document.getElementById('reportRangePreset');
             const startInput = document.getElementById('reportStartDate');
             const endInput = document.getElementById('reportEndDate');
             if (!startInput || !endInput) return;
-            if (!startInput.value || !endInput.value) {
-                const now = new Date();
-                const start = new Date(now.getFullYear(), now.getMonth(), 1);
-                startInput.value = formatDateKey(start);
-                endInput.value = formatDateKey(now);
+            if (presetSelect && !presetSelect.value) {
+                presetSelect.value = 'current-month';
             }
+            const preset = presetSelect ? presetSelect.value : 'current-month';
+            if (preset === 'custom') {
+                toggleReportDateInputs(true);
+                if (!startInput.value || !endInput.value) {
+                    const now = new Date();
+                    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    startInput.value = formatDateKey(start);
+                    endInput.value = formatDateKey(now);
+                }
+                return;
+            }
+            applyReportRangePreset(preset, true);
+        }
+
+        function toggleReportDateInputs(isCustom) {
+            const startInput = document.getElementById('reportStartDate');
+            const endInput = document.getElementById('reportEndDate');
+            if (!startInput || !endInput) return;
+            startInput.disabled = !isCustom;
+            endInput.disabled = !isCustom;
+        }
+
+        function applyReportRangePreset(preset, silent) {
+            const startInput = document.getElementById('reportStartDate');
+            const endInput = document.getElementById('reportEndDate');
+            if (!startInput || !endInput) return;
+            const now = new Date();
+            let start = new Date(now);
+            let end = new Date(now);
+
+            switch (preset) {
+                case 'previous-month':
+                    start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    end = new Date(now.getFullYear(), now.getMonth(), 0);
+                    break;
+                case 'year':
+                    start = new Date(now.getFullYear(), 0, 1);
+                    end = new Date(now);
+                    break;
+                case 'custom':
+                    toggleReportDateInputs(true);
+                    if (!startInput.value || !endInput.value) {
+                        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                        startInput.value = formatDateKey(monthStart);
+                        endInput.value = formatDateKey(now);
+                    }
+                    if (!silent) loadReportEntries();
+                    return;
+                default:
+                    start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    end = new Date(now);
+            }
+
+            startInput.value = formatDateKey(start);
+            endInput.value = formatDateKey(end);
+            toggleReportDateInputs(false);
+            if (!silent) loadReportEntries();
+        }
+
+        function onReportRangePresetChange() {
+            const presetSelect = document.getElementById('reportRangePreset');
+            if (!presetSelect) return;
+            applyReportRangePreset(presetSelect.value);
+        }
+
+        function onReportDateChange() {
+            const presetSelect = document.getElementById('reportRangePreset');
+            if (presetSelect && presetSelect.value !== 'custom') {
+                presetSelect.value = 'custom';
+            }
+            toggleReportDateInputs(true);
+            onReportFilterChange();
         }
 
         function buildReportClientOptions() {
@@ -5830,11 +6009,13 @@
         function getReportFilters() {
             const clientSelect = document.getElementById('reportClientFilter');
             const techSelect = document.getElementById('reportTechnicianFilter');
+            const presetSelect = document.getElementById('reportRangePreset');
             const startInput = document.getElementById('reportStartDate');
             const endInput = document.getElementById('reportEndDate');
             return {
                 clientId: clientSelect ? clientSelect.value : 'all',
                 technician: techSelect ? techSelect.value : 'all',
+                rangePreset: presetSelect ? presetSelect.value : 'custom',
                 startDate: startInput ? startInput.value : '',
                 endDate: endInput ? endInput.value : ''
             };
@@ -5842,6 +6023,368 @@
 
         function onReportFilterChange() {
             loadReportEntries();
+        }
+
+        function getSavedReportPresets() {
+            try {
+                return JSON.parse(localStorage.getItem('cxtechReportPresets') || '[]');
+            } catch (err) {
+                return [];
+            }
+        }
+
+        function saveReportPresets(presets) {
+            localStorage.setItem('cxtechReportPresets', JSON.stringify(presets));
+        }
+
+        function getReportPresetCollection() {
+            if (!window.db || !window.auth || !auth.currentUser) return null;
+            return db.collection('users')
+                .doc(auth.currentUser.uid)
+                .collection('reportPresets');
+        }
+
+        async function loadReportPresetsFromGlobal() {
+            if (!window.db || !window.auth || !auth.currentUser || !window.GLOBAL_PATH) return false;
+            try {
+                const snap = await db.doc(GLOBAL_PATH).get();
+                if (!snap.exists) return false;
+                const data = snap.data() || {};
+                const presetsByUser = data.reportPresetsByUser || {};
+                const presetMap = presetsByUser[auth.currentUser.uid] || {};
+                const presets = Object.values(presetMap).filter(Boolean);
+                if (presets.length) {
+                    saveReportPresets(presets);
+                    buildReportPresetOptions();
+                    return true;
+                }
+            } catch (err) {
+                console.warn('Load report presets from global failed:', err);
+            }
+            return false;
+        }
+
+        async function saveReportPresetToGlobal(preset) {
+            if (!window.db || !window.auth || !auth.currentUser || !window.GLOBAL_PATH || !preset) return;
+            const fieldPath = `reportPresetsByUser.${auth.currentUser.uid}.${preset.id}`;
+            const payload = {
+                id: preset.id,
+                name: preset.name,
+                filters: preset.filters || {},
+                updatedAtMs: Date.now(),
+                updatedBy: auth.currentUser?.email || auth.currentUser?.uid || ''
+            };
+            try {
+                await db.doc(GLOBAL_PATH).set({ [fieldPath]: payload }, { merge: true });
+            } catch (err) {
+                console.warn('Save report preset to global failed:', err);
+            }
+        }
+
+        async function loadReportPresetsFromCloud(force) {
+            if (reportPresetsLoaded && !force) return;
+            const collectionRef = getReportPresetCollection();
+            if (!collectionRef) return;
+            reportPresetsLoaded = true;
+            const localPresets = getSavedReportPresets();
+            try {
+                const snapshot = await collectionRef.orderBy('updatedAtMs', 'desc').get();
+                if (snapshot.empty) {
+                    if (localPresets.length) {
+                        await Promise.all(localPresets.map((preset) => saveReportPresetToCloud(preset)));
+                    } else {
+                        await loadReportPresetsFromGlobal();
+                    }
+                } else {
+                    const presets = snapshot.docs.map(doc => {
+                        const data = doc.data() || {};
+                        return {
+                            id: doc.id,
+                            name: data.name || 'Report',
+                            filters: data.filters || {}
+                        };
+                    });
+                    saveReportPresets(presets);
+                    buildReportPresetOptions();
+                }
+            } catch (err) {
+                console.warn('Load report presets failed:', err);
+                reportPresetsLoaded = false;
+                await loadReportPresetsFromGlobal();
+            }
+        }
+
+        async function saveReportPresetToCloud(preset) {
+            const collectionRef = getReportPresetCollection();
+            if (!collectionRef || !preset) return;
+            try {
+                const payload = {
+                    name: preset.name,
+                    filters: preset.filters || {},
+                    updatedAtMs: Date.now(),
+                    updatedBy: auth.currentUser?.email || auth.currentUser?.uid || ''
+                };
+                if (window.firebase?.firestore?.FieldValue) {
+                    payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+                }
+                await collectionRef.doc(preset.id).set(payload, { merge: true });
+            } catch (err) {
+                console.warn('Save report preset failed:', err);
+                await saveReportPresetToGlobal(preset);
+            }
+        }
+
+        function buildReportPresetOptions() {
+            const select = document.getElementById('reportPresetSelect');
+            if (!select) return;
+            const presets = getSavedReportPresets();
+            const previous = select.value;
+            select.innerHTML = [
+                '<option value="">Ulozene reporty</option>',
+                ...presets.map(preset => `<option value="${preset.id}">${preset.name}</option>`)
+            ].join('');
+            if (presets.some(preset => preset.id === previous)) {
+                select.value = previous;
+            }
+        }
+
+        function buildSharedReportOptions() {
+            const select = document.getElementById('reportSharedSelect');
+            if (!select) return;
+            const previous = select.value;
+            select.innerHTML = [
+                '<option value="">Sdilene reporty</option>',
+                ...sharedReportPresets.map(preset => `<option value="${preset.id}">${preset.name}</option>`)
+            ].join('');
+            if (sharedReportPresets.some(preset => preset.id === previous)) {
+                select.value = previous;
+            }
+        }
+
+        function ensureSelectOption(select, value, label) {
+            if (!select || !value) return;
+            const exists = Array.from(select.options).some(option => option.value === value);
+            if (!exists) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = label || value;
+                select.appendChild(option);
+            }
+        }
+
+        function applyReportFilters(filters) {
+            if (!filters) return;
+            buildReportClientOptions();
+            const clientSelect = document.getElementById('reportClientFilter');
+            const techSelect = document.getElementById('reportTechnicianFilter');
+            const presetSelect = document.getElementById('reportRangePreset');
+            const startInput = document.getElementById('reportStartDate');
+            const endInput = document.getElementById('reportEndDate');
+
+            if (clientSelect && filters.clientId) clientSelect.value = filters.clientId;
+            if (techSelect && filters.technician) {
+                ensureSelectOption(techSelect, filters.technician, filters.technician);
+                techSelect.value = filters.technician;
+            }
+            if (presetSelect && filters.rangePreset) presetSelect.value = filters.rangePreset;
+
+            if (filters.rangePreset && filters.rangePreset !== 'custom') {
+                applyReportRangePreset(filters.rangePreset, true);
+            } else {
+                toggleReportDateInputs(true);
+                if (startInput && filters.startDate) startInput.value = filters.startDate;
+                if (endInput && filters.endDate) endInput.value = filters.endDate;
+            }
+
+            loadReportEntries();
+        }
+
+        function getReportShareCollection() {
+            if (!window.db || !window.auth || !auth.currentUser) return null;
+            return db.collection('reportShares');
+        }
+
+        async function loadSharedReportPresets(force) {
+            if (reportSharedLoaded && !force) return;
+            const collectionRef = getReportShareCollection();
+            if (!collectionRef) return;
+            reportSharedLoaded = true;
+            try {
+                const snapshot = await collectionRef.where('visibility', '==', 'internal').get();
+                sharedReportPresets = snapshot.docs.map(doc => {
+                    const data = doc.data() || {};
+                    return {
+                        id: doc.id,
+                        name: data.name || 'Report',
+                        filters: data.filters || {},
+                        updatedAtMs: data.updatedAtMs || 0
+                    };
+                }).sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
+                buildSharedReportOptions();
+            } catch (err) {
+                console.warn('Load shared report presets failed:', err);
+                reportSharedLoaded = false;
+            }
+        }
+
+        async function createReportShare(filters, name, visibility) {
+            const collectionRef = getReportShareCollection();
+            if (!collectionRef) {
+                alert('Nejprve se prihlaste.');
+                return null;
+            }
+            const docRef = collectionRef.doc();
+            const payload = {
+                name: name || 'Report',
+                filters: filters || {},
+                visibility: visibility || 'link',
+                createdAtMs: Date.now(),
+                updatedAtMs: Date.now(),
+                createdBy: auth.currentUser?.email || auth.currentUser?.uid || '',
+                createdByUid: auth.currentUser?.uid || ''
+            };
+            if (window.firebase?.firestore?.FieldValue) {
+                payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+            }
+            await docRef.set(payload);
+            return docRef.id;
+        }
+
+        function buildReportShareLink(shareId) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('reportShare', shareId);
+            return url.toString();
+        }
+
+        async function createReportShareLink() {
+            ensureReportFilterDefaults();
+            const filters = getReportFilters();
+            const nameInput = document.getElementById('reportPresetName');
+            const name = (nameInput?.value || '').trim() || buildReportPresetName(filters);
+            try {
+                const shareId = await createReportShare(filters, name, 'link');
+                if (!shareId) return;
+                const link = buildReportShareLink(shareId);
+                const linkInput = document.getElementById('reportShareLink');
+                if (linkInput) {
+                    linkInput.value = link;
+                }
+                if (navigator.clipboard?.writeText) {
+                    try {
+                        await navigator.clipboard.writeText(link);
+                        alert('Odkaz zkopirovan.');
+                    } catch (err) {
+                        alert('Odkaz pripraven.');
+                    }
+                } else {
+                    alert('Odkaz pripraven.');
+                }
+            } catch (err) {
+                console.warn('Share link failed:', err);
+                alert('Sdileni selhalo.');
+            }
+        }
+
+        async function shareReportInternally() {
+            ensureReportFilterDefaults();
+            const filters = getReportFilters();
+            const nameInput = document.getElementById('reportPresetName');
+            const name = (nameInput?.value || '').trim() || buildReportPresetName(filters);
+            try {
+                const shareId = await createReportShare(filters, name, 'internal');
+                if (!shareId) return;
+                await loadSharedReportPresets(true);
+                const sharedSelect = document.getElementById('reportSharedSelect');
+                if (sharedSelect) sharedSelect.value = shareId;
+            } catch (err) {
+                console.warn('Share internally failed:', err);
+                alert('Sdileni selhalo.');
+            }
+        }
+
+        async function applyReportShareFromUrl() {
+            if (!pendingReportShareId) return;
+            const shareId = pendingReportShareId;
+            if (!window.db || !window.auth || !auth.currentUser) return;
+            if (!canViewReports()) return;
+            try {
+                const collectionRef = getReportShareCollection();
+                if (!collectionRef) return;
+                const snap = await collectionRef.doc(shareId).get();
+                if (!snap.exists) {
+                    pendingReportShareId = null;
+                    return;
+                }
+                const data = snap.data() || {};
+                if (window.switchView) {
+                    switchView('reports');
+                }
+                applyReportFilters(data.filters || {});
+                const linkInput = document.getElementById('reportShareLink');
+                if (linkInput) linkInput.value = buildReportShareLink(shareId);
+                pendingReportShareId = null;
+            } catch (err) {
+                console.warn('Apply report share failed:', err);
+            }
+        }
+
+        function getReportRangeLabel(filters) {
+            switch (filters.rangePreset) {
+                case 'previous-month':
+                    return 'Predchozi mesic';
+                case 'year':
+                    return 'Aktualni rok';
+                case 'custom':
+                    return `${filters.startDate || '-'} - ${filters.endDate || '-'}`;
+                default:
+                    return 'Soucasny mesic';
+            }
+        }
+
+        function buildReportPresetName(filters) {
+            const clientLabel = filters.clientId === 'all'
+                ? 'Vsechny klienty'
+                : (clients.find(c => c.id === filters.clientId)?.name || filters.clientId);
+            const techLabel = filters.technician === 'all' ? 'Vsechni technici' : filters.technician;
+            const rangeLabel = getReportRangeLabel(filters);
+            return `${clientLabel} | ${rangeLabel} | ${techLabel}`;
+        }
+
+        async function saveReportPreset() {
+            const nameInput = document.getElementById('reportPresetName');
+            ensureReportFilterDefaults();
+            const filters = getReportFilters();
+            const name = (nameInput?.value || '').trim();
+            const presets = getSavedReportPresets();
+            const presetName = name || buildReportPresetName(filters);
+            const preset = {
+                id: `preset-${Date.now()}`,
+                name: presetName,
+                filters
+            };
+            presets.unshift(preset);
+            saveReportPresets(presets.slice(0, 30));
+            if (nameInput) nameInput.value = '';
+            buildReportPresetOptions();
+            await saveReportPresetToCloud(preset);
+        }
+
+        function applyReportPreset() {
+            const select = document.getElementById('reportPresetSelect');
+            if (!select || !select.value) return;
+            const presets = getSavedReportPresets();
+            const preset = presets.find(item => item.id === select.value);
+            if (!preset) return;
+            applyReportFilters(preset.filters || {});
+        }
+
+        function applySharedReportPreset() {
+            const select = document.getElementById('reportSharedSelect');
+            if (!select || !select.value) return;
+            const preset = sharedReportPresets.find(item => item.id === select.value);
+            if (!preset) return;
+            applyReportFilters(preset.filters || {});
         }
 
         function getFilteredReportEntries() {
@@ -6089,14 +6632,7 @@
             printWindow.print();
         }
 
-        function exportAdminReport() {
-            if (!canViewReports()) {
-                alert('Nemate opravneni zobrazit reporty');
-                return;
-            }
-            ensureReportFilterDefaults();
-            const filters = getReportFilters();
-            const entries = getFilteredReportEntries();
+        function buildAdminReportHtml(entries, filters) {
             const clientLabel = filters.clientId === 'all'
                 ? 'Vsechny'
                 : (clients.find(c => c.id === filters.clientId)?.name || filters.clientId);
@@ -6114,7 +6650,7 @@
                 </tr>
             `).join('');
 
-            const reportHtml = `
+            return `
                 <h1>Live reporty</h1>
                 <p>Obdobi: ${periodLabel}</p>
                 <p>Klient: ${clientLabel}</p>
@@ -6135,7 +6671,9 @@
                     </tbody>
                 </table>
             `;
+        }
 
+        function openReportPrintWindow(reportHtml) {
             const printWindow = window.open('', '_blank', 'width=900,height=700');
             if (!printWindow) {
                 alert('Pro export povolte vyskakovaci okna.');
@@ -6159,6 +6697,33 @@
             printWindow.document.close();
             printWindow.focus();
             printWindow.print();
+        }
+
+        async function exportAdminReport() {
+            if (!canViewReports()) {
+                alert('Nemate opravneni zobrazit reporty');
+                return;
+            }
+            ensureReportFilterDefaults();
+            const filters = getReportFilters();
+            const entries = getFilteredReportEntries();
+            openReportPrintWindow(buildAdminReportHtml(entries, filters));
+        }
+
+        async function exportAllClientsReport() {
+            if (!canViewReports()) {
+                alert('Nemate opravneni zobrazit reporty');
+                return;
+            }
+            ensureReportFilterDefaults();
+            const filters = { ...getReportFilters(), clientId: 'all' };
+            try {
+                const entries = await fetchReportEntries(filters);
+                openReportPrintWindow(buildAdminReportHtml(entries, filters));
+            } catch (err) {
+                console.warn('Export all clients failed:', err);
+                alert('Export selhal.');
+            }
         }
         
         // Update statistics
@@ -6612,12 +7177,29 @@
         if (window.switchView) {
           switchView('dashboard');
         }
+        if (window.loadReportPresetsFromCloud) {
+          loadReportPresetsFromCloud(true);
+        }
+        if (window.loadSharedReportPresets) {
+          loadSharedReportPresets(true);
+        }
+        if (window.applyReportShareFromUrl) {
+          applyReportShareFromUrl();
+        }
       } else {
         statusEl.textContent = 'Neprihlasen';
         loginBtn.style.display = 'inline-block';
         logoutBtn.style.display = 'none';
         if (overlay) overlay.classList.remove('hidden');
         document.body.classList.add('auth-locked');
+        if (window.reportPresetsLoaded !== undefined) {
+          reportPresetsLoaded = false;
+        }
+        if (window.reportSharedLoaded !== undefined) {
+          reportSharedLoaded = false;
+          sharedReportPresets = [];
+          buildSharedReportOptions();
+        }
       }
       if (window.applyRolePermissions) {
         window.applyRolePermissions();
