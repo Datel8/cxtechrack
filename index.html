@@ -1090,8 +1090,10 @@
         }
 
         .time-week-grid {
-            grid-auto-rows: 34px;
+            grid-auto-rows: 28px;
             user-select: none;
+            max-height: 560px;
+            overflow: auto;
         }
 
         .time-hour-cell {
@@ -1140,6 +1142,54 @@
             border-radius: 4px;
             background: rgba(34, 197, 94, 0.2);
             border: 1px solid rgba(34, 197, 94, 0.5);
+        }
+
+        .time-activity-manager {
+            margin-top: 1rem;
+        }
+
+        .time-activity-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .time-activity-form input {
+            flex: 1;
+            padding: 0.5rem 0.6rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .time-activity-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.6rem;
+        }
+
+        .time-activity-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(248, 154, 85, 0.15);
+            color: var(--text-primary);
+            font-size: 0.7rem;
+            border: 1px solid rgba(248, 154, 85, 0.4);
+        }
+
+        .time-activity-chip button {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
         }
 
         .time-summary {
@@ -1809,6 +1859,7 @@
                     <button class="view-toggle-btn nav-btn" data-view="topology" onclick="switchView('topology', this)">Topologie</button>
                     <button class="view-toggle-btn nav-btn" data-view="overview" onclick="switchView('overview', this)">Prehled klienta</button>
                     <button class="view-toggle-btn nav-btn" data-view="time" onclick="switchView('time', this)">Vykazovani</button>
+                    <button class="view-toggle-btn nav-btn" data-view="reports" onclick="switchView('reports', this)">Reporty</button>
                 </div>
             </div>
 
@@ -1946,12 +1997,31 @@
                         <div class="time-summary" id="timeSummary"></div>
                         <button class="btn" id="addTimeEntryBtn" onclick="openTimeEntryModal()">Novy zapis</button>
                         <div class="role-note" style="margin-top: 0.75rem;">Tip: oznac si rozsah v kalendari tahem mysi.</div>
-                        <div class="time-report-header">
-                            <div class="section-title">Live report</div>
-                            <select id="timeReportScope" onchange="onTimeReportScopeChange()"></select>
+                        <div class="time-activity-manager">
+                            <div class="section-title">Preddefinovane cinnosti</div>
+                            <div class="time-activity-form">
+                                <input type="text" id="timeActivityInput" placeholder="Nova cinnost">
+                                <button class="btn-small" onclick="addTimeActivity()">Pridat</button>
+                            </div>
+                            <div id="timeActivityList" class="time-activity-list"></div>
                         </div>
-                        <div id="timeReportTable"></div>
                     </div>
+                </div>
+            </div>
+
+            <div id="reportsView" class="time-tracking" style="display: none;">
+                <div class="rack-header">
+                    <h2>Live reporty</h2>
+                    <div class="rack-stats">
+                        <button class="btn-small" onclick="exportTimeReport()">Export PDF</button>
+                    </div>
+                </div>
+                <div class="time-panel">
+                    <div class="time-report-header">
+                        <div class="section-title">Vykaz hodin</div>
+                        <select id="timeReportScope" onchange="onTimeReportScopeChange()"></select>
+                    </div>
+                    <div id="timeReportTable"></div>
                 </div>
             </div>
             
@@ -2031,9 +2101,6 @@
                 <div class="form-group">
                     <label>Popis</label>
                     <input type="text" id="timeEntryDesc" placeholder="Co se delalo">
-                </div>
-                <div class="form-group">
-                    <label><input type="checkbox" id="timeEntryBillable"> Billable</label>
                 </div>
                 <div class="role-note" id="timeEntrySummary"></div>
                 <button class="btn" onclick="saveTimeEntryRange()">Ulozit</button>
@@ -2431,8 +2498,10 @@
             'Dokumentace'
         ];
 
-        const TIME_GRID_START = 6;
-        const TIME_GRID_END = 20;
+        const TIME_GRID_START = 0;
+        const TIME_GRID_END = 23;
+
+        let timeActivities = [];
 
         function getRolePermissions(role) {
             return ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.readonly;
@@ -3244,6 +3313,7 @@
             document.getElementById('topologyView').style.display = 'none';
             document.getElementById('overviewView').style.display = 'none';
             document.getElementById('timeView').style.display = 'none';
+            document.getElementById('reportsView').style.display = 'none';
             
             // Show selected view
             switch(view) {
@@ -3268,6 +3338,14 @@
                         loadTimeEntriesForWeek();
                     } else {
                         renderTimeTracking();
+                    }
+                    break;
+                case 'reports':
+                    document.getElementById('reportsView').style.display = 'block';
+                    if (currentClientId) {
+                        loadTimeEntriesForWeek();
+                    } else {
+                        renderReportsView();
                     }
                     break;
             }
@@ -4515,6 +4593,7 @@
         function initTimeTracking() {
             timeViewWeekStart = getWeekStart(new Date());
             timeSelectionActive = false;
+            loadTimeActivities();
             if (!timeSelectionStart) {
                 const todayKey = formatDateKey(new Date());
                 timeSelectionStart = { date: todayKey, hour: TIME_GRID_START };
@@ -4536,11 +4615,13 @@
             if (!currentClientId) {
                 timeEntries = [];
                 renderTimeTracking();
+                renderReportsView();
                 return;
             }
             if (!window.db || !window.auth || !auth.currentUser) {
                 timeEntries = [];
                 renderTimeTracking();
+                renderReportsView();
                 return;
             }
 
@@ -4568,10 +4649,12 @@
                     ...doc.data()
                 }));
                 renderTimeTracking();
+                renderReportsView();
             } catch (err) {
                 console.warn('Time entries load failed:', err);
                 timeEntries = [];
                 renderTimeTracking();
+                renderReportsView();
             }
         }
 
@@ -4580,9 +4663,15 @@
             if (!view) return;
             renderTimeWeek();
             renderTimeSummary();
+            renderTimeActivities();
+            applyRolePermissions();
+        }
+
+        function renderReportsView() {
+            const view = document.getElementById('reportsView');
+            if (!view) return;
             buildReportScopeOptions();
             renderTimeReportTable();
-            applyRolePermissions();
         }
 
         function getTimeSelectionRange() {
@@ -4754,7 +4843,59 @@
         function buildTimeActivityOptions() {
             const list = document.getElementById('timeActivityOptions');
             if (!list) return;
-            list.innerHTML = DEFAULT_TIME_ACTIVITIES.map(item => `<option value="${item}"></option>`).join('');
+            list.innerHTML = timeActivities.map(item => `<option value="${item}"></option>`).join('');
+        }
+
+        function loadTimeActivities() {
+            const saved = localStorage.getItem('rackManagerTimeActivities');
+            if (saved) {
+                try {
+                    timeActivities = JSON.parse(saved);
+                } catch (err) {
+                    timeActivities = [...DEFAULT_TIME_ACTIVITIES];
+                }
+            } else {
+                timeActivities = [...DEFAULT_TIME_ACTIVITIES];
+            }
+        }
+
+        function saveTimeActivities() {
+            localStorage.setItem('rackManagerTimeActivities', JSON.stringify(timeActivities));
+        }
+
+        function renderTimeActivities() {
+            const list = document.getElementById('timeActivityList');
+            if (!list) return;
+            const items = timeActivities.length ? timeActivities : DEFAULT_TIME_ACTIVITIES;
+            list.innerHTML = items.map(item => `
+                <span class="time-activity-chip">
+                    ${item}
+                    <button onclick="removeTimeActivity('${item}')">x</button>
+                </span>
+            `).join('');
+            buildTimeActivityOptions();
+        }
+
+        function addTimeActivity() {
+            const input = document.getElementById('timeActivityInput');
+            if (!input) return;
+            const value = input.value.trim();
+            if (!value) return;
+            if (!timeActivities.includes(value)) {
+                timeActivities.push(value);
+                saveTimeActivities();
+                renderTimeActivities();
+            }
+            input.value = '';
+        }
+
+        function removeTimeActivity(name) {
+            timeActivities = timeActivities.filter(item => item !== name);
+            if (!timeActivities.length) {
+                timeActivities = [...DEFAULT_TIME_ACTIVITIES];
+            }
+            saveTimeActivities();
+            renderTimeActivities();
         }
 
         function fillTimeEntryModal() {
@@ -4768,14 +4909,12 @@
             const hoursInput = document.getElementById('timeEntryHours');
             const descInput = document.getElementById('timeEntryDesc');
             const activityInput = document.getElementById('timeEntryActivity');
-            const billableInput = document.getElementById('timeEntryBillable');
 
             if (startInput) startInput.value = start;
             if (endInput) endInput.value = end;
             if (hoursInput) hoursInput.value = String(defaultHours);
             if (descInput) descInput.value = '';
             if (activityInput) activityInput.value = '';
-            if (billableInput) billableInput.checked = false;
             updateTimeEntrySummary();
         }
 
@@ -4894,7 +5033,6 @@
                 ${showUser ? '<th>Uzivatel</th>' : ''}
                 <th>Cinnost</th>
                 <th>Popis</th>
-                <th>Billable</th>
                 <th>Akce</th>
             `;
 
@@ -4907,7 +5045,6 @@
                         ${showUser ? `<td>${entry.userEmail || entry.userId || '-'}</td>` : ''}
                         <td>${entry.category || '-'}</td>
                         <td>${entry.description || '-'}</td>
-                        <td>${entry.billable ? 'Ano' : 'Ne'}</td>
                         <td>
                             ${canDelete ? `<button class="delete-btn" onclick="deleteTimeEntry('${entry.id}')">Smazat</button>` : '-'}
                         </td>
@@ -4935,15 +5072,12 @@
             const endInput = document.getElementById('timeEntryEnd');
             const hoursInput = document.getElementById('timeEntryHours');
             const descInput = document.getElementById('timeEntryDesc');
-            const billableInput = document.getElementById('timeEntryBillable');
-
             const clientId = clientSelect ? clientSelect.value : currentClientId;
             const activity = activityInput ? activityInput.value.trim() : '';
             const start = startInput ? startInput.value : '';
             const end = endInput ? endInput.value : '';
             const hours = hoursInput ? parseFloat(hoursInput.value) : 0;
             const description = descInput ? descInput.value.trim() : '';
-            const billable = billableInput ? billableInput.checked : false;
 
             if (!clientId) {
                 alert('Vyberte klienta');
@@ -4968,9 +5102,10 @@
             const selection = getTimeSelectionRange();
             let startHour = null;
             let endHour = null;
-            if (selection && Number.isInteger(hours)) {
+            if (selection) {
+                const block = Math.max(1, Math.ceil(hours));
                 startHour = selection.startHour;
-                endHour = Math.min(TIME_GRID_END, startHour + hours - 1);
+                endHour = Math.min(TIME_GRID_END, startHour + block - 1);
             }
 
             const batch = db.batch();
@@ -4987,7 +5122,6 @@
                     hours,
                     description,
                     category: activity,
-                    billable,
                     startHour,
                     endHour,
                     userId: user.uid,
@@ -5043,7 +5177,6 @@
                     <td>${entry.userEmail || entry.userId || '-'}</td>
                     <td>${entry.category || '-'}</td>
                     <td>${entry.description || '-'}</td>
-                    <td>${entry.billable ? 'Ano' : 'Ne'}</td>
                 </tr>
             `).join('');
 
@@ -5058,7 +5191,6 @@
                             <th>Uzivatel</th>
                             <th>Cinnost</th>
                             <th>Popis</th>
-                            <th>Billable</th>
                         </tr>
                     </thead>
                     <tbody>
