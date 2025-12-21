@@ -1049,73 +1049,97 @@
             font-size: 1rem;
         }
 
-        .calendar-grid {
+        .time-week-header,
+        .time-week-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 0.4rem;
+            grid-template-columns: 70px repeat(7, 1fr);
+            gap: 0.35rem;
         }
 
-        .calendar-weekday {
-            text-transform: uppercase;
-            font-size: 0.6rem;
-            color: var(--text-secondary);
-            text-align: center;
-            letter-spacing: 0.12em;
+        .time-week-header {
+            margin-bottom: 0.4rem;
         }
 
-        .calendar-day {
-            background: #111111;
+        .time-header-cell {
+            background: var(--panel-surface);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 0.5rem;
-            min-height: 64px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            text-align: center;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-secondary);
         }
 
-        .calendar-day:hover {
+        .time-header-cell strong {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            margin-top: 0.15rem;
+            text-transform: none;
+        }
+
+        .time-header-cell span {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--accent-primary);
+            margin-top: 0.1rem;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .time-week-grid {
+            grid-auto-rows: 34px;
+            user-select: none;
+        }
+
+        .time-hour-cell {
+            background: var(--panel-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-family: 'IBM Plex Mono', monospace;
+            text-align: right;
+        }
+
+        .time-slot {
+            background: #101010;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .time-slot:hover {
             border-color: rgba(248, 154, 85, 0.6);
         }
 
-        .calendar-day.muted {
-            opacity: 0.35;
-            cursor: default;
+        .time-slot.in-range {
+            background: rgba(248, 154, 85, 0.15);
+            border-color: rgba(248, 154, 85, 0.65);
         }
 
-        .calendar-day.selected {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 1px rgba(248, 154, 85, 0.25);
-        }
-
-        .calendar-day.in-range {
-            background: rgba(248, 154, 85, 0.12);
-            border-color: rgba(248, 154, 85, 0.55);
-        }
-
-        .calendar-day.range-start,
-        .calendar-day.range-end {
+        .time-slot.range-start,
+        .time-slot.range-end {
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 1px rgba(248, 154, 85, 0.35);
         }
 
-        .calendar-day.today {
+        .time-slot.today {
             border-color: rgba(248, 154, 85, 0.9);
         }
 
-        .calendar-day.has-hours {
-            background: rgba(248, 154, 85, 0.08);
-        }
-
-        .day-number {
-            font-size: 0.75rem;
-            font-family: 'IBM Plex Mono', monospace;
-        }
-
-        .day-hours {
-            font-size: 0.7rem;
-            margin-top: 0.35rem;
-            color: var(--accent-primary);
-            font-family: 'IBM Plex Mono', monospace;
+        .time-slot.has-entry::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border-radius: 4px;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
         }
 
         .time-summary {
@@ -1915,8 +1939,8 @@
                             <div class="calendar-title" id="timeCalendarTitle">-</div>
                             <button class="btn-small" onclick="shiftTimeWeek(1)">›</button>
                         </div>
-                        <div class="calendar-grid" id="timeCalendarWeekdays"></div>
-                        <div class="calendar-grid" id="timeCalendarGrid"></div>
+                        <div class="time-week-header" id="timeWeekHeader"></div>
+                        <div class="time-week-grid" id="timeWeekGrid"></div>
                     </div>
                     <div class="time-panel">
                         <div class="time-summary" id="timeSummary"></div>
@@ -2294,8 +2318,8 @@
         let connections = [];
         let timeEntries = [];
         let timeViewWeekStart = new Date();
-        let timeSelectionStart = '';
-        let timeSelectionEnd = '';
+        let timeSelectionStart = null;
+        let timeSelectionEnd = null;
         let isTimeSelecting = false;
         let timeSelectionActive = false;
 
@@ -2406,6 +2430,9 @@
             'Audit',
             'Dokumentace'
         ];
+
+        const TIME_GRID_START = 6;
+        const TIME_GRID_END = 20;
 
         function getRolePermissions(role) {
             return ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.readonly;
@@ -4489,8 +4516,9 @@
             timeViewWeekStart = getWeekStart(new Date());
             timeSelectionActive = false;
             if (!timeSelectionStart) {
-                timeSelectionStart = formatDateKey(new Date());
-                timeSelectionEnd = timeSelectionStart;
+                const todayKey = formatDateKey(new Date());
+                timeSelectionStart = { date: todayKey, hour: TIME_GRID_START };
+                timeSelectionEnd = { date: todayKey, hour: TIME_GRID_START };
             }
             if (!window.timeMouseUpBound) {
                 window.timeMouseUpBound = true;
@@ -4558,18 +4586,27 @@
         }
 
         function getTimeSelectionRange() {
-            if (!timeSelectionStart) return null;
+            if (!timeSelectionStart || !timeSelectionEnd) return null;
             if (!timeSelectionActive && !isTimeSelecting) return null;
-            const start = timeSelectionStart;
-            const end = timeSelectionEnd || timeSelectionStart;
-            return start <= end ? { start, end } : { start: end, end: start };
+            const startDate = timeSelectionStart.date;
+            const endDate = timeSelectionEnd.date;
+            if (!startDate || !endDate) return null;
+            const startHour = Number.isFinite(timeSelectionStart.hour) ? timeSelectionStart.hour : TIME_GRID_START;
+            const endHour = Number.isFinite(timeSelectionEnd.hour) ? timeSelectionEnd.hour : TIME_GRID_START;
+            const normalized = {
+                startDate: startDate <= endDate ? startDate : endDate,
+                endDate: startDate <= endDate ? endDate : startDate,
+                startHour: Math.min(startHour, endHour),
+                endHour: Math.max(startHour, endHour)
+            };
+            return normalized;
         }
 
         function renderTimeWeek() {
             const titleEl = document.getElementById('timeCalendarTitle');
-            const weekdayGrid = document.getElementById('timeCalendarWeekdays');
-            const grid = document.getElementById('timeCalendarGrid');
-            if (!titleEl || !weekdayGrid || !grid) return;
+            const header = document.getElementById('timeWeekHeader');
+            const grid = document.getElementById('timeWeekGrid');
+            if (!titleEl || !header || !grid) return;
 
             const weekStart = timeViewWeekStart || getWeekStart(new Date());
             const weekEnd = new Date(weekStart);
@@ -4578,69 +4615,103 @@
             titleEl.textContent = `Tyden ${formatShort(weekStart)} - ${formatShort(weekEnd)}`;
 
             const weekdays = ['Po', 'Ut', 'St', 'Ct', 'Pa', 'So', 'Ne'];
-            weekdayGrid.innerHTML = weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join('');
+            const entriesByDate = {};
+            timeEntries.forEach(entry => {
+                if (!entriesByDate[entry.date]) {
+                    entriesByDate[entry.date] = [];
+                }
+                entriesByDate[entry.date].push(entry);
+            });
+
+            let headerHtml = '<div class="time-header-cell">Hod</div>';
+            for (let i = 0; i < 7; i++) {
+                const dayDate = new Date(weekStart);
+                dayDate.setDate(weekStart.getDate() + i);
+                const dateKey = formatDateKey(dayDate);
+                const dayEntries = entriesByDate[dateKey] || [];
+                const totalHours = dayEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+                headerHtml += `
+                    <div class="time-header-cell">
+                        ${weekdays[i]}
+                        <strong>${dateKey.split('-')[2]}.${dateKey.split('-')[1]}.</strong>
+                        <span>${totalHours} h</span>
+                    </div>
+                `;
+            }
+            header.innerHTML = headerHtml;
 
             const selection = getTimeSelectionRange();
             const todayKey = formatDateKey(new Date());
             const canSelect = canManageTimeEntries();
 
             let cells = '';
-            for (let i = 0; i < 7; i++) {
-                const dayDate = new Date(weekStart);
-                dayDate.setDate(weekStart.getDate() + i);
-                const dateKey = formatDateKey(dayDate);
-                const dayEntries = timeEntries.filter(entry => entry.date === dateKey);
-                const totalHours = dayEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
-                const hasHours = totalHours > 0;
-                const isToday = dateKey === todayKey;
+            for (let hour = TIME_GRID_START; hour <= TIME_GRID_END; hour++) {
+                const label = String(hour).padStart(2, '0') + ':00';
+                cells += `<div class="time-hour-cell">${label}</div>`;
 
-                const inRange = selection && dateKey >= selection.start && dateKey <= selection.end;
-                const isStart = selection && dateKey === selection.start;
-                const isEnd = selection && dateKey === selection.end;
+                for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+                    const dayDate = new Date(weekStart);
+                    dayDate.setDate(weekStart.getDate() + dayIndex);
+                    const dateKey = formatDateKey(dayDate);
+                    const dayEntries = entriesByDate[dateKey] || [];
+                    const hasEntry = dayEntries.some(entry =>
+                        Number.isFinite(entry.startHour) &&
+                        Number.isFinite(entry.endHour) &&
+                        hour >= entry.startHour &&
+                        hour <= entry.endHour
+                    );
 
-                const classes = [
-                    'calendar-day',
-                    hasHours ? 'has-hours' : '',
-                    isToday ? 'today' : '',
-                    inRange ? 'in-range' : '',
-                    isStart ? 'range-start' : '',
-                    isEnd ? 'range-end' : ''
-                ].filter(Boolean).join(' ');
+                    const inRange = selection &&
+                        dateKey >= selection.startDate &&
+                        dateKey <= selection.endDate &&
+                        hour >= selection.startHour &&
+                        hour <= selection.endHour;
+                    const isStart = selection &&
+                        dateKey === selection.startDate &&
+                        hour === selection.startHour;
+                    const isEnd = selection &&
+                        dateKey === selection.endDate &&
+                        hour === selection.endHour;
+                    const isToday = dateKey === todayKey;
 
-                const handlers = canSelect
-                    ? `onmousedown="startTimeSelection('${dateKey}')" onmouseenter="updateTimeSelection('${dateKey}')" onmouseup="finishTimeSelection('${dateKey}')"`
-                    : '';
+                    const classes = [
+                        'time-slot',
+                        hasEntry ? 'has-entry' : '',
+                        inRange ? 'in-range' : '',
+                        isStart ? 'range-start' : '',
+                        isEnd ? 'range-end' : '',
+                        isToday ? 'today' : ''
+                    ].filter(Boolean).join(' ');
 
-                const hoursLabel = hasHours ? `<div class="day-hours">${totalHours} h</div>` : '';
-                cells += `
-                    <div class="${classes}" ${handlers}>
-                        <div class="day-number">${dateKey.split('-')[2]}</div>
-                        ${hoursLabel}
-                    </div>
-                `;
+                    const handlers = canSelect
+                        ? `onmousedown="startTimeSelection('${dateKey}', ${hour})" onmouseenter="updateTimeSelection('${dateKey}', ${hour})" onmouseup="finishTimeSelection('${dateKey}', ${hour})"`
+                        : '';
+
+                    cells += `<div class="${classes}" ${handlers}></div>`;
+                }
             }
 
             grid.innerHTML = cells;
         }
 
-        function startTimeSelection(dateKey) {
+        function startTimeSelection(dateKey, hour) {
             if (!canManageTimeEntries()) return;
             isTimeSelecting = true;
             timeSelectionActive = true;
-            timeSelectionStart = dateKey;
-            timeSelectionEnd = dateKey;
+            timeSelectionStart = { date: dateKey, hour };
+            timeSelectionEnd = { date: dateKey, hour };
             renderTimeTracking();
         }
 
-        function updateTimeSelection(dateKey) {
+        function updateTimeSelection(dateKey, hour) {
             if (!isTimeSelecting) return;
-            timeSelectionEnd = dateKey;
+            timeSelectionEnd = { date: dateKey, hour };
             renderTimeTracking();
         }
 
-        function finishTimeSelection(dateKey) {
+        function finishTimeSelection(dateKey, hour) {
             if (!isTimeSelecting) return;
-            timeSelectionEnd = dateKey;
+            timeSelectionEnd = { date: dateKey, hour };
             isTimeSelecting = false;
             openTimeEntryModal();
         }
@@ -4688,8 +4759,9 @@
 
         function fillTimeEntryModal() {
             const range = getTimeSelectionRange();
-            const start = range ? range.start : formatDateKey(new Date());
-            const end = range ? range.end : start;
+            const start = range ? range.startDate : formatDateKey(new Date());
+            const end = range ? range.endDate : start;
+            const defaultHours = range ? Math.max(1, range.endHour - range.startHour + 1) : 1;
 
             const startInput = document.getElementById('timeEntryStart');
             const endInput = document.getElementById('timeEntryEnd');
@@ -4700,7 +4772,7 @@
 
             if (startInput) startInput.value = start;
             if (endInput) endInput.value = end;
-            if (hoursInput && !hoursInput.value) hoursInput.value = '1';
+            if (hoursInput) hoursInput.value = String(defaultHours);
             if (descInput) descInput.value = '';
             if (activityInput) activityInput.value = '';
             if (billableInput) billableInput.checked = false;
@@ -4748,7 +4820,7 @@
 
             const range = getTimeSelectionRange();
             const rangeTotal = range
-                ? timeEntries.filter(entry => entry.date >= range.start && entry.date <= range.end)
+                ? timeEntries.filter(entry => entry.date >= range.startDate && entry.date <= range.endDate)
                     .reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0)
                 : null;
 
@@ -4795,7 +4867,7 @@
             }
             const range = getTimeSelectionRange();
             if (range) {
-                entries = entries.filter(entry => entry.date >= range.start && entry.date <= range.end);
+                entries = entries.filter(entry => entry.date >= range.startDate && entry.date <= range.endDate);
             }
             return entries;
         }
@@ -4893,6 +4965,14 @@
             const max = startDate <= endDate ? endDate : startDate;
             const days = Math.floor((max - min) / (1000 * 60 * 60 * 24)) + 1;
 
+            const selection = getTimeSelectionRange();
+            let startHour = null;
+            let endHour = null;
+            if (selection && Number.isInteger(hours)) {
+                startHour = selection.startHour;
+                endHour = Math.min(TIME_GRID_END, startHour + hours - 1);
+            }
+
             const batch = db.batch();
             for (let i = 0; i < days; i++) {
                 const day = new Date(min);
@@ -4908,6 +4988,8 @@
                     description,
                     category: activity,
                     billable,
+                    startHour,
+                    endHour,
                     userId: user.uid,
                     userEmail: user.email || '',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -4917,8 +4999,9 @@
             try {
                 await batch.commit();
                 closeTimeEntryModal();
-                timeSelectionStart = start;
-                timeSelectionEnd = end;
+                timeSelectionStart = { date: start, hour: startHour !== null ? startHour : TIME_GRID_START };
+                timeSelectionEnd = { date: end, hour: endHour !== null ? endHour : TIME_GRID_START };
+                timeSelectionActive = true;
                 if (clientId === currentClientId) {
                     loadTimeEntriesForWeek();
                 } else {
