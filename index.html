@@ -874,6 +874,30 @@
             margin-bottom: 1rem;
         }
 
+        .dashboard-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .report-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .report-filters select,
+        .report-filters input {
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+        }
+
         .topology-group {
             background: var(--bg-tertiary);
             padding: 1.5rem;
@@ -1190,6 +1214,27 @@
             color: var(--text-secondary);
             font-size: 0.8rem;
             cursor: pointer;
+        }
+
+        .time-preset-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+
+        .time-preset-btn {
+            border: 1px solid rgba(248, 154, 85, 0.5);
+            background: rgba(248, 154, 85, 0.12);
+            color: var(--text-primary);
+            border-radius: 999px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .time-preset-btn:hover {
+            border-color: rgba(248, 154, 85, 0.85);
         }
 
         .time-summary {
@@ -1854,6 +1899,7 @@
             <div class="sidebar-section">
                 <div class="section-title">Navigace</div>
                 <div class="sidebar-nav">
+                    <button class="view-toggle-btn nav-btn" data-view="dashboard" onclick="switchView('dashboard', this)">Dashboard</button>
                     <button class="view-toggle-btn nav-btn active" data-view="racks" onclick="switchView('racks', this)">Racky</button>
                     <button class="view-toggle-btn nav-btn" data-view="network" onclick="switchView('network', this)">Sitova mapa</button>
                     <button class="view-toggle-btn nav-btn" data-view="topology" onclick="switchView('topology', this)">Topologie</button>
@@ -1903,6 +1949,39 @@
                     <div id="authStatus" class="auth-status">Neprihlasen</div>
                     <button class="btn-small" id="loginBtn" onclick="loginWithGoogle()">Prihlasit</button>
                     <button class="btn btn-secondary" id="logoutBtn" onclick="logout()" style="display: none;">Odhlasit</button>
+                </div>
+            </div>
+
+            <div id="dashboardView" class="rack-container" style="display: none;">
+                <div class="rack-header">
+                    <h2>Dashboard</h2>
+                    <div class="rack-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="dashboardRole">-</div>
+                            <div class="stat-label">Role</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="dashboardClient">-</div>
+                            <div class="stat-label">Aktivni klient</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="msp-module-desc">Rychly prehled po prihlaseni, stav klientu a vstup do agendy.</p>
+                <div id="dashboardGrid" class="overview-grid"></div>
+
+                <div class="overview-section">
+                    <div class="overview-section-title">Rychle akce</div>
+                    <div class="dashboard-actions">
+                        <button class="btn" onclick="openClientModal()">Novy klient</button>
+                        <button class="btn btn-secondary" onclick="openClientManagerModal()">Sprava klientu</button>
+                        <button class="btn btn-secondary" onclick="switchView('time')">Vykazovani</button>
+                        <button class="btn btn-secondary" id="dashboardReportsBtn" onclick="switchView('reports')">Reporty</button>
+                    </div>
+                </div>
+
+                <div class="overview-section">
+                    <div class="overview-section-title">MSP sluzby</div>
+                    <div id="dashboardModulesGrid" class="msp-modules-grid"></div>
                 </div>
             </div>
 
@@ -2013,13 +2092,22 @@
                 <div class="rack-header">
                     <h2>Live reporty</h2>
                     <div class="rack-stats">
-                        <button class="btn-small" onclick="exportTimeReport()">Export PDF</button>
+                        <button class="btn-small" onclick="exportAdminReport()">Export PDF</button>
                     </div>
+                </div>
+                <div id="reportsAccessNote" class="empty-state" style="display: none;">
+                    <p>Reporty jsou dostupne jen pro administratory.</p>
                 </div>
                 <div class="time-panel">
                     <div class="time-report-header">
-                        <div class="section-title">Vykaz hodin</div>
-                        <select id="timeReportScope" onchange="onTimeReportScopeChange()"></select>
+                        <div class="section-title">Filtry reportu</div>
+                        <div class="report-filters">
+                            <select id="reportClientFilter" onchange="onReportFilterChange()"></select>
+                            <select id="reportTechnicianFilter" onchange="onReportFilterChange()"></select>
+                            <input type="date" id="reportStartDate" onchange="onReportFilterChange()">
+                            <input type="date" id="reportEndDate" onchange="onReportFilterChange()">
+                            <button class="btn-small" onclick="loadReportEntries()">Nacist</button>
+                        </div>
                     </div>
                     <div id="timeReportTable"></div>
                 </div>
@@ -2097,6 +2185,13 @@
                 <div class="form-group">
                     <label>Hodiny na den</label>
                     <input type="number" id="timeEntryHours" min="0" step="0.25" placeholder="napr. 1.5" oninput="updateTimeEntrySummary()">
+                    <div class="time-preset-group">
+                        <button class="time-preset-btn" type="button" onclick="setTimePreset(0.5)">0.5h</button>
+                        <button class="time-preset-btn" type="button" onclick="setTimePreset(1)">1h</button>
+                        <button class="time-preset-btn" type="button" onclick="setTimePreset(2)">2h</button>
+                        <button class="time-preset-btn" type="button" onclick="setTimePreset(4)">4h</button>
+                        <button class="time-preset-btn" type="button" onclick="setTimePreset(8)">8h</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Popis</label>
@@ -2384,6 +2479,8 @@
         let devices = [];
         let connections = [];
         let timeEntries = [];
+        let reportEntries = [];
+        let currentView = 'racks';
         let timeViewWeekStart = new Date();
         let timeSelectionStart = null;
         let timeSelectionEnd = null;
@@ -2547,6 +2644,10 @@
             return getRolePermissions(currentUserRole).viewTimeAll;
         }
 
+        function canViewReports() {
+            return currentUserRole === 'admin';
+        }
+
         function updateRoleLabel() {
             const roleLabel = document.getElementById('userRole');
             if (roleLabel) {
@@ -2567,12 +2668,23 @@
             const moduleButtons = document.querySelectorAll('[onclick="openModuleModal()"]');
             const roleManagerBtn = document.getElementById('roleManagerBtn');
             const addTimeEntryBtn = document.getElementById('addTimeEntryBtn');
+            const reportsNavBtn = document.querySelector('.view-toggle-btn[data-view="reports"]');
+            const dashboardReportsBtn = document.getElementById('dashboardReportsBtn');
 
             moduleButtons.forEach((button) => {
                 button.disabled = !canManageCategories();
             });
             if (roleManagerBtn) {
                 roleManagerBtn.disabled = !canManageRoles();
+            }
+            if (reportsNavBtn) {
+                reportsNavBtn.style.display = canViewReports() ? 'block' : 'none';
+            }
+            if (dashboardReportsBtn) {
+                dashboardReportsBtn.style.display = canViewReports() ? 'inline-flex' : 'none';
+            }
+            if (!canViewReports() && currentView === 'reports') {
+                switchView('dashboard');
             }
 
             if (!currentClientId) {
@@ -2591,6 +2703,7 @@
             currentUserRole = ROLE_PERMISSIONS[role] ? role : 'readonly';
             updateRoleLabel();
             applyRolePermissions();
+            renderDashboard();
         }
 
         async function fetchUserRole() {
@@ -2863,8 +2976,8 @@
             }
         }
 
-        function renderMspModules() {
-            const grid = document.getElementById('mspModulesGrid');
+        function renderMspModules(targetId) {
+            const grid = document.getElementById(targetId || 'mspModulesGrid');
             if (!grid) return;
 
             const cards = mspModules.map((module) => {
@@ -2932,6 +3045,92 @@
             `).join('');
 
             renderMspModules();
+        }
+
+        function getClientSnapshot(clientId) {
+            if (clientId === currentClientId) {
+                return {
+                    racks: racks || [],
+                    devices: devices || [],
+                    connections: connections || []
+                };
+            }
+            const data = clientData[clientId] || {};
+            return {
+                racks: data.racks || [],
+                devices: data.devices || [],
+                connections: data.connections || []
+            };
+        }
+
+        function getAggregateStats() {
+            const totals = {
+                clients: clients.length,
+                racks: 0,
+                devices: 0,
+                connections: 0
+            };
+
+            clients.forEach((client) => {
+                const snapshot = getClientSnapshot(client.id);
+                totals.racks += snapshot.racks.length;
+                totals.devices += snapshot.devices.length;
+                totals.connections += snapshot.connections.length;
+            });
+
+            return totals;
+        }
+
+        function renderDashboard() {
+            const grid = document.getElementById('dashboardGrid');
+            const roleEl = document.getElementById('dashboardRole');
+            const clientEl = document.getElementById('dashboardClient');
+            if (!grid) return;
+
+            const totals = getAggregateStats();
+            const client = clients.find((c) => c.id === currentClientId);
+            const roleLabel = ROLE_LABELS[currentUserRole] || ROLE_LABELS.readonly;
+
+            if (roleEl) roleEl.textContent = roleLabel;
+            if (clientEl) clientEl.textContent = client ? client.name : 'Nezvoleno';
+
+            const cards = [
+                {
+                    title: 'Klienti',
+                    value: totals.clients,
+                    desc: 'Prehled spravovanych klientu',
+                    action: "openClientManagerModal()"
+                },
+                {
+                    title: 'Racky',
+                    value: totals.racks,
+                    desc: 'Celkem racku napric klienty',
+                    action: currentClientId ? "switchView('racks')" : "openClientManagerModal()"
+                },
+                {
+                    title: 'Zarizeni',
+                    value: totals.devices,
+                    desc: 'Inventar zarizeni',
+                    action: currentClientId ? "switchView('racks')" : "openClientManagerModal()"
+                },
+                {
+                    title: 'Propojeni',
+                    value: totals.connections,
+                    desc: 'Topologie a linky',
+                    action: currentClientId ? "switchView('network')" : "openClientManagerModal()"
+                }
+            ];
+
+            grid.innerHTML = cards.map((card) => `
+                <div class="overview-card" onclick="${card.action}">
+                    <div class="overview-card-title">${card.title}</div>
+                    <div class="overview-card-value">${card.value}</div>
+                    <div class="overview-card-desc">${card.desc}</div>
+                </div>
+            `).join('');
+
+            renderMspModules('dashboardModulesGrid');
+            applyRolePermissions();
         }
 
         async function syncZabbixClients() {
@@ -3298,6 +3497,11 @@
         
         // View switching
         function switchView(view, button) {
+            if (view === 'reports' && !canViewReports()) {
+                alert('Nemate opravneni zobrazit reporty');
+                view = 'dashboard';
+            }
+            currentView = view;
             // Update toggle buttons
             document.querySelectorAll('.view-toggle-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -3314,9 +3518,14 @@
             document.getElementById('overviewView').style.display = 'none';
             document.getElementById('timeView').style.display = 'none';
             document.getElementById('reportsView').style.display = 'none';
+            document.getElementById('dashboardView').style.display = 'none';
             
             // Show selected view
             switch(view) {
+                case 'dashboard':
+                    document.getElementById('dashboardView').style.display = 'block';
+                    renderDashboard();
+                    break;
                 case 'racks':
                     document.getElementById('racksView').style.display = 'block';
                     break;
@@ -3342,11 +3551,7 @@
                     break;
                 case 'reports':
                     document.getElementById('reportsView').style.display = 'block';
-                    if (currentClientId) {
-                        loadTimeEntriesForWeek();
-                    } else {
-                        renderReportsView();
-                    }
+                    loadReportEntries();
                     break;
             }
         }
@@ -4273,6 +4478,7 @@
             renderDeviceTable();
             renderConnections();
             updateStats();
+            renderDashboard();
         }
         
         // Render racks
@@ -4587,7 +4793,7 @@
         }
 
         function onTimeReportScopeChange() {
-            loadTimeEntriesForWeek();
+            loadReportEntries();
         }
 
         function initTimeTracking() {
@@ -4615,18 +4821,15 @@
             if (!currentClientId) {
                 timeEntries = [];
                 renderTimeTracking();
-                renderReportsView();
                 return;
             }
             if (!window.db || !window.auth || !auth.currentUser) {
                 timeEntries = [];
                 renderTimeTracking();
-                renderReportsView();
                 return;
             }
 
             const bounds = getWeekBounds(timeViewWeekStart || new Date());
-            buildReportScopeOptions();
             let ref = db.collection('clients')
                 .doc(currentClientId)
                 .collection('timeEntries')
@@ -4635,11 +4838,6 @@
 
             if (!canViewAllTimeEntries()) {
                 ref = ref.where('userId', '==', auth.currentUser.uid);
-            } else {
-                const scopeSelect = document.getElementById('timeReportScope');
-                if (scopeSelect && scopeSelect.value === 'mine') {
-                    ref = ref.where('userId', '==', auth.currentUser.uid);
-                }
             }
 
             try {
@@ -4649,11 +4847,68 @@
                     ...doc.data()
                 }));
                 renderTimeTracking();
-                renderReportsView();
             } catch (err) {
                 console.warn('Time entries load failed:', err);
                 timeEntries = [];
                 renderTimeTracking();
+            }
+        }
+
+        async function loadReportEntries() {
+            if (!canViewReports()) {
+                reportEntries = [];
+                renderReportsView();
+                return;
+            }
+            if (!window.db || !window.auth || !auth.currentUser) {
+                reportEntries = [];
+                renderReportsView();
+                return;
+            }
+
+            ensureReportFilterDefaults();
+            buildReportClientOptions();
+            const filters = getReportFilters();
+            const startDate = filters.startDate;
+            const endDate = filters.endDate;
+            const clientIds = filters.clientId === 'all'
+                ? clients.map(c => c.id)
+                : [filters.clientId];
+
+            if (!startDate || !endDate || !clientIds.length) {
+                reportEntries = [];
+                renderReportsView();
+                return;
+            }
+
+            try {
+                const results = await Promise.all(clientIds.map(async (clientId) => {
+                    const clientName = clients.find(c => c.id === clientId)?.name || clientId;
+                    let ref = db.collection('clients')
+                        .doc(clientId)
+                        .collection('timeEntries')
+                        .where('date', '>=', startDate)
+                        .where('date', '<=', endDate);
+
+                    if (filters.technician && filters.technician !== 'all') {
+                        const field = filters.technician.includes('@') ? 'userEmail' : 'userId';
+                        ref = ref.where(field, '==', filters.technician);
+                    }
+
+                    const snapshot = await ref.get();
+                    return snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        clientId,
+                        clientName,
+                        ...doc.data()
+                    }));
+                }));
+
+                reportEntries = results.flat().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+                renderReportsView();
+            } catch (err) {
+                console.warn('Report entries load failed:', err);
+                reportEntries = [];
                 renderReportsView();
             }
         }
@@ -4670,7 +4925,20 @@
         function renderReportsView() {
             const view = document.getElementById('reportsView');
             if (!view) return;
-            buildReportScopeOptions();
+            const accessNote = document.getElementById('reportsAccessNote');
+            const filters = view.querySelector('.report-filters');
+            if (!canViewReports()) {
+                if (accessNote) accessNote.style.display = 'block';
+                if (filters) filters.style.display = 'none';
+                const table = document.getElementById('timeReportTable');
+                if (table) table.innerHTML = '';
+                return;
+            }
+            if (accessNote) accessNote.style.display = 'none';
+            if (filters) filters.style.display = 'flex';
+            ensureReportFilterDefaults();
+            buildReportClientOptions();
+            buildReportTechnicianOptions(reportEntries);
             renderTimeReportTable();
         }
 
@@ -4918,6 +5186,13 @@
             updateTimeEntrySummary();
         }
 
+        function setTimePreset(hours) {
+            const hoursInput = document.getElementById('timeEntryHours');
+            if (!hoursInput) return;
+            hoursInput.value = String(hours);
+            updateTimeEntrySummary();
+        }
+
         function updateTimeEntrySummary() {
             const startInput = document.getElementById('timeEntryStart');
             const endInput = document.getElementById('timeEntryEnd');
@@ -4981,32 +5256,80 @@
             `;
         }
 
-        function buildReportScopeOptions() {
-            const select = document.getElementById('timeReportScope');
-            if (!select) return;
-            const previous = select.value || 'mine';
-            if (canViewAllTimeEntries()) {
-                select.innerHTML = `
-                    <option value="all">Vsechny zapisy</option>
-                    <option value="mine">Moje zapisy</option>
-                `;
-                select.value = previous || 'all';
-            } else {
-                select.innerHTML = `<option value="mine">Moje zapisy</option>`;
-                select.value = 'mine';
+        function ensureReportFilterDefaults() {
+            const startInput = document.getElementById('reportStartDate');
+            const endInput = document.getElementById('reportEndDate');
+            if (!startInput || !endInput) return;
+            if (!startInput.value || !endInput.value) {
+                const now = new Date();
+                const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                startInput.value = formatDateKey(start);
+                endInput.value = formatDateKey(now);
             }
         }
 
-        function getFilteredTimeEntries() {
-            buildReportScopeOptions();
-            const scopeSelect = document.getElementById('timeReportScope');
-            let entries = [...timeEntries];
-            if (scopeSelect && scopeSelect.value === 'mine') {
-                entries = entries.filter(entry => entry.userId === (auth && auth.currentUser ? auth.currentUser.uid : ''));
+        function buildReportClientOptions() {
+            const select = document.getElementById('reportClientFilter');
+            if (!select) return;
+            const preferred = select.value || currentClientId || 'all';
+            select.innerHTML = [
+                '<option value="all">Vsechny klienty</option>',
+                ...clients.map(client => `<option value="${client.id}">${client.name}</option>`)
+            ].join('');
+            if (preferred === 'all' || clients.some(c => c.id === preferred)) {
+                select.value = preferred;
+            } else if (currentClientId && clients.some(c => c.id === currentClientId)) {
+                select.value = currentClientId;
+            } else {
+                select.value = 'all';
             }
-            const range = getTimeSelectionRange();
-            if (range) {
-                entries = entries.filter(entry => entry.date >= range.startDate && entry.date <= range.endDate);
+        }
+
+        function buildReportTechnicianOptions(entries) {
+            const select = document.getElementById('reportTechnicianFilter');
+            if (!select) return;
+            const previous = select.value || 'all';
+            const technicians = Array.from(new Set(
+                (entries || []).map(entry => entry.userEmail || entry.userId).filter(Boolean)
+            )).sort((a, b) => a.localeCompare(b, 'cs', { sensitivity: 'base' }));
+            select.innerHTML = [
+                '<option value="all">Vsechni technici</option>',
+                ...technicians.map(name => `<option value="${name}">${name}</option>`)
+            ].join('');
+            select.value = technicians.includes(previous) ? previous : 'all';
+        }
+
+        function getReportFilters() {
+            const clientSelect = document.getElementById('reportClientFilter');
+            const techSelect = document.getElementById('reportTechnicianFilter');
+            const startInput = document.getElementById('reportStartDate');
+            const endInput = document.getElementById('reportEndDate');
+            return {
+                clientId: clientSelect ? clientSelect.value : 'all',
+                technician: techSelect ? techSelect.value : 'all',
+                startDate: startInput ? startInput.value : '',
+                endDate: endInput ? endInput.value : ''
+            };
+        }
+
+        function onReportFilterChange() {
+            loadReportEntries();
+        }
+
+        function getFilteredReportEntries() {
+            const filters = getReportFilters();
+            let entries = [...reportEntries];
+            if (filters.clientId && filters.clientId !== 'all') {
+                entries = entries.filter(entry => entry.clientId === filters.clientId);
+            }
+            if (filters.technician && filters.technician !== 'all') {
+                entries = entries.filter(entry => (entry.userEmail || entry.userId) === filters.technician);
+            }
+            if (filters.startDate) {
+                entries = entries.filter(entry => entry.date >= filters.startDate);
+            }
+            if (filters.endDate) {
+                entries = entries.filter(entry => entry.date <= filters.endDate);
             }
             return entries;
         }
@@ -5014,39 +5337,36 @@
         function renderTimeReportTable() {
             const container = document.getElementById('timeReportTable');
             if (!container) return;
-            if (!currentClientId) {
-                container.innerHTML = '';
-                return;
-            }
 
-            const entries = getFilteredTimeEntries();
+            const entries = getFilteredReportEntries();
             if (entries.length === 0) {
                 container.innerHTML = '<div class="empty-state"><p>Zadne vykazane hodiny.</p></div>';
                 return;
             }
 
-            const showUser = canViewAllTimeEntries();
-            const currentUserId = auth && auth.currentUser ? auth.currentUser.uid : '';
             const headerCols = `
                 <th>Datum</th>
+                <th>Klient</th>
                 <th>Hodiny</th>
-                ${showUser ? '<th>Uzivatel</th>' : ''}
+                <th>Technik</th>
                 <th>Cinnost</th>
                 <th>Popis</th>
                 <th>Akce</th>
             `;
 
             const rows = entries.map(entry => {
-                const canDelete = canManageTimeEntries() && (!canViewAllTimeEntries() ? entry.userId === currentUserId : true);
+                const canDelete = canManageTimeEntries();
+                const clientName = entry.clientName || (clients.find(c => c.id === entry.clientId)?.name) || '-';
                 return `
                     <tr>
                         <td>${entry.date || '-'}</td>
+                        <td>${clientName}</td>
                         <td>${entry.hours || 0}</td>
-                        ${showUser ? `<td>${entry.userEmail || entry.userId || '-'}</td>` : ''}
+                        <td>${entry.userEmail || entry.userId || '-'}</td>
                         <td>${entry.category || '-'}</td>
                         <td>${entry.description || '-'}</td>
                         <td>
-                            ${canDelete ? `<button class="delete-btn" onclick="deleteTimeEntry('${entry.id}')">Smazat</button>` : '-'}
+                            ${canDelete ? `<button class="delete-btn" onclick="deleteReportEntry('${entry.id}', '${entry.clientId || ''}')">Smazat</button>` : '-'}
                         </td>
                     </tr>
                 `;
@@ -5163,12 +5483,29 @@
             }
         }
 
+        async function deleteReportEntry(entryId, clientId) {
+            if (!canManageTimeEntries()) return;
+            const targetClientId = clientId || currentClientId;
+            if (!targetClientId) return;
+            try {
+                await db.collection('clients')
+                    .doc(targetClientId)
+                    .collection('timeEntries')
+                    .doc(entryId)
+                    .delete();
+                loadReportEntries();
+            } catch (err) {
+                console.error('Report entry delete failed:', err);
+                alert('Chyba pri mazani: ' + err.message);
+            }
+        }
+
         function exportTimeReport() {
             if (!currentClientId) {
                 alert('Nejprve vyberte klienta');
                 return;
             }
-            const entries = getFilteredTimeEntries();
+            const entries = [...timeEntries];
             const weekLabel = document.getElementById('timeCalendarTitle')?.textContent || '';
             const tableRows = entries.map(entry => `
                 <tr>
@@ -5208,6 +5545,78 @@
                 <html>
                     <head>
                         <title>Vykaz hodin</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
+                            h1 { margin-bottom: 8px; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+                            th, td { border: 1px solid #ccc; padding: 8px; font-size: 12px; text-align: left; }
+                            th { background: #f1f1f1; }
+                        </style>
+                    </head>
+                    <body>${reportHtml}</body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+
+        function exportAdminReport() {
+            if (!canViewReports()) {
+                alert('Nemate opravneni zobrazit reporty');
+                return;
+            }
+            ensureReportFilterDefaults();
+            const filters = getReportFilters();
+            const entries = getFilteredReportEntries();
+            const clientLabel = filters.clientId === 'all'
+                ? 'Vsechny'
+                : (clients.find(c => c.id === filters.clientId)?.name || filters.clientId);
+            const techLabel = filters.technician === 'all' ? 'Vsechni' : filters.technician;
+            const periodLabel = `${filters.startDate || '-'} - ${filters.endDate || '-'}`;
+
+            const tableRows = entries.map(entry => `
+                <tr>
+                    <td>${entry.date || '-'}</td>
+                    <td>${entry.clientName || (clients.find(c => c.id === entry.clientId)?.name) || '-'}</td>
+                    <td>${entry.hours || 0}</td>
+                    <td>${entry.userEmail || entry.userId || '-'}</td>
+                    <td>${entry.category || '-'}</td>
+                    <td>${entry.description || '-'}</td>
+                </tr>
+            `).join('');
+
+            const reportHtml = `
+                <h1>Live reporty</h1>
+                <p>Obdobi: ${periodLabel}</p>
+                <p>Klient: ${clientLabel}</p>
+                <p>Technik: ${techLabel}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Klient</th>
+                            <th>Hodiny</th>
+                            <th>Technik</th>
+                            <th>Cinnost</th>
+                            <th>Popis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows || '<tr><td colspan="6">Zadne zaznamy</td></tr>'}
+                    </tbody>
+                </table>
+            `;
+
+            const printWindow = window.open('', '_blank', 'width=900,height=700');
+            if (!printWindow) {
+                alert('Pro export povolte vyskakovaci okna.');
+                return;
+            }
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Live reporty</title>
                         <style>
                             body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
                             h1 { margin-bottom: 8px; }
@@ -5616,6 +6025,9 @@
         } else {
           setCurrentRole('admin');
         }
+        if (window.switchView) {
+          switchView('dashboard');
+        }
       }
     }
 
@@ -5669,6 +6081,9 @@
         logoutBtn.style.display = 'inline-block';
         if (overlay) overlay.classList.add('hidden');
         document.body.classList.remove('auth-locked');
+        if (window.switchView) {
+          switchView('dashboard');
+        }
       } else {
         statusEl.textContent = 'Neprihlasen';
         loginBtn.style.display = 'inline-block';
