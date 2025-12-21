@@ -211,10 +211,57 @@
         }
 
         .topbar-actions {
+            display: grid;
+            gap: 0.6rem;
+            z-index: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--panel-surface-2);
+            min-width: 240px;
+        }
+
+        .topbar-menu-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .topbar-menu-row {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 0.75rem;
-            z-index: 1;
+            flex-wrap: wrap;
+        }
+
+        .topbar-menu-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .auth-pill {
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 0.35rem 0.6rem;
+            background: var(--panel-surface);
+            color: var(--text-secondary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .topbar-actions .btn,
+        .topbar-actions .btn-small,
+        .topbar-actions .btn-secondary {
+            width: auto;
+            padding: 0.45rem 0.8rem;
+            font-size: 0.75rem;
         }
 
         .auth-status {
@@ -340,6 +387,18 @@
             .main-content {
                 padding: 1.5rem;
             }
+
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-hero-actions {
+                width: 100%;
+            }
         }
 
         @media (max-width: 700px) {
@@ -349,6 +408,14 @@
 
             .topbar {
                 padding: 1rem 1.25rem;
+            }
+
+            .topbar-actions {
+                width: 100%;
+            }
+
+            .dashboard-hero {
+                padding: 1.25rem;
             }
         }
         
@@ -874,10 +941,146 @@
             margin-bottom: 1rem;
         }
 
+        .dashboard-view .overview-section {
+            margin-top: 1.5rem;
+        }
+
+        .dashboard-view .overview-section:first-child {
+            margin-top: 0;
+        }
+
         .dashboard-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .dashboard-actions-stack {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-view {
+            display: block;
+        }
+
+        .dashboard-hero {
+            background: linear-gradient(140deg, rgba(248, 154, 85, 0.18), rgba(10, 10, 10, 0.85));
+            border: 1px solid rgba(248, 154, 85, 0.4);
+            border-radius: 18px;
+            padding: 1.75rem;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 1.5rem;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-hero::after {
+            content: '';
+            position: absolute;
+            right: -10%;
+            top: -20%;
+            width: 55%;
+            height: 140%;
+            background: radial-gradient(circle at center, rgba(248, 154, 85, 0.22), transparent 70%);
+            opacity: 0.6;
+        }
+
+        .dashboard-hero-main {
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-hero-actions {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 0.6rem;
+            min-width: 220px;
+        }
+
+        .dashboard-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .dashboard-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 0.35rem;
+            max-width: 520px;
+        }
+
+        .dashboard-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.75rem;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .dashboard-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: var(--panel-surface);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .dashboard-chip-label {
+            color: var(--text-secondary);
+        }
+
+        .dashboard-chip-value {
+            color: var(--cx-orange);
+            font-weight: 600;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .dashboard-main {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .dashboard-menu {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .dashboard-menu-card {
+            background: var(--panel-surface-2);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .dashboard-menu-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .dashboard-grid {
+            margin-top: 0.5rem;
         }
 
         .report-filters {
@@ -1946,42 +2149,59 @@
                     <div class="topbar-subtitle">Multi-tenant sprava infrastruktury</div>
                 </div>
                 <div class="topbar-actions">
-                    <div id="authStatus" class="auth-status">Neprihlasen</div>
-                    <button class="btn-small" id="loginBtn" onclick="loginWithGoogle()">Prihlasit</button>
-                    <button class="btn btn-secondary" id="logoutBtn" onclick="logout()" style="display: none;">Odhlasit</button>
+                    <div class="topbar-menu-title">Ucet</div>
+                    <div class="topbar-menu-row">
+                        <div id="authStatus" class="auth-status auth-pill">Neprihlasen</div>
+                        <div class="topbar-menu-actions">
+                            <button class="btn-small" id="loginBtn" onclick="loginWithGoogle()">Prihlasit</button>
+                            <button class="btn btn-secondary" id="logoutBtn" onclick="logout()" style="display: none;">Odhlasit</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id="dashboardView" class="rack-container" style="display: none;">
-                <div class="rack-header">
-                    <h2>Dashboard</h2>
-                    <div class="rack-stats">
-                        <div class="stat">
-                            <div class="stat-value" id="dashboardRole">-</div>
-                            <div class="stat-label">Role</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value" id="dashboardClient">-</div>
-                            <div class="stat-label">Aktivni klient</div>
+            <div id="dashboardView" class="rack-container dashboard-view" style="display: none;">
+                <div class="dashboard-hero">
+                    <div class="dashboard-hero-main">
+                        <div class="dashboard-title">Dashboard</div>
+                        <div class="dashboard-subtitle">Rychly prehled po prihlaseni, stav klientu a vstup do agendy.</div>
+                        <div class="dashboard-meta">
+                            <div class="dashboard-chip">
+                                <span class="dashboard-chip-label">Role</span>
+                                <span class="dashboard-chip-value" id="dashboardRole">-</span>
+                            </div>
+                            <div class="dashboard-chip">
+                                <span class="dashboard-chip-label">Aktivni klient</span>
+                                <span class="dashboard-chip-value" id="dashboardClient">-</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <p class="msp-module-desc">Rychly prehled po prihlaseni, stav klientu a vstup do agendy.</p>
-                <div id="dashboardGrid" class="overview-grid"></div>
-
-                <div class="overview-section">
-                    <div class="overview-section-title">Rychle akce</div>
-                    <div class="dashboard-actions">
+                    <div class="dashboard-hero-actions">
                         <button class="btn" onclick="openClientModal()">Novy klient</button>
                         <button class="btn btn-secondary" onclick="openClientManagerModal()">Sprava klientu</button>
-                        <button class="btn btn-secondary" onclick="switchView('time')">Vykazovani</button>
-                        <button class="btn btn-secondary" id="dashboardReportsBtn" onclick="switchView('reports')">Reporty</button>
                     </div>
                 </div>
 
-                <div class="overview-section">
-                    <div class="overview-section-title">MSP sluzby</div>
-                    <div id="dashboardModulesGrid" class="msp-modules-grid"></div>
+                <div class="dashboard-layout">
+                    <div class="dashboard-main">
+                        <div class="overview-section">
+                            <div class="overview-section-title">Prehled</div>
+                            <div id="dashboardGrid" class="overview-grid dashboard-grid"></div>
+                        </div>
+                        <div class="overview-section">
+                            <div class="overview-section-title">MSP sluzby</div>
+                            <div id="dashboardModulesGrid" class="msp-modules-grid"></div>
+                        </div>
+                    </div>
+                    <aside class="dashboard-menu">
+                        <div class="dashboard-menu-card">
+                            <div class="dashboard-menu-title">Rychle akce</div>
+                            <div class="dashboard-actions dashboard-actions-stack">
+                                <button class="btn btn-secondary" onclick="switchView('time')">Vykazovani</button>
+                                <button class="btn btn-secondary" id="dashboardReportsBtn" onclick="switchView('reports')">Reporty</button>
+                            </div>
+                        </div>
+                    </aside>
                 </div>
             </div>
 
