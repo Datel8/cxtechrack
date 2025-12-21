@@ -407,12 +407,17 @@
                 padding: 1.5rem;
             }
 
-            .dashboard-intro {
+            .dashboard-shell {
                 grid-template-columns: 1fr;
             }
 
-            .dashboard-command {
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            .dashboard-hero-card {
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+
+            .dashboard-logo-wall {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             }
         }
 
@@ -429,17 +434,20 @@
                 width: 100%;
             }
 
-            .dashboard-intro-card {
-                padding: 1.5rem;
-                min-height: auto;
+            .dashboard-section {
+                padding: 1.25rem;
             }
 
-            .dashboard-command {
+            .dashboard-hero-card {
+                padding: 1.5rem;
+            }
+
+            .dashboard-logo-wall {
                 grid-template-columns: 1fr;
             }
 
-            .dashboard-section {
-                padding: 1.25rem;
+            .module-expansion-grid {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -972,100 +980,152 @@
             padding: 0;
         }
 
-        .dashboard-intro {
+        .dashboard-shell {
             display: grid;
-            grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+            grid-template-columns: minmax(0, 1fr) 320px;
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
-        .dashboard-intro-card {
-            background: linear-gradient(145deg, rgba(248, 154, 85, 0.22), rgba(12, 12, 12, 0.92));
+        .dashboard-hero-card {
+            background: linear-gradient(150deg, rgba(248, 154, 85, 0.22), rgba(10, 10, 10, 0.95));
             border: 1px solid rgba(248, 154, 85, 0.45);
-            border-radius: 22px;
+            border-radius: 24px;
             padding: 2rem;
             position: relative;
             overflow: hidden;
-            min-height: 260px;
+            min-height: 320px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+            gap: 1.5rem;
             box-shadow: var(--shadow-soft);
         }
 
-        .dashboard-intro-card::after {
+        .dashboard-hero-card::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 20% 20%, rgba(248, 154, 85, 0.25), transparent 55%),
-                        radial-gradient(circle at 90% 10%, rgba(248, 154, 85, 0.15), transparent 50%);
-            opacity: 0.8;
+            background: radial-gradient(circle at 15% 20%, rgba(248, 154, 85, 0.28), transparent 55%),
+                        radial-gradient(circle at 80% 10%, rgba(248, 154, 85, 0.2), transparent 60%);
+            opacity: 0.9;
         }
 
-        .dashboard-intro-content {
+        .dashboard-hero-content {
             position: relative;
             z-index: 1;
             display: grid;
             gap: 0.75rem;
         }
 
-        .dashboard-kicker {
-            font-size: 0.7rem;
+        .dashboard-hero-kicker {
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.28em;
             color: var(--text-secondary);
         }
 
-        .dashboard-headline {
+        .dashboard-hero-title {
             font-size: 2rem;
             font-weight: 700;
         }
 
-        .dashboard-lead {
+        .dashboard-hero-subtitle {
             color: var(--text-secondary);
             font-size: 0.95rem;
-            max-width: 520px;
+            max-width: 560px;
         }
 
-        .dashboard-meta-grid {
+        .dashboard-hero-metrics {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 0.75rem;
             margin-top: 0.5rem;
         }
 
-        .dashboard-meta-card {
+        .dashboard-metric {
             background: rgba(8, 8, 8, 0.6);
             border: 1px solid rgba(248, 154, 85, 0.35);
             border-radius: 14px;
             padding: 0.85rem 1rem;
         }
 
-        .dashboard-meta-label {
+        .dashboard-metric-label {
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.22em;
             color: var(--text-secondary);
         }
 
-        .dashboard-meta-value {
+        .dashboard-metric-value {
             font-size: 1.1rem;
             font-weight: 600;
             margin-top: 0.45rem;
             color: var(--cx-orange);
         }
 
-        .dashboard-command {
+        .dashboard-logo-wall {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            align-content: start;
+        }
+
+        .dashboard-logo-title {
+            grid-column: 1 / -1;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.22em;
+            color: var(--text-secondary);
+        }
+
+        .dashboard-logo-slot {
+            background: rgba(8, 8, 8, 0.65);
+            border: 1px dashed rgba(248, 154, 85, 0.4);
+            border-radius: 16px;
+            padding: 0.9rem;
+            min-height: 110px;
+            display: grid;
+            place-items: center;
+            gap: 0.4rem;
+            text-align: center;
+        }
+
+        .logo-mark {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--cx-orange), #ff6a25);
+            color: #0b0b0b;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 700;
+            display: grid;
+            place-items: center;
+            letter-spacing: 0.12em;
+        }
+
+        .logo-caption {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-secondary);
+        }
+
+        .dashboard-rail {
             display: grid;
             gap: 1rem;
         }
 
-        .dashboard-command-card {
-            background: linear-gradient(160deg, rgba(20, 20, 20, 0.95), rgba(8, 8, 8, 0.9));
+        .dashboard-rail-card {
+            background: linear-gradient(160deg, rgba(18, 18, 18, 0.95), rgba(10, 10, 10, 0.9));
             border: 1px solid var(--border-color);
             border-radius: 18px;
             padding: 1.25rem;
             box-shadow: var(--shadow-soft);
         }
 
-        .dashboard-command-title {
+        .dashboard-rail-title {
             font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.2em;
@@ -1074,7 +1134,30 @@
             font-weight: 600;
         }
 
-        .dashboard-command-list {
+        .dashboard-contact-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .dashboard-contact-item {
+            display: grid;
+            gap: 0.25rem;
+        }
+
+        .dashboard-contact-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-secondary);
+        }
+
+        .dashboard-contact-value {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .dashboard-rail-actions {
             display: grid;
             gap: 0.6rem;
         }
@@ -1087,7 +1170,7 @@
         .dashboard-section {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 18px;
+            border-radius: 20px;
             padding: 1.5rem;
             box-shadow: var(--shadow-soft);
         }
@@ -1163,6 +1246,55 @@
 
         .dashboard-view .msp-module-card:hover {
             border-color: rgba(248, 154, 85, 0.6);
+        }
+
+        .module-expansion {
+            margin-top: 1rem;
+            display: grid;
+            gap: 0.6rem;
+        }
+
+        .module-expansion-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-secondary);
+        }
+
+        .module-expansion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .module-expansion-tile {
+            border: 1px dashed rgba(248, 154, 85, 0.35);
+            border-radius: 14px;
+            padding: 0.9rem;
+            background: rgba(8, 8, 8, 0.6);
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .module-expansion-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: rgba(248, 154, 85, 0.2);
+            color: var(--cx-orange);
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+        }
+
+        .module-expansion-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .module-expansion-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
         }
 
         .dashboard-grid {
@@ -2248,35 +2380,71 @@
             </div>
 
             <div id="dashboardView" class="rack-container dashboard-view" style="display: none;">
-                <div class="dashboard-intro">
-                    <section class="dashboard-intro-card">
-                        <div class="dashboard-intro-content">
-                            <div class="dashboard-kicker">Uvodni panel</div>
-                            <h2 class="dashboard-headline">Dashboard</h2>
-                            <p class="dashboard-lead">Prehled klientu, role a rychly vstup do hlavni agendy.</p>
-                            <div class="dashboard-meta-grid">
-                                <div class="dashboard-meta-card">
-                                    <div class="dashboard-meta-label">Role</div>
-                                    <div class="dashboard-meta-value" id="dashboardRole">-</div>
+                <div class="dashboard-shell">
+                    <section class="dashboard-hero-card">
+                        <div class="dashboard-hero-content">
+                            <div class="dashboard-hero-kicker">CX.TECH MSP</div>
+                            <h2 class="dashboard-hero-title">Operations Canvas</h2>
+                            <p class="dashboard-hero-subtitle">Prehled klientu, role a rychly vstup do hlavni agendy s mistem pro brandy a kontakty.</p>
+                            <div class="dashboard-hero-metrics">
+                                <div class="dashboard-metric">
+                                    <div class="dashboard-metric-label">Role</div>
+                                    <div class="dashboard-metric-value" id="dashboardRole">-</div>
                                 </div>
-                                <div class="dashboard-meta-card">
-                                    <div class="dashboard-meta-label">Aktivni klient</div>
-                                    <div class="dashboard-meta-value" id="dashboardClient">-</div>
+                                <div class="dashboard-metric">
+                                    <div class="dashboard-metric-label">Aktivni klient</div>
+                                    <div class="dashboard-metric-value" id="dashboardClient">-</div>
                                 </div>
+                                <div class="dashboard-metric">
+                                    <div class="dashboard-metric-label">Typ klienta</div>
+                                    <div class="dashboard-metric-value" id="dashboardType">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dashboard-logo-wall">
+                            <div class="dashboard-logo-title">Loga klienta</div>
+                            <div class="dashboard-logo-slot">
+                                <div class="logo-mark" id="dashboardLogoPrimary">LOGO</div>
+                                <div class="logo-caption">Primarni</div>
+                            </div>
+                            <div class="dashboard-logo-slot">
+                                <div class="logo-mark">LOGO</div>
+                                <div class="logo-caption">Dalsi brand</div>
+                            </div>
+                            <div class="dashboard-logo-slot">
+                                <div class="logo-mark">LOGO</div>
+                                <div class="logo-caption">Projekt</div>
+                            </div>
+                            <div class="dashboard-logo-slot">
+                                <div class="logo-mark">LOGO</div>
+                                <div class="logo-caption">Vychozi</div>
                             </div>
                         </div>
                     </section>
-                    <aside class="dashboard-command">
-                        <div class="dashboard-command-card">
-                            <div class="dashboard-command-title">Klienti</div>
-                            <div class="dashboard-command-list">
-                                <button class="btn" onclick="openClientModal()">Novy klient</button>
-                                <button class="btn btn-secondary" onclick="openClientManagerModal()">Sprava klientu</button>
+
+                    <aside class="dashboard-rail">
+                        <div class="dashboard-rail-card">
+                            <div class="dashboard-rail-title">Kontaktni udaje</div>
+                            <div class="dashboard-contact-list">
+                                <div class="dashboard-contact-item">
+                                    <div class="dashboard-contact-label">Kontakt</div>
+                                    <div class="dashboard-contact-value" id="dashboardContact">-</div>
+                                </div>
+                                <div class="dashboard-contact-item">
+                                    <div class="dashboard-contact-label">Adresa</div>
+                                    <div class="dashboard-contact-value" id="dashboardLocation">-</div>
+                                </div>
+                                <div class="dashboard-contact-item">
+                                    <div class="dashboard-contact-label">ICO</div>
+                                    <div class="dashboard-contact-value" id="dashboardIco">-</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="dashboard-command-card">
-                            <div class="dashboard-command-title">Agenda</div>
-                            <div class="dashboard-command-list">
+                        <div class="dashboard-rail-card">
+                            <div class="dashboard-rail-title">Rychle akce</div>
+                            <div class="dashboard-rail-actions">
+                                <button class="btn" onclick="openClientModal()">Novy klient</button>
+                                <button class="btn btn-secondary" onclick="openClientManagerModal()">Sprava klientu</button>
                                 <button class="btn btn-secondary" onclick="switchView('time')">Vykazovani</button>
                                 <button class="btn btn-secondary" id="dashboardReportsBtn" onclick="switchView('reports')">Reporty</button>
                             </div>
@@ -2302,6 +2470,26 @@
                             </div>
                         </div>
                         <div id="dashboardModulesGrid" class="msp-modules-grid"></div>
+                        <div class="module-expansion">
+                            <div class="module-expansion-title">Priprava na expanzi</div>
+                            <div class="module-expansion-grid">
+                                <div class="module-expansion-tile">
+                                    <div class="module-expansion-icon">+</div>
+                                    <div class="module-expansion-label">Novy modul</div>
+                                    <div class="module-expansion-desc">Slot pro dalsi workflow a integrace.</div>
+                                </div>
+                                <div class="module-expansion-tile">
+                                    <div class="module-expansion-icon">+</div>
+                                    <div class="module-expansion-label">Automatizace</div>
+                                    <div class="module-expansion-desc">Pripraveno pro budoucni automat.</div>
+                                </div>
+                                <div class="module-expansion-tile">
+                                    <div class="module-expansion-icon">+</div>
+                                    <div class="module-expansion-label">Compliance</div>
+                                    <div class="module-expansion-desc">Misto pro governance a audit.</div>
+                                </div>
+                            </div>
+                        </div>
                     </section>
                 </div>
             </div>
@@ -3792,6 +3980,11 @@
         // Update client info panel
         function updateClientInfo() {
             const client = clients.find(c => c.id === currentClientId);
+            const dashboardContact = document.getElementById('dashboardContact');
+            const dashboardLocation = document.getElementById('dashboardLocation');
+            const dashboardType = document.getElementById('dashboardType');
+            const dashboardIco = document.getElementById('dashboardIco');
+            const dashboardLogo = document.getElementById('dashboardLogoPrimary');
             if (client) {
                 document.getElementById('clientInfo').style.display = 'block';
                 document.getElementById('clientName').textContent = client.name + (client.ico ? ` (ICO: ${client.ico})` : '');
@@ -3799,8 +3992,22 @@
                 document.getElementById('clientContact').textContent = client.contact ? `Kontakt: ${client.contact}` : '';
                 document.getElementById('clientLocation').textContent = client.address ? `Adresa: ${client.address}` : '';
                 document.getElementById('clientType').textContent = client.type.toUpperCase();
+                if (dashboardContact) dashboardContact.textContent = client.contact || 'Neuvedeno';
+                if (dashboardLocation) dashboardLocation.textContent = client.address || 'Neuvedeno';
+                if (dashboardType) dashboardType.textContent = client.type ? client.type.toUpperCase() : '-';
+                if (dashboardIco) dashboardIco.textContent = client.ico || 'Neuvedeno';
+                if (dashboardLogo) {
+                    const parts = (client.name || '').trim().split(/\s+/).filter(Boolean);
+                    const initials = parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
+                    dashboardLogo.textContent = initials || 'LOGO';
+                }
             } else {
                 document.getElementById('clientInfo').style.display = 'none';
+                if (dashboardContact) dashboardContact.textContent = '-';
+                if (dashboardLocation) dashboardLocation.textContent = '-';
+                if (dashboardType) dashboardType.textContent = '-';
+                if (dashboardIco) dashboardIco.textContent = '-';
+                if (dashboardLogo) dashboardLogo.textContent = 'LOGO';
             }
         }
         
