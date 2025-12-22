@@ -126,13 +126,13 @@
         }
 
         .sidebar-section {
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.35rem;
             padding: 0.5rem 0;
         }
 
         .sidebar-section + .sidebar-section {
             border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding-top: 0.9rem;
+            padding-top: 0.6rem;
         }
 
         .sidebar-section-title {
@@ -140,22 +140,14 @@
             text-transform: uppercase;
             letter-spacing: 0.18em;
             color: rgba(248, 154, 85, 0.85);
-            margin-bottom: 0.55rem;
+            margin-bottom: 0.4rem;
             font-weight: 600;
             position: relative;
             padding-left: 0.75rem;
         }
 
         .sidebar-section-title::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            width: 6px;
-            height: 6px;
-            border-radius: 999px;
-            background: rgba(248, 154, 85, 0.9);
-            transform: translateY(-50%);
+            display: none;
         }
 
         .section-title {
@@ -220,8 +212,8 @@
         }
 
         .sidebar-subsection {
-            margin-top: 0.6rem;
-            padding-top: 0.6rem;
+            margin-top: 0.45rem;
+            padding-top: 0.45rem;
             border-top: 1px dashed rgba(255, 255, 255, 0.08);
         }
 
@@ -317,6 +309,20 @@
             height: 100%;
             background: radial-gradient(circle at right, rgba(248, 154, 85, 0.2), transparent 70%);
             opacity: 0.8;
+        }
+
+        .topbar-compact {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            margin-bottom: 1rem;
+            justify-content: flex-end;
+        }
+
+        .topbar-compact::after {
+            display: none;
         }
 
         .topbar-title {
@@ -1181,6 +1187,37 @@
             letter-spacing: 0.18em;
             color: var(--text-secondary);
             margin-bottom: 1rem;
+        }
+
+        .overview-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .overview-client-meta {
+            display: grid;
+            gap: 0.25rem;
+        }
+
+        .overview-client-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            border: 1px solid rgba(248, 154, 85, 0.35);
+            background: rgba(15, 15, 15, 0.6);
+            display: grid;
+            place-items: center;
+            color: var(--cx-orange);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            font-size: 0.75rem;
+        }
+
+        .overview-client-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
         .dashboard-view {
@@ -2994,13 +3031,6 @@
             </div>
 
             <div class="sidebar-section">
-                <div class="sidebar-section-title">Dashboard</div>
-                <div class="sidebar-nav">
-                    <button class="view-toggle-btn nav-btn" data-view="dashboard" onclick="switchView('dashboard', this)">Dashboard</button>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
                 <div class="sidebar-section-title">Sit</div>
                 <div class="sidebar-nav sidebar-nav-nested">
                     <button class="view-toggle-btn nav-btn nav-btn-nested active" data-view="racks" onclick="switchView('racks', this)">Racky</button>
@@ -3065,11 +3095,7 @@
         </aside>
 
         <main class="main-content">
-            <div class="topbar">
-                <div>
-                    <div class="topbar-title">MSP Operations Desk</div>
-                    <div class="topbar-subtitle">Multi-tenant sprava infrastruktury</div>
-                </div>
+            <div class="topbar topbar-compact">
                 <div class="topbar-user">
                     <button class="user-menu-btn" id="userMenuBtn" onclick="toggleUserMenu()" aria-label="Uzivatelske nastaveni">
                         <span class="user-menu-avatar" id="userMenuAvatar">NA</span>
@@ -3207,9 +3233,12 @@
                 <div class="rack-header">
                     <h2>Prehled klienta</h2>
                     <div class="rack-stats">
-                        <div class="stat">
-                            <div class="stat-value" id="overviewClientName">-</div>
-                            <div class="stat-label">Aktivni klient</div>
+                        <div class="overview-header">
+                            <div class="overview-client-meta">
+                                <div class="stat-value" id="overviewClientName">-</div>
+                                <div class="stat-label">Aktivni klient</div>
+                            </div>
+                            <div class="overview-client-logo" id="overviewClientLogo">LOGO</div>
                         </div>
                     </div>
                 </div>
@@ -4285,16 +4314,43 @@
         function renderClientOverview() {
             const grid = document.getElementById('overviewGrid');
             const name = document.getElementById('overviewClientName');
+            const logo = document.getElementById('overviewClientLogo');
             if (!grid) return;
 
             const client = clients.find((c) => c.id === currentClientId);
             if (name) {
                 name.textContent = client ? client.name : '-';
             }
+            if (logo) {
+                const logoUrl = client ? (client.logoUrl || client.logo) : '';
+                if (logoUrl) {
+                    const safeName = client?.name || 'Klient';
+                    logo.innerHTML = `<img src="${logoUrl}" alt="Logo ${safeName}">`;
+                } else {
+                    const parts = (client?.name || '').trim().split(/\s+/).filter(Boolean);
+                    const initials = parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+                    logo.textContent = initials || 'LOGO';
+                }
+            }
 
             const totalUnits = racks.reduce((sum, rack) => sum + rack.units, 0);
             const usedUnits = devices.reduce((sum, device) => sum + device.height, 0);
             const freeUnits = Math.max(totalUnits - usedUnits, 0);
+            const types = moduleTypes.length ? moduleTypes : DEFAULT_MODULE_TYPES;
+            const typeCounts = types.map((type) => ({
+                id: type.id,
+                label: type.label || getModuleTypeLabel(type.id),
+                count: devices.filter((device) => device.type === type.id).length
+            }));
+            const keepIds = ['switch', 'ap'];
+            const deviceTypeCards = typeCounts
+                .filter((item) => item.count > 0 || keepIds.includes(item.id))
+                .map((item) => ({
+                    title: item.label,
+                    value: item.count,
+                    desc: 'Zarizeni dle typu',
+                    view: 'racks'
+                }));
 
             const cards = [
                 {
@@ -4320,18 +4376,52 @@
                     value: freeUnits,
                     desc: 'Kapacita pro rozsireni',
                     view: 'racks'
+                },
+                ...deviceTypeCards,
+                {
+                    title: 'Hodiny tento mesic',
+                    value: '-',
+                    valueId: 'overviewMonthHours',
+                    desc: 'Vykazano za aktualni mesic',
+                    view: 'time'
                 }
             ];
 
             grid.innerHTML = cards.map((card) => `
                 <div class="overview-card" onclick="switchView('${card.view}')">
                     <div class="overview-card-title">${card.title}</div>
-                    <div class="overview-card-value">${card.value}</div>
+                    <div class="overview-card-value"${card.valueId ? ` id="${card.valueId}"` : ''}>${card.value}</div>
                     <div class="overview-card-desc">${card.desc}</div>
                 </div>
             `).join('');
 
             renderMspModules();
+            loadOverviewMonthHours();
+        }
+
+        async function loadOverviewMonthHours() {
+            const valueEl = document.getElementById('overviewMonthHours');
+            if (!valueEl) return;
+            if (!currentClientId || !window.db || !window.auth || !auth.currentUser) {
+                valueEl.textContent = '-';
+                return;
+            }
+            const now = new Date();
+            const start = formatDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
+            const end = formatDateKey(now);
+            try {
+                const snapshot = await db.collection('clients')
+                    .doc(currentClientId)
+                    .collection('timeEntries')
+                    .where('date', '>=', start)
+                    .where('date', '<=', end)
+                    .get();
+                const total = snapshot.docs.reduce((sum, doc) => sum + (parseFloat(doc.data().hours) || 0), 0);
+                valueEl.textContent = `${total} h`;
+            } catch (err) {
+                console.warn('Overview month hours load failed:', err);
+                valueEl.textContent = '-';
+            }
         }
 
         function getClientSnapshot(clientId) {
