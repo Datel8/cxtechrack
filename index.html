@@ -626,10 +626,6 @@
                 grid-template-columns: 1fr;
                 min-height: auto;
             }
-
-            .dashboard-logo-wall {
-                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            }
         }
 
         @media (max-width: 700px) {
@@ -651,10 +647,6 @@
 
             .dashboard-hero-card {
                 padding: 1.5rem;
-            }
-
-            .dashboard-logo-wall {
-                grid-template-columns: 1fr;
             }
 
             .module-expansion-grid {
@@ -1233,7 +1225,7 @@
 
         .dashboard-shell {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 320px;
+            grid-template-columns: minmax(0, 1fr);
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -1247,7 +1239,7 @@
             overflow: hidden;
             min-height: 320px;
             display: grid;
-            grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
             gap: 1.5rem;
             box-shadow: var(--shadow-soft);
         }
@@ -1314,103 +1306,95 @@
             color: var(--cx-orange);
         }
 
-        .dashboard-logo-wall {
+        .dashboard-time-panel {
             position: relative;
             z-index: 1;
+            background: rgba(8, 8, 8, 0.6);
+            border: 1px solid rgba(248, 154, 85, 0.35);
+            border-radius: 18px;
+            padding: 1.25rem;
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.75rem;
+            gap: 0.85rem;
             align-content: start;
         }
 
-        .dashboard-logo-title {
-            grid-column: 1 / -1;
+        .dashboard-time-title {
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.22em;
             color: var(--text-secondary);
         }
 
-        .dashboard-logo-slot {
-            background: rgba(8, 8, 8, 0.65);
-            border: 1px dashed rgba(248, 154, 85, 0.4);
-            border-radius: 16px;
-            padding: 0.9rem;
-            min-height: 110px;
-            display: grid;
-            place-items: center;
-            gap: 0.4rem;
-            text-align: center;
-        }
-
-        .logo-mark {
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, var(--cx-orange), #ff6a25);
-            color: #0b0b0b;
-            font-family: 'IBM Plex Mono', monospace;
+        .dashboard-time-total {
+            font-size: 2rem;
             font-weight: 700;
-            display: grid;
-            place-items: center;
-            letter-spacing: 0.12em;
+            color: var(--cx-orange);
         }
 
-        .logo-caption {
+        .dashboard-time-progress {
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .dashboard-time-progress span {
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--cx-orange), #ff6a25);
+        }
+
+        .dashboard-time-remaining {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .dashboard-time-divider {
+            height: 1px;
+            background: rgba(248, 154, 85, 0.25);
+        }
+
+        .dashboard-time-subtitle {
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.2em;
             color: var(--text-secondary);
         }
 
-        .dashboard-rail {
+        .dashboard-tech-list {
             display: grid;
-            gap: 1rem;
+            gap: 0.55rem;
         }
 
-        .dashboard-rail-card {
-            background: linear-gradient(160deg, rgba(18, 18, 18, 0.95), rgba(10, 10, 10, 0.9));
-            border: 1px solid var(--border-color);
-            border-radius: 18px;
-            padding: 1.25rem;
-            box-shadow: var(--shadow-soft);
+        .dashboard-tech-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.85rem;
         }
 
-        .dashboard-rail-title {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            color: var(--text-secondary);
-            margin-bottom: 0.75rem;
+        .dashboard-tech-name {
+            color: var(--text-primary);
             font-weight: 600;
         }
 
-        .dashboard-contact-list {
-            display: grid;
-            gap: 0.75rem;
+        .dashboard-tech-hours {
+            color: var(--cx-orange);
+            font-weight: 600;
         }
 
-        .dashboard-contact-item {
-            display: grid;
-            gap: 0.25rem;
+        .dashboard-tech-bar {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
         }
 
-        .dashboard-contact-label {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.18em;
-            color: var(--text-secondary);
-        }
-
-        .dashboard-contact-value {
-            font-size: 0.9rem;
-            color: var(--text-primary);
-            word-break: break-word;
-        }
-
-        .dashboard-rail-actions {
-            display: grid;
-            gap: 0.6rem;
+        .dashboard-tech-bar span {
+            display: block;
+            height: 100%;
+            background: rgba(248, 154, 85, 0.7);
         }
 
         .dashboard-body {
@@ -3124,7 +3108,7 @@
                         <div class="dashboard-hero-content">
                             <div class="dashboard-hero-kicker">CX.TECH MSP</div>
                             <h2 class="dashboard-hero-title">Operations Canvas</h2>
-                            <p class="dashboard-hero-subtitle">Prehled klientu, role a rychly vstup do hlavni agendy s mistem pro brandy a kontakty.</p>
+                            <p class="dashboard-hero-subtitle">Prehled vykazu, kapacit a pracovniho nasazeni napric klienty.</p>
                             <div class="dashboard-hero-metrics">
                                 <div class="dashboard-metric">
                                     <div class="dashboard-metric-label">Role</div>
@@ -3140,55 +3124,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="dashboard-logo-wall">
-                            <div class="dashboard-logo-title">Loga klienta</div>
-                            <div class="dashboard-logo-slot">
-                                <div class="logo-mark" id="dashboardLogoPrimary">LOGO</div>
-                                <div class="logo-caption">Primarni</div>
+                        <div class="dashboard-time-panel">
+                            <div class="dashboard-time-title">Vykazovani za mesic</div>
+                            <div class="dashboard-time-total" id="dashboardMonthTotal">-</div>
+                            <div class="dashboard-time-progress">
+                                <span id="dashboardMonthProgress"></span>
                             </div>
-                            <div class="dashboard-logo-slot">
-                                <div class="logo-mark">LOGO</div>
-                                <div class="logo-caption">Dalsi brand</div>
-                            </div>
-                            <div class="dashboard-logo-slot">
-                                <div class="logo-mark">LOGO</div>
-                                <div class="logo-caption">Projekt</div>
-                            </div>
-                            <div class="dashboard-logo-slot">
-                                <div class="logo-mark">LOGO</div>
-                                <div class="logo-caption">Vychozi</div>
-                            </div>
+                            <div class="dashboard-time-remaining" id="dashboardMonthRemaining">Zbyva do HPP: - h</div>
+                            <div class="dashboard-time-divider"></div>
+                            <div class="dashboard-time-subtitle">Technici</div>
+                            <div class="dashboard-tech-list" id="dashboardTechHours"></div>
                         </div>
                     </section>
-
-                    <aside class="dashboard-rail">
-                        <div class="dashboard-rail-card">
-                            <div class="dashboard-rail-title">Kontaktni udaje</div>
-                            <div class="dashboard-contact-list">
-                                <div class="dashboard-contact-item">
-                                    <div class="dashboard-contact-label">Kontakt</div>
-                                    <div class="dashboard-contact-value" id="dashboardContact">-</div>
-                                </div>
-                                <div class="dashboard-contact-item">
-                                    <div class="dashboard-contact-label">Adresa</div>
-                                    <div class="dashboard-contact-value" id="dashboardLocation">-</div>
-                                </div>
-                                <div class="dashboard-contact-item">
-                                    <div class="dashboard-contact-label">ICO</div>
-                                    <div class="dashboard-contact-value" id="dashboardIco">-</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="dashboard-rail-card">
-                            <div class="dashboard-rail-title">Rychle akce</div>
-                            <div class="dashboard-rail-actions">
-                                <button class="btn" onclick="openClientModal()">Novy klient</button>
-                                <button class="btn btn-secondary" onclick="openClientManagerModal()">Sprava klientu</button>
-                                <button class="btn btn-secondary" onclick="switchView('time')">Vykazovani</button>
-                                <button class="btn btn-secondary" id="dashboardReportsBtn" onclick="switchView('reports')">Reporty</button>
-                            </div>
-                        </div>
-                    </aside>
                 </div>
 
                 <div class="dashboard-body">
@@ -3917,6 +3864,7 @@
 
         const TIME_GRID_START = 0;
         const TIME_GRID_END = 23;
+        const HPP_MONTHLY_TARGET = 160;
 
         let timeActivities = [];
 
@@ -4511,7 +4459,89 @@
             `).join('');
 
             renderMspModules('dashboardModulesGrid');
+            loadDashboardTimeOverview();
             applyRolePermissions();
+        }
+
+        async function loadDashboardTimeOverview() {
+            const totalEl = document.getElementById('dashboardMonthTotal');
+            const remainingEl = document.getElementById('dashboardMonthRemaining');
+            const progressEl = document.getElementById('dashboardMonthProgress');
+            const listEl = document.getElementById('dashboardTechHours');
+            if (!totalEl || !remainingEl || !progressEl || !listEl) return;
+
+            totalEl.textContent = '-';
+            remainingEl.textContent = `Zbyva do HPP: - h`;
+            progressEl.style.width = '0%';
+            listEl.innerHTML = '<div class="dashboard-tech-row"><span class="dashboard-tech-name">Zadne vykazy</span><span class="dashboard-tech-hours">-</span></div>';
+
+            if (!currentClientId || !window.db || !window.auth || !auth.currentUser) {
+                return;
+            }
+
+            const now = new Date();
+            const start = formatDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
+            const end = formatDateKey(now);
+
+            try {
+                const snapshot = await db.collection('clients')
+                    .doc(currentClientId)
+                    .collection('timeEntries')
+                    .where('date', '>=', start)
+                    .where('date', '<=', end)
+                    .get();
+
+                const totalsByTech = {};
+                let totalHours = 0;
+                snapshot.docs.forEach((doc) => {
+                    const data = doc.data() || {};
+                    const hours = parseFloat(data.hours) || 0;
+                    const tech = data.userEmail || data.userId || 'Neprirazeno';
+                    totalHours += hours;
+                    totalsByTech[tech] = (totalsByTech[tech] || 0) + hours;
+                });
+
+                const roundedTotal = Math.round(totalHours * 10) / 10;
+                totalEl.textContent = `${roundedTotal} h`;
+                const remaining = Math.max(HPP_MONTHLY_TARGET - totalHours, 0);
+                const roundedRemaining = Math.round(remaining * 10) / 10;
+                remainingEl.textContent = `Zbyva do HPP: ${roundedRemaining} h z ${HPP_MONTHLY_TARGET} h`;
+                const progress = HPP_MONTHLY_TARGET ? Math.min((totalHours / HPP_MONTHLY_TARGET) * 100, 100) : 0;
+                progressEl.style.width = `${Math.round(progress)}%`;
+
+                const rows = Object.entries(totalsByTech)
+                    .sort((a, b) => b[1] - a[1]);
+                if (!rows.length) {
+                    listEl.innerHTML = '<div class="dashboard-tech-row"><span class="dashboard-tech-name">Zadne vykazy</span><span class="dashboard-tech-hours">-</span></div>';
+                    return;
+                }
+
+                const maxList = 5;
+                const visibleRows = rows.slice(0, maxList);
+                const overflow = rows.length - visibleRows.length;
+                const listHtml = visibleRows.map(([name, hours]) => {
+                    const rounded = Math.round(hours * 10) / 10;
+                    const width = totalHours ? Math.max(6, Math.round((hours / totalHours) * 100)) : 0;
+                    return `
+                        <div>
+                            <div class="dashboard-tech-row">
+                                <span class="dashboard-tech-name">${name}</span>
+                                <span class="dashboard-tech-hours">${rounded} h</span>
+                            </div>
+                            <div class="dashboard-tech-bar"><span style="width: ${width}%"></span></div>
+                        </div>
+                    `;
+                }).join('');
+                listEl.innerHTML = listHtml + (overflow > 0
+                    ? `<div class="dashboard-tech-row"><span class="dashboard-tech-name">+${overflow} dalsich</span><span class="dashboard-tech-hours"></span></div>`
+                    : '');
+            } catch (err) {
+                console.warn('Dashboard time overview failed:', err);
+                totalEl.textContent = '-';
+                remainingEl.textContent = `Zbyva do HPP: - h`;
+                progressEl.style.width = '0%';
+                listEl.innerHTML = '<div class="dashboard-tech-row"><span class="dashboard-tech-name">Nacitani selhalo</span><span class="dashboard-tech-hours">-</span></div>';
+            }
         }
 
         async function syncZabbixClients() {
