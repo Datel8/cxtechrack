@@ -1334,6 +1334,123 @@
             min-height: 0.7rem;
         }
 
+        .erp-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .erp-summary-card {
+            background: rgba(10, 10, 10, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 1rem;
+            display: grid;
+            gap: 0.6rem;
+        }
+
+        .erp-summary-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-secondary);
+        }
+
+        .erp-summary-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .erp-summary-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .erp-summary-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 0.4rem;
+        }
+
+        .erp-summary-list li {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .erp-summary-list strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .erp-employee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .erp-employee-card {
+            background: rgba(10, 10, 10, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 1rem;
+            display: grid;
+            gap: 0.7rem;
+        }
+
+        .erp-employee-head {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .erp-employee-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(248, 154, 85, 0.3), rgba(248, 154, 85, 0.05));
+            border: 1px solid rgba(248, 154, 85, 0.35);
+            display: grid;
+            place-items: center;
+            color: var(--cx-orange);
+            font-weight: 700;
+        }
+
+        .erp-employee-name {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .erp-employee-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .erp-employee-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .erp-employee-tag {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            padding: 0.2rem 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .erp-employee-tag.active {
+            border-color: rgba(248, 154, 85, 0.45);
+            color: var(--cx-orange);
+        }
+
         .dashboard-metric {
             background: rgba(8, 8, 8, 0.6);
             border: 1px solid rgba(248, 154, 85, 0.35);
@@ -3246,17 +3363,126 @@
                     <section class="dashboard-section">
                         <div class="dashboard-section-head">
                             <div>
-                                <div class="dashboard-section-title">Prehled</div>
-                                <div class="dashboard-section-subtitle">Stav klientu a rychly prechod do detailu.</div>
+                                <div class="dashboard-section-title">ERP cockpit</div>
+                                <div class="dashboard-section-subtitle">Zjednoduseny prehled pro finance, lidi a provoz.</div>
+                            </div>
+                        </div>
+                        <div class="erp-summary-grid">
+                            <div class="erp-summary-card">
+                                <div class="erp-summary-title">Fakturace</div>
+                                <div class="erp-summary-value">Pripraveno</div>
+                                <div class="erp-summary-meta">Napojeni na faktury, smlouvy a SLA.</div>
+                                <ul class="erp-summary-list">
+                                    <li><span>Navrhy faktur</span><strong>0</strong></li>
+                                    <li><span>Pripraveno k vystaveni</span><strong>0</strong></li>
+                                    <li><span>Neuhrazene</span><strong>0</strong></li>
+                                </ul>
+                            </div>
+                            <div class="erp-summary-card">
+                                <div class="erp-summary-title">Lide</div>
+                                <div class="erp-summary-value">Karty zamestnancu</div>
+                                <div class="erp-summary-meta">Rychly prehled kapacit a roli.</div>
+                                <ul class="erp-summary-list">
+                                    <li><span>Aktivni technici</span><strong>0</strong></li>
+                                    <li><span>HPP tento mesic</span><strong>160 h</strong></li>
+                                    <li><span>Dovolena / absence</span><strong>0 h</strong></li>
+                                </ul>
+                            </div>
+                            <div class="erp-summary-card">
+                                <div class="erp-summary-title">Provoz</div>
+                                <div class="erp-summary-value">Operations</div>
+                                <div class="erp-summary-meta">Projekty, vykazy a SLA na jednom miste.</div>
+                                <ul class="erp-summary-list">
+                                    <li><span>Aktivni klienti</span><strong>0</strong></li>
+                                    <li><span>Rozpracovane tikety</span><strong>0</strong></li>
+                                    <li><span>Servisni okna</span><strong>0</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-section">
+                        <div class="dashboard-section-head">
+                            <div>
+                                <div class="dashboard-section-title">Karty zamestnancu</div>
+                                <div class="dashboard-section-subtitle">Pripraveno pro dochazku, role a kapacity.</div>
+                            </div>
+                        </div>
+                        <div class="erp-employee-grid">
+                            <div class="erp-employee-card">
+                                <div class="erp-employee-head">
+                                    <div class="erp-employee-avatar">OH</div>
+                                    <div>
+                                        <div class="erp-employee-name">Ondrej H.</div>
+                                        <div class="erp-employee-role">Admin / MSP</div>
+                                    </div>
+                                </div>
+                                <div class="erp-employee-tags">
+                                    <span class="erp-employee-tag active">Aktivni</span>
+                                    <span class="erp-employee-tag">HPP</span>
+                                    <span class="erp-employee-tag">Lead</span>
+                                </div>
+                            </div>
+                            <div class="erp-employee-card">
+                                <div class="erp-employee-head">
+                                    <div class="erp-employee-avatar">JB</div>
+                                    <div>
+                                        <div class="erp-employee-name">Jan B.</div>
+                                        <div class="erp-employee-role">Technik / Site</div>
+                                    </div>
+                                </div>
+                                <div class="erp-employee-tags">
+                                    <span class="erp-employee-tag active">Aktivni</span>
+                                    <span class="erp-employee-tag">HPP</span>
+                                    <span class="erp-employee-tag">L1</span>
+                                </div>
+                            </div>
+                            <div class="erp-employee-card">
+                                <div class="erp-employee-head">
+                                    <div class="erp-employee-avatar">MS</div>
+                                    <div>
+                                        <div class="erp-employee-name">Michaela S.</div>
+                                        <div class="erp-employee-role">Servis / Projekty</div>
+                                    </div>
+                                </div>
+                                <div class="erp-employee-tags">
+                                    <span class="erp-employee-tag active">Aktivni</span>
+                                    <span class="erp-employee-tag">HPP</span>
+                                    <span class="erp-employee-tag">L2</span>
+                                </div>
+                            </div>
+                            <div class="erp-employee-card">
+                                <div class="erp-employee-head">
+                                    <div class="erp-employee-avatar">VP</div>
+                                    <div>
+                                        <div class="erp-employee-name">Vaclav P.</div>
+                                        <div class="erp-employee-role">Finance / HR</div>
+                                    </div>
+                                </div>
+                                <div class="erp-employee-tags">
+                                    <span class="erp-employee-tag">Plan</span>
+                                    <span class="erp-employee-tag">HR</span>
+                                    <span class="erp-employee-tag">Finance</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-section">
+                        <div class="dashboard-section-head">
+                            <div>
+                                <div class="dashboard-section-title">Operacni prehled</div>
+                                <div class="dashboard-section-subtitle">Rychle prechody do klientu, racku a site.</div>
                             </div>
                         </div>
                         <div id="dashboardGrid" class="overview-grid dashboard-grid"></div>
                     </section>
+
                     <section class="dashboard-section dashboard-section-alt">
                         <div class="dashboard-section-head">
                             <div>
-                                <div class="dashboard-section-title">MSP sluzby</div>
-                                <div class="dashboard-section-subtitle">Dostupne moduly a pripravene workflow.</div>
+                                <div class="dashboard-section-title">Moduly a integrace</div>
+                                <div class="dashboard-section-subtitle">Priprava na fakturaci, dochazku a HR.</div>
                             </div>
                         </div>
                         <div id="dashboardModulesGrid" class="msp-modules-grid"></div>
@@ -3265,18 +3491,18 @@
                             <div class="module-expansion-grid">
                                 <div class="module-expansion-tile">
                                     <div class="module-expansion-icon">+</div>
-                                    <div class="module-expansion-label">Novy modul</div>
-                                    <div class="module-expansion-desc">Slot pro dalsi workflow a integrace.</div>
+                                    <div class="module-expansion-label">Fakturace</div>
+                                    <div class="module-expansion-desc">Vystavovani faktur a kontrola cashflow.</div>
                                 </div>
                                 <div class="module-expansion-tile">
                                     <div class="module-expansion-icon">+</div>
-                                    <div class="module-expansion-label">Automatizace</div>
-                                    <div class="module-expansion-desc">Pripraveno pro budoucni automat.</div>
+                                    <div class="module-expansion-label">Dochazka</div>
+                                    <div class="module-expansion-desc">Prehled vykazu, absenci a kapacit.</div>
                                 </div>
                                 <div class="module-expansion-tile">
                                     <div class="module-expansion-icon">+</div>
-                                    <div class="module-expansion-label">Compliance</div>
-                                    <div class="module-expansion-desc">Misto pro governance a audit.</div>
+                                    <div class="module-expansion-label">HR karty</div>
+                                    <div class="module-expansion-desc">Uchovani smluv a kompetenci.</div>
                                 </div>
                             </div>
                         </div>
@@ -8562,7 +8788,13 @@
       }
 
       if (user) {
-        statusEl.textContent = 'Prihlasen: ' + (user.email || user.uid);
+        var providerId = user.providerData && user.providerData[0] ? user.providerData[0].providerId : '';
+        var providerName = providerId === 'google.com'
+          ? 'Google'
+          : providerId === 'password'
+            ? 'Magic link'
+            : providerId || '';
+        statusEl.textContent = 'Prihlasen: ' + (user.email || user.uid) + (providerName ? ' (' + providerName + ')' : '');
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
         if (avatarEl) {
