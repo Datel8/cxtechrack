@@ -1435,6 +1435,23 @@
             gap: 0.35rem;
         }
 
+        .report-share-row {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .report-share-actions {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .report-share-note {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
         .report-form-row label {
             font-size: 0.7rem;
             color: #7a756e;
@@ -3060,10 +3077,6 @@
             <div id="reportsView" class="time-tracking" style="display: none;">
                 <div class="rack-header">
                     <h2>Live reporty</h2>
-                    <div class="rack-stats">
-                        <button class="btn-small" onclick="exportAdminReport()">Export PDF</button>
-                        <button class="btn-small" onclick="exportAllClientsReport()">Export vsechny klienty</button>
-                    </div>
                 </div>
                 <div id="reportsAccessNote" class="empty-state" style="display: none;">
                     <p>Reporty jsou dostupne jen pro administratory.</p>
@@ -3077,14 +3090,12 @@
                                     <label for="reportPresetName">Nazev</label>
                                     <input type="text" id="reportPresetName" placeholder="Administrativa CXTech">
                                 </div>
-                                <div class="report-action-row">
-                                    <button class="btn-small" onclick="saveReportPreset()">Pridat report</button>
-                                    <button class="btn-small" onclick="shareReportInternally()">Sdilet interne</button>
-                                    <button class="btn-small" onclick="createReportShareLink()">Permanentni odkaz</button>
-                                </div>
                                 <div class="report-form-row">
-                                    <label for="reportShareLink">Permanentni odkaz</label>
-                                    <input type="text" id="reportShareLink" class="report-share-link" placeholder="Permanentni odkaz" readonly>
+                                    <label for="reportShareLink">Sdileni</label>
+                                    <div class="report-share-row">
+                                        <button class="btn-small" onclick="openReportShareModal()">Sdilet report</button>
+                                        <input type="text" id="reportShareLink" class="report-share-link" placeholder="Permanentni odkaz" readonly>
+                                    </div>
                                 </div>
                             </div>
                             <div class="report-filter-divider"></div>
@@ -3120,7 +3131,7 @@
                                 </div>
                             </div>
                             <div class="report-actions">
-                                <button class="btn-small" onclick="loadReportEntries()">Zobrazit</button>
+                                <button class="btn-small" onclick="createReportFromBuilder()">Vytvorit report</button>
                                 <button class="btn-small" onclick="showReportList()">Zpet na seznam</button>
                             </div>
                         </div>
@@ -3217,6 +3228,21 @@
                 </div>
                 <div class="role-note" id="timeEntrySummary"></div>
                 <button class="btn" onclick="saveTimeEntryRange()">Ulozit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Share Modal -->
+    <div id="reportShareModal" class="modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h2>Sdilet report</h2>
+                <button class="modal-close" onclick="closeReportShareModal()">Æ-</button>
+            </div>
+            <div class="report-share-note">Vyberte zpusob sdileni pro aktualni filtry.</div>
+            <div class="report-share-actions" style="margin-top: 1rem;">
+                <button class="btn" onclick="handleReportShareOption('link')">Permanentni odkaz</button>
+                <button class="btn-secondary" onclick="handleReportShareOption('internal')">Sdilet interne</button>
             </div>
         </div>
     </div>
@@ -6499,6 +6525,28 @@
             renderReportsView();
         }
 
+        async function createReportFromBuilder() {
+            const nameInput = document.getElementById('reportPresetName');
+            ensureReportFilterDefaults();
+            const filters = getReportFilters();
+            const name = (nameInput?.value || '').trim();
+            const presets = getSavedReportPresets();
+            const presetName = name || buildReportPresetName(filters);
+            const preset = {
+                id: `preset-${Date.now()}`,
+                name: presetName,
+                filters
+            };
+            presets.unshift(preset);
+            saveReportPresets(presets.slice(0, 30));
+            buildReportPresetOptions();
+            if (nameInput && !name) {
+                nameInput.value = presetName;
+            }
+            await saveReportPresetToCloud(preset);
+            loadReportEntries();
+        }
+
         function getSavedReportPresets() {
             try {
                 return JSON.parse(localStorage.getItem('cxtechReportPresets') || '[]');
@@ -6818,6 +6866,28 @@
             const url = new URL(window.location.href);
             url.searchParams.set('reportShare', shareId);
             return url.toString();
+        }
+
+        function openReportShareModal() {
+            const modal = document.getElementById('reportShareModal');
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeReportShareModal() {
+            const modal = document.getElementById('reportShareModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        async function handleReportShareOption(type) {
+            try {
+                if (type === 'link') {
+                    await createReportShareLink();
+                } else if (type === 'internal') {
+                    await shareReportInternally();
+                }
+            } finally {
+                closeReportShareModal();
+            }
         }
 
         async function createReportShareLink() {
