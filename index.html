@@ -1350,6 +1350,52 @@
             color: var(--text-secondary);
         }
 
+        .dashboard-time-filter {
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .dashboard-time-filter label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-secondary);
+        }
+
+        .dashboard-time-filter select {
+            background: rgba(12, 12, 12, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: var(--text-primary);
+            padding: 0.45rem 0.6rem;
+            font-size: 0.85rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .dashboard-category-list {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .dashboard-category-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .dashboard-category-label {
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.7rem;
+        }
+
+        .dashboard-category-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
         .dashboard-time-divider {
             height: 1px;
             background: rgba(248, 154, 85, 0.25);
@@ -3126,13 +3172,18 @@
                         </div>
                         <div class="dashboard-time-panel">
                             <div class="dashboard-time-title">Vykazovani za mesic</div>
+                            <div class="dashboard-time-filter" id="dashboardTechFilter">
+                                <label for="dashboardTechSelect">Technik</label>
+                                <select id="dashboardTechSelect" onchange="loadDashboardTimeOverview()"></select>
+                            </div>
                             <div class="dashboard-time-total" id="dashboardMonthTotal">-</div>
                             <div class="dashboard-time-progress">
                                 <span id="dashboardMonthProgress"></span>
                             </div>
                             <div class="dashboard-time-remaining" id="dashboardMonthRemaining">Zbyva do HPP: - h</div>
+                            <div class="dashboard-category-list" id="dashboardCategoryList"></div>
                             <div class="dashboard-time-divider"></div>
-                            <div class="dashboard-time-subtitle">Technici</div>
+                            <div class="dashboard-time-subtitle" id="dashboardTechTitle">Technici</div>
                             <div class="dashboard-tech-list" id="dashboardTechHours"></div>
                         </div>
                     </section>
@@ -3409,6 +3460,14 @@
                 <div class="form-group">
                     <label>Klient</label>
                     <select id="timeEntryClient"></select>
+                </div>
+                <div class="form-group">
+                    <label>Kategorie</label>
+                    <select id="timeEntryCategory">
+                        <option value="client">Klientske hodiny</option>
+                        <option value="internal">Interni</option>
+                        <option value="leave">Dovolena</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Cinnost</label>
@@ -4463,19 +4522,91 @@
             applyRolePermissions();
         }
 
+        function getEntryTechKey(entry) {
+            return entry.userEmail || entry.userId || 'Neprirazeno';
+        }
+
+        function resolveTimeEntryCategory(entry) {
+            const direct = (entry.categoryType || '').toString().toLowerCase();
+            if (direct === 'client' || direct === 'internal' || direct === 'leave') {
+                return direct;
+            }
+            const raw = `${entry.category || ''} ${entry.activity || ''} ${entry.description || ''}`.toLowerCase();
+            if (raw.includes('dovol')) return 'leave';
+            if (raw.includes('intern')) return 'internal';
+            return 'client';
+        }
+
+        function buildDashboardTechFilter(entries, selectedValue) {
+            const select = document.getElementById('dashboardTechSelect');
+            if (!select) return 'all';
+            const techMap = new Map();
+            entries.forEach((entry) => {
+                const key = getEntryTechKey(entry);
+                if (!techMap.has(key)) {
+                    techMap.set(key, entry.userEmail || entry.userId || 'Neprirazeno');
+                }
+            });
+            const options = ['<option value="all">Vsechni technici</option>'];
+            techMap.forEach((label, key) => {
+                options.push(`<option value="${key}">${label}</option>`);
+            });
+            select.innerHTML = options.join('');
+            const nextValue = selectedValue && (selectedValue === 'all' || techMap.has(selectedValue))
+                ? selectedValue
+                : 'all';
+            select.value = nextValue;
+            return nextValue;
+        }
+
+        function buildDashboardCategoryList(totals) {
+            const items = [
+                { key: 'client', label: 'Klientske hodiny' },
+                { key: 'internal', label: 'Interni' },
+                { key: 'leave', label: 'Dovolena' }
+            ];
+            return items.map((item) => {
+                const value = Math.round((totals[item.key] || 0) * 10) / 10;
+                return `
+                    <div class="dashboard-category-row">
+                        <span class="dashboard-category-label">${item.label}</span>
+                        <span class="dashboard-category-value">${value} h</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
         async function loadDashboardTimeOverview() {
             const totalEl = document.getElementById('dashboardMonthTotal');
             const remainingEl = document.getElementById('dashboardMonthRemaining');
             const progressEl = document.getElementById('dashboardMonthProgress');
             const listEl = document.getElementById('dashboardTechHours');
+            const filterWrap = document.getElementById('dashboardTechFilter');
+            const filterSelect = document.getElementById('dashboardTechSelect');
+            const categoryList = document.getElementById('dashboardCategoryList');
+            const titleEl = document.getElementById('dashboardTechTitle');
             if (!totalEl || !remainingEl || !progressEl || !listEl) return;
+
+            const isAdminView = canViewAllTimeEntries();
+            if (filterWrap) {
+                filterWrap.style.display = isAdminView ? 'grid' : 'none';
+            }
+            if (titleEl) {
+                titleEl.textContent = isAdminView ? 'Technici' : 'Moje hodiny';
+            }
 
             totalEl.textContent = '-';
             remainingEl.textContent = `Zbyva do HPP: - h`;
             progressEl.style.width = '0%';
             listEl.innerHTML = '<div class="dashboard-tech-row"><span class="dashboard-tech-name">Zadne vykazy</span><span class="dashboard-tech-hours">-</span></div>';
+            if (categoryList) {
+                categoryList.innerHTML = buildDashboardCategoryList({ client: 0, internal: 0, leave: 0 });
+            }
 
             if (!currentClientId || !window.db || !window.auth || !auth.currentUser) {
+                if (filterSelect) {
+                    filterSelect.innerHTML = '<option value="all">Vsechni technici</option>';
+                }
                 return;
             }
 
@@ -4484,21 +4615,44 @@
             const end = formatDateKey(now);
 
             try {
-                const snapshot = await db.collection('clients')
+                let ref = db.collection('clients')
                     .doc(currentClientId)
                     .collection('timeEntries')
                     .where('date', '>=', start)
-                    .where('date', '<=', end)
-                    .get();
+                    .where('date', '<=', end);
+                if (!isAdminView) {
+                    ref = ref.where('userId', '==', auth.currentUser.uid);
+                }
+                const snapshot = await ref.get();
+
+                const entries = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                let selectedTech = 'all';
+                if (isAdminView) {
+                    selectedTech = buildDashboardTechFilter(entries, filterSelect ? filterSelect.value : 'all');
+                }
+                if (titleEl) {
+                    titleEl.textContent = isAdminView
+                        ? (selectedTech !== 'all' ? 'Vybrany technik' : 'Technici')
+                        : 'Moje hodiny';
+                }
+
+                const filteredEntries = isAdminView && selectedTech !== 'all'
+                    ? entries.filter((entry) => getEntryTechKey(entry) === selectedTech)
+                    : entries;
 
                 const totalsByTech = {};
+                const categoryTotals = { client: 0, internal: 0, leave: 0 };
                 let totalHours = 0;
-                snapshot.docs.forEach((doc) => {
-                    const data = doc.data() || {};
-                    const hours = parseFloat(data.hours) || 0;
-                    const tech = data.userEmail || data.userId || 'Neprirazeno';
+                filteredEntries.forEach((entry) => {
+                    const hours = parseFloat(entry.hours) || 0;
                     totalHours += hours;
+                    const tech = getEntryTechKey(entry);
                     totalsByTech[tech] = (totalsByTech[tech] || 0) + hours;
+                    const categoryKey = resolveTimeEntryCategory(entry);
+                    categoryTotals[categoryKey] = (categoryTotals[categoryKey] || 0) + hours;
                 });
 
                 const roundedTotal = Math.round(totalHours * 10) / 10;
@@ -4508,6 +4662,9 @@
                 remainingEl.textContent = `Zbyva do HPP: ${roundedRemaining} h z ${HPP_MONTHLY_TARGET} h`;
                 const progress = HPP_MONTHLY_TARGET ? Math.min((totalHours / HPP_MONTHLY_TARGET) * 100, 100) : 0;
                 progressEl.style.width = `${Math.round(progress)}%`;
+                if (categoryList) {
+                    categoryList.innerHTML = buildDashboardCategoryList(categoryTotals);
+                }
 
                 const rows = Object.entries(totalsByTech)
                     .sort((a, b) => b[1] - a[1]);
@@ -6645,12 +6802,14 @@
             const hoursInput = document.getElementById('timeEntryHours');
             const descInput = document.getElementById('timeEntryDesc');
             const activityInput = document.getElementById('timeEntryActivity');
+            const categorySelect = document.getElementById('timeEntryCategory');
 
             if (startInput) startInput.value = start;
             if (endInput) endInput.value = end;
             if (hoursInput) hoursInput.value = String(defaultHours);
             if (descInput) descInput.value = '';
             if (activityInput) activityInput.value = '';
+            if (categorySelect) categorySelect.value = 'client';
             updateTimeEntrySummary();
         }
 
@@ -7502,12 +7661,14 @@
             const endInput = document.getElementById('timeEntryEnd');
             const hoursInput = document.getElementById('timeEntryHours');
             const descInput = document.getElementById('timeEntryDesc');
+            const categorySelect = document.getElementById('timeEntryCategory');
             const clientId = clientSelect ? clientSelect.value : currentClientId;
             const activity = activityInput ? activityInput.value.trim() : '';
             const start = startInput ? startInput.value : '';
             const end = endInput ? endInput.value : '';
             const hours = hoursInput ? parseFloat(hoursInput.value) : 0;
             const description = descInput ? descInput.value.trim() : '';
+            const categoryType = categorySelect && categorySelect.value ? categorySelect.value : 'client';
 
             if (!clientId) {
                 alert('Vyberte klienta');
@@ -7552,6 +7713,7 @@
                     hours,
                     description,
                     category: activity,
+                    categoryType,
                     startHour,
                     endHour,
                     userId: user.uid,
