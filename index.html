@@ -1357,6 +1357,175 @@
             align-items: center;
         }
 
+        .reports-layout {
+            display: grid;
+            grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+            gap: 1.75rem;
+            align-items: start;
+        }
+
+        .report-filter-panel {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .report-filter-card {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 16px;
+            padding: 1.25rem;
+            color: #1c1c1c;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .report-filter-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #6f6a63;
+            margin-bottom: 0.85rem;
+            font-weight: 600;
+        }
+
+        .report-form-grid {
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .report-form-row {
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .report-form-row label {
+            font-size: 0.7rem;
+            color: #7a756e;
+            letter-spacing: 0.08em;
+        }
+
+        .report-action-row {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .report-display {
+            min-height: 420px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .report-sheet {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+            color: #1c1c1c;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .report-sheet-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+
+        .report-sheet-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .report-live {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.12);
+            color: #1f7a44;
+            font-size: 0.7rem;
+            margin-left: 0.4rem;
+        }
+
+        .report-sheet-subtitle {
+            margin-top: 0.3rem;
+            color: #7a756e;
+            font-size: 0.85rem;
+        }
+
+        .report-sheet-logo {
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: #f89a55;
+            font-size: 1rem;
+        }
+
+        .report-sheet-meta {
+            display: grid;
+            gap: 0.5rem;
+            margin: 1.5rem 0 1.25rem;
+            color: #4f4a45;
+        }
+
+        .report-meta-item {
+            display: grid;
+            grid-template-columns: 140px minmax(0, 1fr);
+            gap: 0.75rem;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .report-meta-item span {
+            color: #7a756e;
+        }
+
+        .report-sheet-totals {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee5da;
+            border-bottom: 1px solid #eee5da;
+            padding: 0.75rem 0;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+            color: #4f4a45;
+        }
+
+        #reportsView .time-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            color: #1c1c1c;
+        }
+
+        #reportsView .time-table th,
+        #reportsView .time-table td {
+            padding: 0.65rem 0.75rem;
+            border-bottom: 1px solid #eee5da;
+            text-align: left;
+        }
+
+        #reportsView .time-table th {
+            background: #f7f4ef;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.6rem;
+            color: #7a756e;
+        }
+
+        #reportsView .time-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        #reportsView .empty-state {
+            background: transparent;
+            border: 1px dashed #e1d8cd;
+            color: #7a756e;
+        }
+
         .report-list {
             display: grid;
             gap: 0.75rem;
@@ -1417,10 +1586,29 @@
             letter-spacing: 0.06em;
         }
 
+        .report-sheet .report-list-title {
+            color: #6f6a63;
+        }
+
+        .report-sheet .report-list-group + .report-list-group {
+            border-top: 1px solid #eee5da;
+        }
+
+        .report-sheet .report-list-card {
+            color: #1c1c1c;
+            border-bottom: 1px solid #eee5da;
+        }
+
+        .report-sheet .report-list-meta {
+            color: #7a756e;
+        }
+
         #reportsView {
-            background: transparent;
+            background: #f4f2ee;
             border: none;
-            padding: 0;
+            padding: 1.5rem;
+            border-radius: 18px;
+            color: #1c1c1c;
         }
 
         #reportsView .time-panel {
@@ -1436,7 +1624,8 @@
         }
 
         #reportsView .report-filters {
-            gap: 1rem;
+            display: grid;
+            gap: 0.75rem;
         }
 
         #reportsView .report-field label {
@@ -1444,14 +1633,48 @@
             letter-spacing: 0.08em;
         }
 
+        #reportsView .report-field {
+            min-width: 0;
+        }
+
         #reportsView .report-filters select,
         #reportsView .report-filters input,
-        #reportsView .report-presets input,
-        #reportsView .report-presets select {
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid var(--border-color);
-            border-radius: 0;
+        #reportsView .report-form-row input,
+        #reportsView .report-form-row select {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            color: #1c1c1c;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            padding: 0.6rem 0.7rem;
+        }
+
+        #reportsView .report-actions {
+            flex-direction: column;
+            align-items: stretch;
+            border-top: none;
+            padding-top: 0;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 1100px) {
+            .reports-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .report-sheet {
+                padding: 1.5rem;
+            }
+
+            .report-sheet-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .report-meta-item {
+                grid-template-columns: 1fr;
+            }
         }
 
         .device-list,
@@ -2773,54 +2996,78 @@
                 <div id="reportsAccessNote" class="empty-state" style="display: none;">
                     <p>Reporty jsou dostupne jen pro administratory.</p>
                 </div>
-                <div class="time-panel">
-                    <div class="time-report-header">
-                        <div class="section-title">Pridat report</div>
-                        <div class="report-filters">
-                            <div class="report-field">
-                                <label for="reportClientFilter">Klient</label>
-                                <select id="reportClientFilter" onchange="onReportFilterChange()"></select>
-                            </div>
-                            <div class="report-field">
-                                <label for="reportTechnicianFilter">Technik</label>
-                                <select id="reportTechnicianFilter" onchange="onReportFilterChange()"></select>
-                            </div>
-                            <div class="report-field">
-                                <label for="reportRangePreset">Obdobi</label>
-                                <select id="reportRangePreset" onchange="onReportRangePresetChange()">
-                                    <option value="all">Vsechno</option>
-                                    <option value="current-month">Soucasny mesic</option>
-                                    <option value="previous-month">Predchozi mesic</option>
-                                    <option value="year">Aktualni rok</option>
-                                    <option value="custom">Vlastni rozsah</option>
-                                </select>
-                            </div>
-                            <div class="report-field">
-                                <label for="reportStartDate">Od</label>
-                                <input type="date" id="reportStartDate" onchange="onReportDateChange()">
-                            </div>
-                            <div class="report-field">
-                                <label for="reportEndDate">Do</label>
-                                <input type="date" id="reportEndDate" onchange="onReportDateChange()">
+                <div class="reports-layout">
+                    <aside class="report-filter-panel">
+                        <div class="report-filter-card">
+                            <div class="report-filter-title">Nazev a sdileni</div>
+                            <div class="report-form-grid">
+                                <div class="report-form-row">
+                                    <label for="reportPresetName">Nazev</label>
+                                    <input type="text" id="reportPresetName" placeholder="Administrativa CXTech">
+                                </div>
+                                <div class="report-action-row">
+                                    <button class="btn-small" onclick="saveReportPreset()">Pridat report</button>
+                                    <button class="btn-small" onclick="shareReportInternally()">Sdilet interne</button>
+                                    <button class="btn-small" onclick="createReportShareLink()">Permanentni odkaz</button>
+                                </div>
+                                <div class="report-form-row">
+                                    <label for="reportShareLink">Permanentni odkaz</label>
+                                    <input type="text" id="reportShareLink" class="report-share-link" placeholder="Permanentni odkaz" readonly>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="report-actions">
-                        <div class="report-presets">
-                            <input type="text" id="reportPresetName" placeholder="Nazev reportu">
-                            <button class="btn-small" onclick="saveReportPreset()">Pridat report</button>
-                            <button class="btn-small" onclick="shareReportInternally()">Sdilet interne</button>
-                            <button class="btn-small" onclick="createReportShareLink()">Permanentni odkaz</button>
-                            <input type="text" id="reportShareLink" class="report-share-link" placeholder="Permanentni odkaz" readonly>
-                            <select id="reportPresetSelect" onchange="applyReportPreset()"></select>
-                            <select id="reportSharedSelect" onchange="applySharedReportPreset()"></select>
+                        <div class="report-filter-card">
+                            <div class="report-filter-title">Sestavit vykaz pro</div>
+                            <div class="report-filters">
+                                <div class="report-field">
+                                    <label for="reportRangePreset">Casovy interval</label>
+                                    <select id="reportRangePreset" onchange="onReportRangePresetChange()">
+                                        <option value="all">Vsechno</option>
+                                        <option value="current-month">Soucasny mesic</option>
+                                        <option value="previous-month">Predchozi mesic</option>
+                                        <option value="year">Aktualni rok</option>
+                                        <option value="custom">Vlastni rozsah</option>
+                                    </select>
+                                </div>
+                                <div class="report-field">
+                                    <label for="reportClientFilter">Zakaznici</label>
+                                    <select id="reportClientFilter" onchange="onReportFilterChange()"></select>
+                                </div>
+                                <div class="report-field">
+                                    <label for="reportTechnicianFilter">Uzivatele</label>
+                                    <select id="reportTechnicianFilter" onchange="onReportFilterChange()"></select>
+                                </div>
+                                <div class="report-field">
+                                    <label for="reportStartDate">Od</label>
+                                    <input type="date" id="reportStartDate" onchange="onReportDateChange()">
+                                </div>
+                                <div class="report-field">
+                                    <label for="reportEndDate">Do</label>
+                                    <input type="date" id="reportEndDate" onchange="onReportDateChange()">
+                                </div>
+                            </div>
+                            <div class="report-actions">
+                                <button class="btn-small" onclick="loadReportEntries()">Zobrazit</button>
+                                <button class="btn-small" onclick="showReportList()">Seznam reportu</button>
+                            </div>
                         </div>
-                        <div class="report-actions-right">
-                            <button class="btn-small" onclick="loadReportEntries()">Zobrazit</button>
-                            <button class="btn-small" onclick="showReportList()">Seznam reportu</button>
+                        <div class="report-filter-card">
+                            <div class="report-filter-title">Vybrat report</div>
+                            <div class="report-form-grid">
+                                <div class="report-form-row">
+                                    <label for="reportPresetSelect">Ulozene</label>
+                                    <select id="reportPresetSelect" onchange="applyReportPreset()"></select>
+                                </div>
+                                <div class="report-form-row">
+                                    <label for="reportSharedSelect">Sdilene</label>
+                                    <select id="reportSharedSelect" onchange="applySharedReportPreset()"></select>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div id="timeReportTable"></div>
+                    </aside>
+                    <section class="report-display">
+                        <div id="timeReportTable"></div>
+                    </section>
                 </div>
             </div>
             
@@ -5687,7 +5934,7 @@
                 return;
             }
             if (accessNote) accessNote.style.display = 'none';
-            if (filters) filters.style.display = 'flex';
+            if (filters) filters.style.display = 'grid';
             if (actions) actions.style.display = 'flex';
             ensureReportFilterDefaults();
             buildReportClientOptions();
@@ -6309,7 +6556,7 @@
                 : (clients.find(c => c.id === clientId)?.name || clientId);
             const techLabel = technician === 'all' ? 'Vsechni technici' : technician;
             const rangeLabel = getReportRangeLabel(filters);
-            return `Klient: ${clientLabel} • Obdobi: ${rangeLabel} • Technik: ${techLabel}`;
+            return `Klient: ${clientLabel} | Obdobi: ${rangeLabel} | Technik: ${techLabel}`;
         }
 
         function renderReportLanding() {
@@ -6335,14 +6582,27 @@
             };
 
             container.innerHTML = `
-                <div class="report-list">
-                    <div class="report-list-group">
-                        <div class="report-list-title">Ulozene reporty</div>
-                        ${buildCards(saved, 'local')}
+                <div class="report-sheet">
+                    <div class="report-sheet-header">
+                        <div>
+                            <div class="report-sheet-title">Reporty</div>
+                            <div class="report-sheet-subtitle">Vyber ulozeny nebo sdileny report.</div>
+                        </div>
+                        <div class="report-sheet-logo">CX.TECH</div>
                     </div>
-                    <div class="report-list-group">
-                        <div class="report-list-title">Sdilene reporty</div>
-                        ${buildCards(shared, 'shared')}
+                    <div class="report-sheet-meta">
+                        <div class="report-meta-item"><span>Ulozene</span><div>${saved.length}</div></div>
+                        <div class="report-meta-item"><span>Sdilene</span><div>${shared.length}</div></div>
+                    </div>
+                    <div class="report-list">
+                        <div class="report-list-group">
+                            <div class="report-list-title">Ulozene reporty</div>
+                            ${buildCards(saved, 'local')}
+                        </div>
+                        <div class="report-list-group">
+                            <div class="report-list-title">Sdilene reporty</div>
+                            ${buildCards(shared, 'shared')}
+                        </div>
                     </div>
                 </div>
             `;
@@ -6617,45 +6877,87 @@
             const container = document.getElementById('timeReportTable');
             if (!container) return;
 
+            const filters = getReportFilters();
             const entries = getFilteredReportEntries();
-            if (entries.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>Zadne vykazane hodiny.</p></div>';
-                return;
-            }
+            const reportTitleInput = document.getElementById('reportPresetName');
+            const reportTitle = (reportTitleInput?.value || '').trim() || buildReportPresetName(filters);
+            const creator = auth?.currentUser?.displayName || auth?.currentUser?.email || auth?.currentUser?.uid || 'System';
+            const clientLabel = filters.clientId === 'all'
+                ? 'Vsechny klienty'
+                : (clients.find(c => c.id === filters.clientId)?.name || filters.clientId || 'Klient');
+            const techLabel = filters.technician === 'all' ? 'Vsechni technici' : (filters.technician || 'Vsechni technici');
+            const rangeLabel = getReportRangeLabel(filters);
+            const creatorSuffix = clientLabel && clientLabel !== 'Vsechny klienty' ? ` (${clientLabel})` : '';
+            const totalHours = entries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+            const totalHoursLabel = Number.isFinite(totalHours)
+                ? (Math.round(totalHours * 100) / 100).toString()
+                : '0';
+            const canDelete = canManageTimeEntries();
 
-            const headerCols = `
-                <th>Datum</th>
-                <th>Klient</th>
-                <th>Hodiny</th>
-                <th>Technik</th>
-                <th>Cinnost</th>
-                <th>Popis</th>
-                <th>Akce</th>
-            `;
+            const headerCells = [
+                '<th>Datum</th>',
+                '<th>Polozka</th>',
+                '<th>Klient</th>',
+                '<th>Hodin</th>',
+                '<th>Technik</th>',
+                '<th>Popis</th>'
+            ];
+            if (canDelete) headerCells.push('<th>Akce</th>');
+            const headerCols = headerCells.join('');
 
             const rows = entries.map(entry => {
-                const canDelete = canManageTimeEntries();
                 const clientName = entry.clientName || (clients.find(c => c.id === entry.clientId)?.name) || '-';
+                const activity = entry.category || entry.activity || '-';
+                const hoursValue = parseFloat(entry.hours);
+                const hoursLabel = Number.isFinite(hoursValue)
+                    ? (Math.round(hoursValue * 100) / 100).toString()
+                    : '0';
+                const deleteCell = canDelete
+                    ? `<td><button class="delete-btn" onclick="deleteReportEntry('${entry.id}', '${entry.clientId || ''}')">Smazat</button></td>`
+                    : '';
                 return `
                     <tr>
                         <td>${entry.date || '-'}</td>
+                        <td>${activity}</td>
                         <td>${clientName}</td>
-                        <td>${entry.hours || 0}</td>
+                        <td>${hoursLabel}</td>
                         <td>${entry.userEmail || entry.userId || '-'}</td>
-                        <td>${entry.category || '-'}</td>
                         <td>${entry.description || '-'}</td>
-                        <td>
-                            ${canDelete ? `<button class="delete-btn" onclick="deleteReportEntry('${entry.id}', '${entry.clientId || ''}')">Smazat</button>` : '-'}
-                        </td>
+                        ${deleteCell}
                     </tr>
                 `;
             }).join('');
 
+            const tableHtml = entries.length
+                ? `
+                    <table class="time-table">
+                        <thead><tr>${headerCols}</tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `
+                : '<div class="empty-state"><p>Zadne vykazane hodiny.</p></div>';
+
             container.innerHTML = `
-                <table class="time-table">
-                    <thead><tr>${headerCols}</tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>
+                <div class="report-sheet">
+                    <div class="report-sheet-header">
+                        <div>
+                            <div class="report-sheet-title">${reportTitle} <span class="report-live">live</span></div>
+                            <div class="report-sheet-subtitle">Vytvoril ${creator}${creatorSuffix}</div>
+                        </div>
+                        <div class="report-sheet-logo">CX.TECH</div>
+                    </div>
+                    <div class="report-sheet-meta">
+                        <div class="report-meta-item"><span>Klient</span><div>${clientLabel}</div></div>
+                        <div class="report-meta-item"><span>Uzivatel</span><div>${techLabel}</div></div>
+                        <div class="report-meta-item"><span>Obdobi</span><div>${rangeLabel}</div></div>
+                        <div class="report-meta-item"><span>Polozky</span><div>${entries.length}</div></div>
+                    </div>
+                    <div class="report-sheet-totals">
+                        <div>Celkem hodin: ${totalHoursLabel} h</div>
+                        <div>Report pripraven</div>
+                    </div>
+                    ${tableHtml}
+                </div>
             `;
         }
 
