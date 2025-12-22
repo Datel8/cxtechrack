@@ -1285,6 +1285,55 @@
             margin-top: 0.5rem;
         }
 
+        .dashboard-hours-chart {
+            display: none;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .dashboard-hours-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.22em;
+            color: var(--text-secondary);
+        }
+
+        .dashboard-hours-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
+            gap: 0.35rem;
+            align-items: end;
+            height: 140px;
+        }
+
+        .dashboard-hours-bar {
+            display: grid;
+            grid-template-rows: 1fr auto;
+            align-items: end;
+            gap: 0.2rem;
+        }
+
+        .dashboard-hours-fill {
+            display: block;
+            width: 100%;
+            border-radius: 8px;
+            background: linear-gradient(180deg, #ffbf7f, var(--cx-orange));
+            min-height: 6px;
+            box-shadow: 0 0 10px rgba(248, 154, 85, 0.35);
+        }
+
+        .dashboard-hours-fill.is-empty {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+        }
+
+        .dashboard-hours-label {
+            font-size: 0.6rem;
+            text-align: center;
+            color: var(--text-secondary);
+            min-height: 0.7rem;
+        }
+
         .dashboard-metric {
             background: rgba(8, 8, 8, 0.6);
             border: 1px solid rgba(248, 154, 85, 0.35);
@@ -3152,10 +3201,10 @@
                 <div class="dashboard-shell">
                     <section class="dashboard-hero-card">
                         <div class="dashboard-hero-content">
-                            <div class="dashboard-hero-kicker">CX.TECH MSP</div>
-                            <h2 class="dashboard-hero-title">Operations Canvas</h2>
-                            <p class="dashboard-hero-subtitle">Prehled vykazu, kapacit a pracovniho nasazeni napric klienty.</p>
-                            <div class="dashboard-hero-metrics">
+                            <div class="dashboard-hero-kicker" id="dashboardHeroKicker">CX.TECH MSP</div>
+                            <h2 class="dashboard-hero-title" id="dashboardHeroTitle">Operations Canvas</h2>
+                            <p class="dashboard-hero-subtitle" id="dashboardHeroSubtitle">Prehled vykazu, kapacit a pracovniho nasazeni napric klienty.</p>
+                            <div class="dashboard-hero-metrics" id="dashboardHeroMetrics">
                                 <div class="dashboard-metric">
                                     <div class="dashboard-metric-label">Role</div>
                                     <div class="dashboard-metric-value" id="dashboardRole">-</div>
@@ -3168,6 +3217,10 @@
                                     <div class="dashboard-metric-label">Typ klienta</div>
                                     <div class="dashboard-metric-value" id="dashboardType">-</div>
                                 </div>
+                            </div>
+                            <div class="dashboard-hours-chart" id="dashboardHoursChart">
+                                <div class="dashboard-hours-title">Hodiny po dnech</div>
+                                <div class="dashboard-hours-grid" id="dashboardHoursGrid"></div>
                             </div>
                         </div>
                         <div class="dashboard-time-panel">
@@ -3377,11 +3430,11 @@
                                     </div>
                                     <div class="report-field">
                                         <label for="reportClientFilter">Zakaznici</label>
-                                        <select id="reportClientFilter" onchange="onReportFilterChange()"></select>
+                                        <select id="reportClientFilter" multiple size="6" onchange="onReportFilterChange()"></select>
                                     </div>
                                     <div class="report-field">
                                         <label for="reportTechnicianFilter">Uzivatele</label>
-                                        <select id="reportTechnicianFilter" onchange="onReportFilterChange()"></select>
+                                        <select id="reportTechnicianFilter" multiple size="6" onchange="onReportFilterChange()"></select>
                                     </div>
                                     <div class="report-field">
                                         <label for="reportStartDate">Od</label>
@@ -4519,11 +4572,75 @@
 
             renderMspModules('dashboardModulesGrid');
             loadDashboardTimeOverview();
+            updateDashboardHeroForRole();
             applyRolePermissions();
+        }
+
+        function updateDashboardHeroForRole() {
+            const isTech = currentUserRole === 'technician';
+            const kicker = document.getElementById('dashboardHeroKicker');
+            const title = document.getElementById('dashboardHeroTitle');
+            const subtitle = document.getElementById('dashboardHeroSubtitle');
+            const metrics = document.getElementById('dashboardHeroMetrics');
+            const chart = document.getElementById('dashboardHoursChart');
+
+            if (kicker) kicker.style.display = isTech ? 'none' : '';
+            if (title) title.style.display = isTech ? 'none' : '';
+            if (subtitle) subtitle.style.display = isTech ? 'none' : '';
+            if (metrics) metrics.style.display = isTech ? 'none' : 'grid';
+            if (chart) chart.style.display = isTech ? 'grid' : 'none';
         }
 
         function getEntryTechKey(entry) {
             return entry.userEmail || entry.userId || 'Neprirazeno';
+        }
+
+        function renderDashboardDailyChart(entries, startKey, endKey) {
+            const chart = document.getElementById('dashboardHoursChart');
+            const grid = document.getElementById('dashboardHoursGrid');
+            if (!chart || !grid) return;
+            if (currentUserRole !== 'technician') {
+                chart.style.display = 'none';
+                return;
+            }
+
+            const startDate = parseDateKey(startKey);
+            const endDate = parseDateKey(endKey);
+            if (!startDate || !endDate) {
+                grid.innerHTML = '';
+                return;
+            }
+
+            const totalsByDay = {};
+            (entries || []).forEach((entry) => {
+                if (!entry.date) return;
+                const hours = parseFloat(entry.hours) || 0;
+                totalsByDay[entry.date] = (totalsByDay[entry.date] || 0) + hours;
+            });
+
+            const days = [];
+            const cursor = new Date(startDate);
+            while (cursor <= endDate) {
+                const key = formatDateKey(cursor);
+                days.push({ key, day: cursor.getDate() });
+                cursor.setDate(cursor.getDate() + 1);
+            }
+
+            const maxHours = Math.max(0, ...days.map((day) => totalsByDay[day.key] || 0));
+            const labelStep = days.length > 20 ? 5 : days.length > 12 ? 3 : 1;
+
+            grid.innerHTML = days.map((day, index) => {
+                const hours = totalsByDay[day.key] || 0;
+                const height = maxHours ? Math.max(6, Math.round((hours / maxHours) * 100)) : 6;
+                const showLabel = day.day === 1 || index === days.length - 1 || day.day % labelStep === 0;
+                const hoursLabel = Math.round(hours * 10) / 10;
+                return `
+                    <div class="dashboard-hours-bar" title="${day.key}: ${hoursLabel} h">
+                        <span class="dashboard-hours-fill${hours ? '' : ' is-empty'}" style="height: ${height}%;"></span>
+                        <span class="dashboard-hours-label">${showLabel ? day.day : ''}</span>
+                    </div>
+                `;
+            }).join('');
         }
 
         function resolveTimeEntryCategory(entry) {
@@ -4603,16 +4720,17 @@
                 categoryList.innerHTML = buildDashboardCategoryList({ client: 0, internal: 0, leave: 0 });
             }
 
+            const now = new Date();
+            const start = formatDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
+            const end = formatDateKey(now);
+
             if (!currentClientId || !window.db || !window.auth || !auth.currentUser) {
+                renderDashboardDailyChart([], start, end);
                 if (filterSelect) {
                     filterSelect.innerHTML = '<option value="all">Vsechni technici</option>';
                 }
                 return;
             }
-
-            const now = new Date();
-            const start = formatDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
-            const end = formatDateKey(now);
 
             try {
                 let ref = db.collection('clients')
@@ -4654,6 +4772,7 @@
                     const categoryKey = resolveTimeEntryCategory(entry);
                     categoryTotals[categoryKey] = (categoryTotals[categoryKey] || 0) + hours;
                 });
+                renderDashboardDailyChart(filteredEntries, start, end);
 
                 const roundedTotal = Math.round(totalHours * 10) / 10;
                 totalEl.textContent = `${roundedTotal} h`;
@@ -6447,11 +6566,15 @@
             if (!canViewReports() || !window.db || !window.auth || !auth.currentUser) {
                 return [];
             }
-            const startDate = filters.startDate;
-            const endDate = filters.endDate;
-            const clientIds = filters.clientId === 'all'
+            const normalized = normalizeReportFilters(filters);
+            const startDate = normalized.startDate;
+            const endDate = normalized.endDate;
+            const clientIds = normalized.clientIds.includes('all')
                 ? clients.map(c => c.id)
-                : [filters.clientId];
+                : normalized.clientIds;
+            const technicianValues = normalized.technicians.includes('all')
+                ? []
+                : normalized.technicians;
 
             if (!startDate || !endDate || !clientIds.length) {
                 return [];
@@ -6465,9 +6588,16 @@
                     .where('date', '>=', startDate)
                     .where('date', '<=', endDate);
 
-                if (filters.technician && filters.technician !== 'all') {
-                    const field = filters.technician.includes('@') ? 'userEmail' : 'userId';
-                    ref = ref.where(field, '==', filters.technician);
+                if (technicianValues.length) {
+                    const isEmail = technicianValues.every(value => value.includes('@'));
+                    const isId = technicianValues.every(value => !value.includes('@'));
+                    if (technicianValues.length === 1) {
+                        const field = technicianValues[0].includes('@') ? 'userEmail' : 'userId';
+                        ref = ref.where(field, '==', technicianValues[0]);
+                    } else if ((isEmail || isId) && technicianValues.length <= 10) {
+                        const field = isEmail ? 'userEmail' : 'userId';
+                        ref = ref.where(field, 'in', technicianValues);
+                    }
                 }
 
                 const snapshot = await ref.get();
@@ -6973,24 +7103,21 @@
         function buildReportClientOptions() {
             const select = document.getElementById('reportClientFilter');
             if (!select) return;
-            const preferred = select.value || 'all';
+            const previous = getMultiSelectValues(select);
             select.innerHTML = [
                 '<option value="all">Vsechny klienty</option>',
                 ...clients.map(client => `<option value="${client.id}">${client.name}</option>`)
             ].join('');
-            if (preferred === 'all' || clients.some(c => c.id === preferred)) {
-                select.value = preferred;
-            } else if (currentClientId && clients.some(c => c.id === currentClientId)) {
-                select.value = currentClientId;
-            } else {
-                select.value = 'all';
-            }
+            const fallback = currentClientId && clients.some(c => c.id === currentClientId)
+                ? currentClientId
+                : 'all';
+            setMultiSelectValues(select, previous, fallback);
         }
 
         function buildReportTechnicianOptions(entries) {
             const select = document.getElementById('reportTechnicianFilter');
             if (!select) return;
-            const previous = select.value || 'all';
+            const previous = getMultiSelectValues(select);
             const technicians = Array.from(new Set(
                 (entries || []).map(entry => entry.userEmail || entry.userId).filter(Boolean)
             )).sort((a, b) => a.localeCompare(b, 'cs', { sensitivity: 'base' }));
@@ -6998,7 +7125,54 @@
                 '<option value="all">Vsechni technici</option>',
                 ...technicians.map(name => `<option value="${name}">${name}</option>`)
             ].join('');
-            select.value = technicians.includes(previous) ? previous : 'all';
+            ensureSelectOptions(select, previous);
+            setMultiSelectValues(select, previous, 'all');
+        }
+
+        function getMultiSelectValues(select) {
+            if (!select) return [];
+            return Array.from(select.selectedOptions || []).map(option => option.value);
+        }
+
+        function normalizeMultiSelection(values, allValue) {
+            const list = Array.isArray(values) ? values : (values ? [values] : []);
+            const cleaned = [...new Set(list.map(value => `${value}`.trim()).filter(Boolean))];
+            if (!cleaned.length || cleaned.includes(allValue)) {
+                return [allValue];
+            }
+            return cleaned;
+        }
+
+        function setMultiSelectValues(select, values, fallbackValue) {
+            if (!select) return;
+            const normalized = normalizeMultiSelection(values, 'all');
+            const available = new Set(Array.from(select.options).map(option => option.value));
+            let next = normalized.filter(value => available.has(value));
+            if (!next.length) {
+                const fallback = fallbackValue && available.has(fallbackValue) ? [fallbackValue] : ['all'];
+                next = fallback;
+            }
+            Array.from(select.options).forEach(option => {
+                option.selected = next.includes(option.value);
+            });
+        }
+
+        function ensureSelectOptions(select, values) {
+            if (!select) return;
+            const normalized = normalizeMultiSelection(values, 'all');
+            normalized.forEach(value => ensureSelectOption(select, value, value));
+        }
+
+        function normalizeReportFilters(filters) {
+            const next = { ...(filters || {}) };
+            next.clientIds = normalizeMultiSelection(next.clientIds || next.clientId, 'all');
+            next.technicians = normalizeMultiSelection(next.technicians || next.technician, 'all');
+            if (!next.rangePreset) {
+                next.rangePreset = 'custom';
+            }
+            if (!next.startDate) next.startDate = '';
+            if (!next.endDate) next.endDate = '';
+            return next;
         }
 
         function getReportFilters() {
@@ -7007,13 +7181,13 @@
             const presetSelect = document.getElementById('reportRangePreset');
             const startInput = document.getElementById('reportStartDate');
             const endInput = document.getElementById('reportEndDate');
-            return {
-                clientId: clientSelect ? clientSelect.value : 'all',
-                technician: techSelect ? techSelect.value : 'all',
+            return normalizeReportFilters({
+                clientIds: normalizeMultiSelection(getMultiSelectValues(clientSelect), 'all'),
+                technicians: normalizeMultiSelection(getMultiSelectValues(techSelect), 'all'),
                 rangePreset: presetSelect ? presetSelect.value : 'custom',
                 startDate: startInput ? startInput.value : '',
                 endDate: endInput ? endInput.value : ''
-            };
+            });
         }
 
         function onReportFilterChange() {
@@ -7204,14 +7378,31 @@
             }
         }
 
+        function formatMultiLabel(values, maxItems) {
+            const cleaned = (values || []).filter(Boolean);
+            if (!cleaned.length) return '-';
+            if (cleaned.length <= maxItems) return cleaned.join(', ');
+            return `${cleaned.slice(0, maxItems).join(', ')} +${cleaned.length - maxItems}`;
+        }
+
+        function formatReportClientLabel(clientIds) {
+            const normalized = normalizeMultiSelection(clientIds, 'all');
+            if (normalized.includes('all')) return 'Vsechny klienty';
+            const names = normalized.map((id) => clients.find(c => c.id === id)?.name || id);
+            return formatMultiLabel(names, 2);
+        }
+
+        function formatReportTechnicianLabel(technicians) {
+            const normalized = normalizeMultiSelection(technicians, 'all');
+            if (normalized.includes('all')) return 'Vsechni technici';
+            return formatMultiLabel(normalized, 2);
+        }
+
         function getReportSummary(filters) {
-            const clientId = filters.clientId || 'all';
-            const technician = filters.technician || 'all';
-            const clientLabel = clientId === 'all'
-                ? 'Vsechny klienty'
-                : (clients.find(c => c.id === clientId)?.name || clientId);
-            const techLabel = technician === 'all' ? 'Vsechni technici' : technician;
-            const rangeLabel = getReportRangeLabel(filters);
+            const normalized = normalizeReportFilters(filters);
+            const clientLabel = formatReportClientLabel(normalized.clientIds);
+            const techLabel = formatReportTechnicianLabel(normalized.technicians);
+            const rangeLabel = getReportRangeLabel(normalized);
             return `Klient: ${clientLabel} | Obdobi: ${rangeLabel} | Technik: ${techLabel}`;
         }
 
@@ -7289,29 +7480,33 @@
 
         function applyReportFilters(filters, shouldLoad) {
             if (!filters) return;
+            const normalized = normalizeReportFilters(filters);
             if (shouldLoad !== false) {
                 reportFiltersVisible = false;
             }
             buildReportClientOptions();
+            buildReportTechnicianOptions(reportEntries || []);
             const clientSelect = document.getElementById('reportClientFilter');
             const techSelect = document.getElementById('reportTechnicianFilter');
             const presetSelect = document.getElementById('reportRangePreset');
             const startInput = document.getElementById('reportStartDate');
             const endInput = document.getElementById('reportEndDate');
 
-            if (clientSelect && filters.clientId) clientSelect.value = filters.clientId;
-            if (techSelect && filters.technician) {
-                ensureSelectOption(techSelect, filters.technician, filters.technician);
-                techSelect.value = filters.technician;
+            if (clientSelect) {
+                setMultiSelectValues(clientSelect, normalized.clientIds, currentClientId || 'all');
             }
-            if (presetSelect && filters.rangePreset) presetSelect.value = filters.rangePreset;
+            if (techSelect) {
+                ensureSelectOptions(techSelect, normalized.technicians);
+                setMultiSelectValues(techSelect, normalized.technicians, 'all');
+            }
+            if (presetSelect && normalized.rangePreset) presetSelect.value = normalized.rangePreset;
 
-            if (filters.rangePreset && filters.rangePreset !== 'custom') {
-                applyReportRangePreset(filters.rangePreset, true);
+            if (normalized.rangePreset && normalized.rangePreset !== 'custom') {
+                applyReportRangePreset(normalized.rangePreset, true);
             } else {
                 toggleReportDateInputs(true);
-                if (startInput && filters.startDate) startInput.value = filters.startDate;
-                if (endInput && filters.endDate) endInput.value = filters.endDate;
+                if (startInput && normalized.startDate) startInput.value = normalized.startDate;
+                if (endInput && normalized.endDate) endInput.value = normalized.endDate;
             }
 
             if (shouldLoad !== false) {
@@ -7493,11 +7688,10 @@
         }
 
         function buildReportPresetName(filters) {
-            const clientLabel = filters.clientId === 'all'
-                ? 'Vsechny klienty'
-                : (clients.find(c => c.id === filters.clientId)?.name || filters.clientId);
-            const techLabel = filters.technician === 'all' ? 'Vsechni technici' : filters.technician;
-            const rangeLabel = getReportRangeLabel(filters);
+            const normalized = normalizeReportFilters(filters);
+            const clientLabel = formatReportClientLabel(normalized.clientIds);
+            const techLabel = formatReportTechnicianLabel(normalized.technicians);
+            const rangeLabel = getReportRangeLabel(normalized);
             return `${clientLabel} | ${rangeLabel} | ${techLabel}`;
         }
 
@@ -7541,13 +7735,13 @@
         }
 
         function getFilteredReportEntries() {
-            const filters = getReportFilters();
+            const filters = normalizeReportFilters(getReportFilters());
             let entries = [...reportEntries];
-            if (filters.clientId && filters.clientId !== 'all') {
-                entries = entries.filter(entry => entry.clientId === filters.clientId);
+            if (!filters.clientIds.includes('all')) {
+                entries = entries.filter(entry => filters.clientIds.includes(entry.clientId));
             }
-            if (filters.technician && filters.technician !== 'all') {
-                entries = entries.filter(entry => (entry.userEmail || entry.userId) === filters.technician);
+            if (!filters.technicians.includes('all')) {
+                entries = entries.filter(entry => filters.technicians.includes(entry.userEmail || entry.userId));
             }
             if (filters.startDate) {
                 entries = entries.filter(entry => entry.date >= filters.startDate);
@@ -7562,17 +7756,17 @@
             const container = document.getElementById('timeReportTable');
             if (!container) return;
 
-            const filters = getReportFilters();
+            const filters = normalizeReportFilters(getReportFilters());
             const entries = getFilteredReportEntries();
             const reportTitleInput = document.getElementById('reportPresetName');
             const reportTitle = (reportTitleInput?.value || '').trim() || buildReportPresetName(filters);
             const creator = auth?.currentUser?.displayName || auth?.currentUser?.email || auth?.currentUser?.uid || 'System';
-            const clientLabel = filters.clientId === 'all'
-                ? 'Vsechny klienty'
-                : (clients.find(c => c.id === filters.clientId)?.name || filters.clientId || 'Klient');
-            const techLabel = filters.technician === 'all' ? 'Vsechni technici' : (filters.technician || 'Vsechni technici');
+            const clientLabel = formatReportClientLabel(filters.clientIds);
+            const techLabel = formatReportTechnicianLabel(filters.technicians);
             const rangeLabel = getReportRangeLabel(filters);
-            const creatorSuffix = clientLabel && clientLabel !== 'Vsechny klienty' ? ` (${clientLabel})` : '';
+            const creatorSuffix = filters.clientIds.length === 1 && !filters.clientIds.includes('all')
+                ? ` (${clientLabel})`
+                : '';
             const totalHours = entries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
             const totalHoursLabel = Number.isFinite(totalHours)
                 ? (Math.round(totalHours * 100) / 100).toString()
@@ -7834,11 +8028,10 @@
         }
 
         function buildAdminReportHtml(entries, filters) {
-            const clientLabel = filters.clientId === 'all'
-                ? 'Vsechny'
-                : (clients.find(c => c.id === filters.clientId)?.name || filters.clientId);
-            const techLabel = filters.technician === 'all' ? 'Vsechni' : filters.technician;
-            const periodLabel = `${filters.startDate || '-'} - ${filters.endDate || '-'}`;
+            const normalized = normalizeReportFilters(filters);
+            const clientLabel = formatReportClientLabel(normalized.clientIds);
+            const techLabel = formatReportTechnicianLabel(normalized.technicians);
+            const periodLabel = `${normalized.startDate || '-'} - ${normalized.endDate || '-'}`;
 
             const tableRows = entries.map(entry => `
                 <tr>
@@ -7917,7 +8110,7 @@
                 return;
             }
             ensureReportFilterDefaults();
-            const filters = { ...getReportFilters(), clientId: 'all' };
+            const filters = normalizeReportFilters({ ...getReportFilters(), clientIds: ['all'] });
             try {
                 const entries = await fetchReportEntries(filters);
                 openReportPrintWindow(buildAdminReportHtml(entries, filters));
