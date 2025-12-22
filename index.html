@@ -1398,7 +1398,8 @@
         }
 
         .report-filter-card-full {
-            display: grid;
+            display: flex;
+            flex-direction: column;
             gap: 1.25rem;
         }
 
@@ -1418,6 +1419,10 @@
         .report-filter-divider {
             height: 1px;
             background: #eee5da;
+        }
+
+        .report-filter-card-full .report-actions {
+            margin-top: auto;
         }
 
         .report-form-grid {
@@ -3117,20 +3122,6 @@
                             <div class="report-actions">
                                 <button class="btn-small" onclick="loadReportEntries()">Zobrazit</button>
                                 <button class="btn-small" onclick="showReportList()">Zpet na seznam</button>
-                            </div>
-                            <div class="report-filter-divider"></div>
-                            <div class="report-filter-section">
-                                <div class="report-filter-section-title">Ulozene a sdilene</div>
-                                <div class="report-form-grid">
-                                    <div class="report-form-row">
-                                        <label for="reportPresetSelect">Ulozene</label>
-                                        <select id="reportPresetSelect" onchange="applyReportPreset()"></select>
-                                    </div>
-                                    <div class="report-form-row">
-                                        <label for="reportSharedSelect">Sdilene</label>
-                                        <select id="reportSharedSelect" onchange="applySharedReportPreset()"></select>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </aside>
