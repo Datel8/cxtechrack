@@ -126,21 +126,36 @@
         }
 
         .sidebar-section {
-            margin-bottom: 1.1rem;
-            padding: 1rem;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: linear-gradient(160deg, rgba(22, 22, 22, 0.9), rgba(10, 10, 10, 0.9));
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.01);
+            margin-bottom: 0.6rem;
+            padding: 0.5rem 0;
+        }
+
+        .sidebar-section + .sidebar-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 0.9rem;
         }
 
         .sidebar-section-title {
             font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.18em;
-            color: var(--text-secondary);
-            margin-bottom: 0.75rem;
+            color: rgba(248, 154, 85, 0.85);
+            margin-bottom: 0.55rem;
             font-weight: 600;
+            position: relative;
+            padding-left: 0.75rem;
+        }
+
+        .sidebar-section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(248, 154, 85, 0.9);
+            transform: translateY(-50%);
         }
 
         .section-title {
@@ -154,7 +169,7 @@
 
         .sidebar-nav {
             display: grid;
-            gap: 0.4rem;
+            gap: 0.25rem;
         }
 
         .sidebar-nav-nested {
@@ -164,10 +179,10 @@
         .nav-btn {
             text-align: left;
             width: 100%;
-            padding: 0.7rem 0.9rem;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(15, 15, 15, 0.7);
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(14, 14, 14, 0.6);
             color: var(--text-primary);
             font-weight: 600;
             font-size: 0.9rem;
@@ -176,8 +191,8 @@
         }
 
         .nav-btn-nested {
-            padding-left: 2rem;
-            font-size: 0.85rem;
+            padding-left: 1.8rem;
+            font-size: 0.84rem;
             position: relative;
         }
 
@@ -205,35 +220,35 @@
         }
 
         .sidebar-subsection {
-            margin-top: 0.85rem;
-            padding-top: 0.85rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px dashed rgba(255, 255, 255, 0.08);
         }
 
         .sidebar-subtitle {
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.18em;
-            color: var(--text-secondary);
-            margin-bottom: 0.65rem;
+            color: rgba(255, 255, 255, 0.55);
+            margin-bottom: 0.5rem;
             font-weight: 600;
         }
 
         .sidebar-actions {
             display: grid;
-            gap: 0.5rem;
+            gap: 0.35rem;
         }
 
         .sidebar-action-btn {
             text-align: left;
             width: 100%;
-            padding: 0.6rem 0.8rem;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(18, 18, 18, 0.85);
+            padding: 0.5rem 0.7rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(16, 16, 16, 0.8);
             color: var(--text-primary);
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -251,18 +266,18 @@
 
         .sidebar-module-list {
             display: grid;
-            gap: 0.5rem;
+            gap: 0.35rem;
         }
 
         .sidebar-module {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.6rem 0.8rem;
-            border-radius: 12px;
+            padding: 0.45rem 0.7rem;
+            border-radius: 10px;
             border: 1px dashed rgba(255, 255, 255, 0.12);
             color: var(--text-secondary);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             background: rgba(12, 12, 12, 0.7);
         }
 
@@ -313,6 +328,87 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
             margin-top: 0.35rem;
+        }
+
+        .topbar-user {
+            position: relative;
+            margin-left: auto;
+            z-index: 2;
+        }
+
+        .user-menu-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(248, 154, 85, 0.4);
+            background: rgba(18, 18, 18, 0.85);
+            color: var(--text-primary);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .user-menu-btn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(248, 154, 85, 0.7);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+        }
+
+        .user-menu-avatar {
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+        }
+
+        .user-menu-panel {
+            position: absolute;
+            top: calc(100% + 0.85rem);
+            right: 0;
+            min-width: 220px;
+            padding: 1rem;
+            border-radius: 14px;
+            border: 1px solid rgba(248, 154, 85, 0.35);
+            background: linear-gradient(160deg, rgba(18, 18, 18, 0.98), rgba(10, 10, 10, 0.92));
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+            display: none;
+            gap: 0.75rem;
+        }
+
+        .user-menu-panel.active {
+            display: grid;
+        }
+
+        .user-menu-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .user-menu-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(12, 12, 12, 0.7);
+            font-size: 0.75rem;
+        }
+
+        .user-menu-actions {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .user-menu-panel .btn,
+        .user-menu-panel .btn-small,
+        .user-menu-panel .btn-secondary {
+            width: 100%;
+            padding: 0.55rem 0.9rem;
+            font-size: 0.8rem;
         }
 
         .topbar-actions {
@@ -2974,15 +3070,20 @@
                     <div class="topbar-title">MSP Operations Desk</div>
                     <div class="topbar-subtitle">Multi-tenant sprava infrastruktury</div>
                 </div>
-                <div class="topbar-actions">
-                    <div class="topbar-menu-title">Ucet</div>
-                    <div class="session-status">
-                        <span class="status-dot" aria-hidden="true"></span>
-                        <div id="authStatus" class="auth-status">Neprihlasen</div>
-                    </div>
-                    <div class="topbar-menu-actions">
-                        <button class="btn-small" id="loginBtn" onclick="loginWithGoogle()">Prihlasit</button>
-                        <button class="btn btn-secondary" id="logoutBtn" onclick="logout()" style="display: none;">Odhlasit</button>
+                <div class="topbar-user">
+                    <button class="user-menu-btn" id="userMenuBtn" onclick="toggleUserMenu()" aria-label="Uzivatelske nastaveni">
+                        <span class="user-menu-avatar" id="userMenuAvatar">NA</span>
+                    </button>
+                    <div class="user-menu-panel" id="userMenuPanel">
+                        <div class="user-menu-title">Ucet</div>
+                        <div class="user-menu-status">
+                            <span class="status-dot" aria-hidden="true"></span>
+                            <div id="authStatus" class="auth-status">Neprihlasen</div>
+                        </div>
+                        <div class="user-menu-actions">
+                            <button class="btn-small" id="loginBtn" onclick="loginWithGoogle(); closeUserMenu()">Prihlasit</button>
+                            <button class="btn btn-secondary" id="logoutBtn" onclick="logout(); closeUserMenu()" style="display: none;">Odhlasit</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -7923,8 +8024,10 @@
     function updateLocalAdminUI(enabled) {
       var statusEl = document.getElementById('authStatus');
       var overlay = document.getElementById('authOverlay');
+      var avatarEl = document.getElementById('userMenuAvatar');
       if (enabled) {
         if (statusEl) statusEl.textContent = 'Local admin';
+        if (avatarEl) avatarEl.textContent = 'LA';
         if (overlay) overlay.classList.add('hidden');
         document.body.classList.remove('auth-locked');
         if (window.setCurrentRole) {
@@ -7969,6 +8072,7 @@
       var loginBtn = document.getElementById('loginBtn');
       var logoutBtn = document.getElementById('logoutBtn');
       var overlay = document.getElementById('authOverlay');
+      var avatarEl = document.getElementById('userMenuAvatar');
 
       if (!statusEl || !loginBtn || !logoutBtn) return;
 
@@ -7986,6 +8090,12 @@
         statusEl.textContent = 'Prihlasen: ' + (user.email || user.uid);
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
+        if (avatarEl) {
+          var label = user.displayName || user.email || user.uid || '';
+          var parts = label.split(/\s+|@/).filter(Boolean);
+          var initials = parts.slice(0, 2).map(function(part) { return part[0]; }).join('').toUpperCase();
+          avatarEl.textContent = initials || 'UA';
+        }
         if (overlay) overlay.classList.add('hidden');
         document.body.classList.remove('auth-locked');
         if (window.switchView) {
@@ -8010,6 +8120,7 @@
         statusEl.textContent = 'Neprihlasen';
         loginBtn.style.display = 'inline-block';
         logoutBtn.style.display = 'none';
+        if (avatarEl) avatarEl.textContent = 'NA';
         if (overlay) overlay.classList.remove('hidden');
         document.body.classList.add('auth-locked');
         if (window.reportPresetsLoaded !== undefined) {
@@ -8086,6 +8197,26 @@
       });
     }
 
+    function toggleUserMenu() {
+      var panel = document.getElementById('userMenuPanel');
+      if (!panel) return;
+      panel.classList.toggle('active');
+    }
+
+    function closeUserMenu() {
+      var panel = document.getElementById('userMenuPanel');
+      if (panel) panel.classList.remove('active');
+    }
+
+    document.addEventListener('click', function(event) {
+      var panel = document.getElementById('userMenuPanel');
+      var btn = document.getElementById('userMenuBtn');
+      if (!panel || !btn) return;
+      if (panel.classList.contains('active') && !panel.contains(event.target) && !btn.contains(event.target)) {
+        panel.classList.remove('active');
+      }
+    });
+
     auth.onAuthStateChanged(function (user) {
       updateAuthUI(user);
       if (window.onAuthRoleChanged) {
@@ -8105,6 +8236,8 @@
     window.loginWithGoogle = loginWithGoogle;
     window.sendMagicLink = sendMagicLink;
     window.logout = logout;
+    window.toggleUserMenu = toggleUserMenu;
+    window.closeUserMenu = closeUserMenu;
     window.requireAuth = requireAuth;
     window.enableLocalAdmin = enableLocalAdmin;
   }).catch(function(err) {
