@@ -57,3 +57,4 @@ service cloud.firestore {
 
 Ale pro testování použijte první variantu s `if true`.
 
+

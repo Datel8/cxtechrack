@@ -64,3 +64,4 @@ Pak zkuste v Firebase Console:
 **Pokud manuální vytvoření funguje**, ale z aplikace ne, pak:
 - Problém je v kódu aplikace (možná špatné projectId nebo něco jiného)
 
+

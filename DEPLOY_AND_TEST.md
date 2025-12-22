@@ -69,3 +69,4 @@ Vercel automaticky nasadí novou verzi.
 - `autoSyncToFirestore EARLY RETURN` = firestoreReady je false
 - `saveClientDataToDb ERROR` = chyba při ukládání (permissions, network, atd.)
 
+

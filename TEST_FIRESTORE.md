@@ -66,3 +66,4 @@ service cloud.firestore {
 5. Pokud ne, nastavte a klikněte **Publish**
 6. Počkejte 10-20 sekund na propagaci
 
+

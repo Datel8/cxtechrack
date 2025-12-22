@@ -58,3 +58,4 @@ Po nastavení pravidel byste měli vidět v konzoli:
 - Pro produkci byste měli použít přísnější pravidla s autentizací
 - Ale pro teď to potřebujeme pro testování
 
+

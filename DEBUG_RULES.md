@@ -61,3 +61,4 @@ setDoc(testRef, { test: true })
 - **Rules nejsou správně validní** - zkuste validovat rules v editoru (měl by být nějaký validator)
 - **Propagace rules trvá déle** - někdy to trvá až minutu
 
+
