@@ -1362,10 +1362,14 @@
         }
 
         .report-list-group {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
+            padding: 0;
+            background: transparent;
+            border: none;
+        }
+
+        .report-list-group + .report-list-group {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
         }
 
         .report-list-title {
@@ -1379,14 +1383,15 @@
 
         .report-list-grid {
             display: grid;
-            gap: 0.6rem;
+            gap: 0;
         }
 
         .report-list-card {
-            background: var(--panel-surface-2);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 0.75rem 0.9rem;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0;
+            padding: 0.75rem 0;
             text-align: left;
             color: var(--text-primary);
             cursor: pointer;
@@ -1395,7 +1400,7 @@
 
         .report-list-card:hover {
             border-color: rgba(248, 154, 85, 0.5);
-            transform: translateY(-2px);
+            transform: none;
         }
 
         .report-list-name {
@@ -1409,6 +1414,48 @@
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.14em;
+        }
+
+        #reportsView {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        #reportsView .time-panel {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        #reportsView .report-actions {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 1.25rem;
+        }
+
+        #reportsView .report-filters {
+            gap: 1rem;
+        }
+
+        #reportsView .report-field label {
+            text-transform: none;
+            letter-spacing: 0.08em;
+        }
+
+        #reportsView .report-filters select,
+        #reportsView .report-filters input,
+        #reportsView .report-presets input,
+        #reportsView .report-presets select {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0;
+        }
+
+        .device-list,
+        .connections-container {
+            display: none !important;
         }
 
         .report-presets {
