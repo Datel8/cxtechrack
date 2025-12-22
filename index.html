@@ -1349,6 +1349,68 @@
             margin-top: 1rem;
         }
 
+        .report-actions-right {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .report-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .report-list-group {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .report-list-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .report-list-grid {
+            display: grid;
+            gap: 0.6rem;
+        }
+
+        .report-list-card {
+            background: var(--panel-surface-2);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.75rem 0.9rem;
+            text-align: left;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .report-list-card:hover {
+            border-color: rgba(248, 154, 85, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .report-list-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .report-list-meta {
+            margin-top: 0.35rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+        }
+
         .report-presets {
             display: flex;
             flex-wrap: wrap;
@@ -2704,7 +2766,10 @@
                             <select id="reportPresetSelect" onchange="applyReportPreset()"></select>
                             <select id="reportSharedSelect" onchange="applySharedReportPreset()"></select>
                         </div>
-                        <button class="btn-small" onclick="loadReportEntries()">Zobrazit</button>
+                        <div class="report-actions-right">
+                            <button class="btn-small" onclick="loadReportEntries()">Zobrazit</button>
+                            <button class="btn-small" onclick="showReportList()">Seznam reportu</button>
+                        </div>
                     </div>
                     <div id="timeReportTable"></div>
                 </div>
@@ -3081,6 +3146,7 @@
         let reportSharedLoaded = false;
         let sharedReportPresets = [];
         let pendingReportShareId = null;
+        let reportHasLoaded = false;
         let currentView = 'racks';
         let timeViewWeekStart = new Date();
         let timeSelectionStart = null;
@@ -4176,7 +4242,8 @@
                     break;
                 case 'reports':
                     document.getElementById('reportsView').style.display = 'block';
-                    loadReportEntries();
+                    reportHasLoaded = false;
+                    renderReportsView();
                     break;
             }
         }
@@ -5521,11 +5588,13 @@
         async function loadReportEntries() {
             if (!canViewReports()) {
                 reportEntries = [];
+                reportHasLoaded = false;
                 renderReportsView();
                 return;
             }
             if (!window.db || !window.auth || !auth.currentUser) {
                 reportEntries = [];
+                reportHasLoaded = false;
                 renderReportsView();
                 return;
             }
@@ -5535,6 +5604,7 @@
             const filters = getReportFilters();
 
             try {
+                reportHasLoaded = true;
                 reportEntries = await fetchReportEntries(filters);
                 renderReportsView();
             } catch (err) {
@@ -5572,12 +5642,16 @@
             if (actions) actions.style.display = 'flex';
             ensureReportFilterDefaults();
             buildReportClientOptions();
-            buildReportTechnicianOptions(reportEntries);
+            buildReportTechnicianOptions(reportHasLoaded ? reportEntries : []);
             loadReportPresetsFromCloud();
             loadSharedReportPresets(true);
             buildReportPresetOptions();
             buildSharedReportOptions();
-            renderTimeReportTable();
+            if (reportHasLoaded) {
+                renderTimeReportTable();
+            } else {
+                renderReportLanding();
+            }
         }
 
         function getTimeSelectionRange() {
@@ -6027,7 +6101,13 @@
         }
 
         function onReportFilterChange() {
-            loadReportEntries();
+            reportHasLoaded = false;
+            renderReportLanding();
+        }
+
+        function showReportList() {
+            reportHasLoaded = false;
+            renderReportsView();
         }
 
         function getSavedReportPresets() {
@@ -6061,6 +6141,9 @@
                 if (presets.length) {
                     saveReportPresets(presets);
                     buildReportPresetOptions();
+                    if (!reportHasLoaded) {
+                        renderReportLanding();
+                    }
                     return true;
                 }
             } catch (err) {
@@ -6111,6 +6194,9 @@
                     });
                     saveReportPresets(presets);
                     buildReportPresetOptions();
+                    if (!reportHasLoaded) {
+                        renderReportLanding();
+                    }
                 }
             } catch (err) {
                 console.warn('Load report presets failed:', err);
@@ -6166,6 +6252,61 @@
             }
         }
 
+        function getReportSummary(filters) {
+            const clientId = filters.clientId || 'all';
+            const technician = filters.technician || 'all';
+            const clientLabel = clientId === 'all'
+                ? 'Vsechny klienty'
+                : (clients.find(c => c.id === clientId)?.name || clientId);
+            const techLabel = technician === 'all' ? 'Vsechni technici' : technician;
+            const rangeLabel = getReportRangeLabel(filters);
+            return `Klient: ${clientLabel} • Obdobi: ${rangeLabel} • Technik: ${techLabel}`;
+        }
+
+        function renderReportLanding() {
+            const container = document.getElementById('timeReportTable');
+            if (!container) return;
+            const saved = getSavedReportPresets();
+            const shared = sharedReportPresets || [];
+
+            const buildCards = (items, source) => {
+                if (!items.length) {
+                    return '<div class="empty-state"><p>Zadne reporty.</p></div>';
+                }
+                return `
+                    <div class="report-list-grid">
+                        ${items.map(item => `
+                            <button class="report-list-card" onclick="openReportPreset('${source}', '${item.id}')">
+                                <div class="report-list-name">${item.name || 'Report'}</div>
+                                <div class="report-list-meta">${getReportSummary(item.filters || {})}</div>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            };
+
+            container.innerHTML = `
+                <div class="report-list">
+                    <div class="report-list-group">
+                        <div class="report-list-title">Ulozene reporty</div>
+                        ${buildCards(saved, 'local')}
+                    </div>
+                    <div class="report-list-group">
+                        <div class="report-list-title">Sdilene reporty</div>
+                        ${buildCards(shared, 'shared')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function openReportPreset(source, id) {
+            const presets = source === 'shared' ? sharedReportPresets : getSavedReportPresets();
+            const preset = presets.find(item => item.id === id);
+            if (!preset) return;
+            reportHasLoaded = true;
+            applyReportFilters(preset.filters || {}, true);
+        }
+
         function ensureSelectOption(select, value, label) {
             if (!select || !value) return;
             const exists = Array.from(select.options).some(option => option.value === value);
@@ -6177,7 +6318,7 @@
             }
         }
 
-        function applyReportFilters(filters) {
+        function applyReportFilters(filters, shouldLoad) {
             if (!filters) return;
             buildReportClientOptions();
             const clientSelect = document.getElementById('reportClientFilter');
@@ -6201,7 +6342,12 @@
                 if (endInput && filters.endDate) endInput.value = filters.endDate;
             }
 
-            loadReportEntries();
+            if (shouldLoad !== false) {
+                loadReportEntries();
+            } else {
+                reportHasLoaded = false;
+                renderReportLanding();
+            }
         }
 
         function getReportShareCollection() {
@@ -6226,6 +6372,9 @@
                     };
                 }).sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
                 buildSharedReportOptions();
+                if (!reportHasLoaded) {
+                    renderReportLanding();
+                }
             } catch (err) {
                 console.warn('Load shared report presets failed:', err);
                 reportSharedLoaded = false;
@@ -6374,6 +6523,9 @@
             saveReportPresets(presets.slice(0, 30));
             if (nameInput) nameInput.value = '';
             buildReportPresetOptions();
+            if (!reportHasLoaded) {
+                renderReportLanding();
+            }
             await saveReportPresetToCloud(preset);
         }
 
@@ -7184,6 +7336,9 @@
         if (window.switchView) {
           switchView('dashboard');
         }
+        if (window.reportHasLoaded !== undefined) {
+          reportHasLoaded = false;
+        }
         if (window.loadReportPresetsFromCloud) {
           loadReportPresetsFromCloud(true);
         }
@@ -7201,6 +7356,9 @@
         document.body.classList.add('auth-locked');
         if (window.reportPresetsLoaded !== undefined) {
           reportPresetsLoaded = false;
+        }
+        if (window.reportHasLoaded !== undefined) {
+          reportHasLoaded = false;
         }
         if (window.reportSharedLoaded !== undefined) {
           reportSharedLoaded = false;
