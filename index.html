@@ -1373,6 +1373,12 @@
             gap: 1rem;
         }
 
+        .reports-layout-single .report-filter-panel {
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
         .report-filter-card {
             background: #ffffff;
             border: 1px solid rgba(0, 0, 0, 0.06);
@@ -1389,6 +1395,29 @@
             color: #6f6a63;
             margin-bottom: 0.85rem;
             font-weight: 600;
+        }
+
+        .report-filter-card-full {
+            display: grid;
+            gap: 1.25rem;
+        }
+
+        .report-filter-section {
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .report-filter-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #6f6a63;
+            font-weight: 600;
+        }
+
+        .report-filter-divider {
+            height: 1px;
+            background: #eee5da;
         }
 
         .report-form-grid {
@@ -3036,8 +3065,8 @@
                 </div>
                 <div class="reports-layout">
                     <aside class="report-filter-panel">
-                        <div class="report-filter-card">
-                            <div class="report-filter-title">Nazev a sdileni</div>
+                        <div class="report-filter-card report-filter-card-full">
+                            <div class="report-filter-title">Vytvorit report</div>
                             <div class="report-form-grid">
                                 <div class="report-form-row">
                                     <label for="reportPresetName">Nazev</label>
@@ -3053,52 +3082,54 @@
                                     <input type="text" id="reportShareLink" class="report-share-link" placeholder="Permanentni odkaz" readonly>
                                 </div>
                             </div>
-                        </div>
-                        <div class="report-filter-card">
-                            <div class="report-filter-title">Sestavit vykaz pro</div>
-                            <div class="report-filters">
-                                <div class="report-field">
-                                    <label for="reportRangePreset">Casovy interval</label>
-                                    <select id="reportRangePreset" onchange="onReportRangePresetChange()">
-                                        <option value="all">Vsechno</option>
-                                        <option value="current-month">Soucasny mesic</option>
-                                        <option value="previous-month">Predchozi mesic</option>
-                                        <option value="year">Aktualni rok</option>
-                                        <option value="custom">Vlastni rozsah</option>
-                                    </select>
-                                </div>
-                                <div class="report-field">
-                                    <label for="reportClientFilter">Zakaznici</label>
-                                    <select id="reportClientFilter" onchange="onReportFilterChange()"></select>
-                                </div>
-                                <div class="report-field">
-                                    <label for="reportTechnicianFilter">Uzivatele</label>
-                                    <select id="reportTechnicianFilter" onchange="onReportFilterChange()"></select>
-                                </div>
-                                <div class="report-field">
-                                    <label for="reportStartDate">Od</label>
-                                    <input type="date" id="reportStartDate" onchange="onReportDateChange()">
-                                </div>
-                                <div class="report-field">
-                                    <label for="reportEndDate">Do</label>
-                                    <input type="date" id="reportEndDate" onchange="onReportDateChange()">
+                            <div class="report-filter-divider"></div>
+                            <div class="report-filter-section">
+                                <div class="report-filter-section-title">Filtry</div>
+                                <div class="report-filters">
+                                    <div class="report-field">
+                                        <label for="reportRangePreset">Casovy interval</label>
+                                        <select id="reportRangePreset" onchange="onReportRangePresetChange()">
+                                            <option value="all">Vsechno</option>
+                                            <option value="current-month">Soucasny mesic</option>
+                                            <option value="previous-month">Predchozi mesic</option>
+                                            <option value="year">Aktualni rok</option>
+                                            <option value="custom">Vlastni rozsah</option>
+                                        </select>
+                                    </div>
+                                    <div class="report-field">
+                                        <label for="reportClientFilter">Zakaznici</label>
+                                        <select id="reportClientFilter" onchange="onReportFilterChange()"></select>
+                                    </div>
+                                    <div class="report-field">
+                                        <label for="reportTechnicianFilter">Uzivatele</label>
+                                        <select id="reportTechnicianFilter" onchange="onReportFilterChange()"></select>
+                                    </div>
+                                    <div class="report-field">
+                                        <label for="reportStartDate">Od</label>
+                                        <input type="date" id="reportStartDate" onchange="onReportDateChange()">
+                                    </div>
+                                    <div class="report-field">
+                                        <label for="reportEndDate">Do</label>
+                                        <input type="date" id="reportEndDate" onchange="onReportDateChange()">
+                                    </div>
                                 </div>
                             </div>
                             <div class="report-actions">
                                 <button class="btn-small" onclick="loadReportEntries()">Zobrazit</button>
-                                <button class="btn-small" onclick="showReportList()">Seznam reportu</button>
+                                <button class="btn-small" onclick="showReportList()">Zpet na seznam</button>
                             </div>
-                        </div>
-                        <div class="report-filter-card">
-                            <div class="report-filter-title">Vybrat report</div>
-                            <div class="report-form-grid">
-                                <div class="report-form-row">
-                                    <label for="reportPresetSelect">Ulozene</label>
-                                    <select id="reportPresetSelect" onchange="applyReportPreset()"></select>
-                                </div>
-                                <div class="report-form-row">
-                                    <label for="reportSharedSelect">Sdilene</label>
-                                    <select id="reportSharedSelect" onchange="applySharedReportPreset()"></select>
+                            <div class="report-filter-divider"></div>
+                            <div class="report-filter-section">
+                                <div class="report-filter-section-title">Ulozene a sdilene</div>
+                                <div class="report-form-grid">
+                                    <div class="report-form-row">
+                                        <label for="reportPresetSelect">Ulozene</label>
+                                        <select id="reportPresetSelect" onchange="applyReportPreset()"></select>
+                                    </div>
+                                    <div class="report-form-row">
+                                        <label for="reportSharedSelect">Sdilene</label>
+                                        <select id="reportSharedSelect" onchange="applySharedReportPreset()"></select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -5942,6 +5973,7 @@
             try {
                 reportHasLoaded = true;
                 reportEntries = await fetchReportEntries(filters);
+                reportFiltersVisible = false;
                 renderReportsView();
             } catch (err) {
                 console.warn('Report entries load failed:', err);
@@ -5965,23 +5997,27 @@
             const accessNote = document.getElementById('reportsAccessNote');
             const filterPanel = view.querySelector('.report-filter-panel');
             const layout = view.querySelector('.reports-layout');
+            const reportDisplay = view.querySelector('.report-display');
             const filters = view.querySelector('.report-filters');
             const actions = view.querySelector('.report-actions');
+            const showFilters = reportFiltersVisible && !reportHasLoaded;
             if (!canViewReports()) {
                 if (accessNote) accessNote.style.display = 'block';
                 if (filterPanel) filterPanel.style.display = 'none';
                 if (filters) filters.style.display = 'none';
                 if (actions) actions.style.display = 'none';
                 if (layout) layout.classList.add('reports-layout-single');
+                if (reportDisplay) reportDisplay.style.display = 'none';
                 const table = document.getElementById('timeReportTable');
                 if (table) table.innerHTML = '';
                 return;
             }
             if (accessNote) accessNote.style.display = 'none';
-            if (filterPanel) filterPanel.style.display = reportFiltersVisible ? 'grid' : 'none';
-            if (layout) layout.classList.toggle('reports-layout-single', !reportFiltersVisible);
-            if (filters) filters.style.display = reportFiltersVisible ? 'grid' : 'none';
-            if (actions) actions.style.display = reportFiltersVisible ? 'flex' : 'none';
+            if (filterPanel) filterPanel.style.display = showFilters ? 'grid' : 'none';
+            if (layout) layout.classList.add('reports-layout-single');
+            if (filters) filters.style.display = showFilters ? 'grid' : 'none';
+            if (actions) actions.style.display = showFilters ? 'flex' : 'none';
+            if (reportDisplay) reportDisplay.style.display = showFilters ? 'none' : 'flex';
             ensureReportFilterDefaults();
             buildReportClientOptions();
             buildReportTechnicianOptions(reportHasLoaded ? reportEntries : []);
@@ -5989,6 +6025,11 @@
             loadSharedReportPresets(true);
             buildReportPresetOptions();
             buildSharedReportOptions();
+            if (showFilters) {
+                const table = document.getElementById('timeReportTable');
+                if (table) table.innerHTML = '';
+                return;
+            }
             if (reportHasLoaded) {
                 renderTimeReportTable();
             } else {
@@ -6384,7 +6425,8 @@
         function onReportRangePresetChange() {
             const presetSelect = document.getElementById('reportRangePreset');
             if (!presetSelect) return;
-            applyReportRangePreset(presetSelect.value);
+            const silent = reportFiltersVisible || !reportHasLoaded;
+            applyReportRangePreset(presetSelect.value, silent);
         }
 
         function onReportDateChange() {
@@ -6444,7 +6486,11 @@
 
         function onReportFilterChange() {
             reportHasLoaded = false;
-            renderReportLanding();
+            if (reportFiltersVisible) {
+                renderReportsView();
+            } else {
+                renderReportLanding();
+            }
         }
 
         function showReportFilters() {
@@ -6452,7 +6498,7 @@
             reportFiltersVisible = true;
             renderReportsView();
             setTimeout(() => {
-                document.getElementById('reportClientFilter')?.focus();
+                document.getElementById('reportPresetName')?.focus();
             }, 0);
         }
 
@@ -6672,6 +6718,7 @@
             const preset = presets.find(item => item.id === id);
             if (!preset) return;
             reportHasLoaded = true;
+            reportFiltersVisible = false;
             applyReportFilters(preset.filters || {}, true);
         }
 
@@ -6688,6 +6735,9 @@
 
         function applyReportFilters(filters, shouldLoad) {
             if (!filters) return;
+            if (shouldLoad !== false) {
+                reportFiltersVisible = false;
+            }
             buildReportClientOptions();
             const clientSelect = document.getElementById('reportClientFilter');
             const techSelect = document.getElementById('reportTechnicianFilter');
@@ -7752,6 +7802,9 @@
         if (window.reportHasLoaded !== undefined) {
           reportHasLoaded = false;
         }
+        if (window.reportFiltersVisible !== undefined) {
+          reportFiltersVisible = false;
+        }
         if (window.loadReportPresetsFromCloud) {
           loadReportPresetsFromCloud(true);
         }
@@ -7772,6 +7825,9 @@
         }
         if (window.reportHasLoaded !== undefined) {
           reportHasLoaded = false;
+        }
+        if (window.reportFiltersVisible !== undefined) {
+          reportFiltersVisible = false;
         }
         if (window.reportSharedLoaded !== undefined) {
           reportSharedLoaded = false;
