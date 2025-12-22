@@ -1364,6 +1364,10 @@
             align-items: start;
         }
 
+        .reports-layout.reports-layout-single {
+            grid-template-columns: 1fr;
+        }
+
         .report-filter-panel {
             display: grid;
             gap: 1rem;
@@ -1411,8 +1415,9 @@
         .report-display {
             min-height: 420px;
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            justify-content: flex-start;
+            align-items: stretch;
+            width: 100%;
         }
 
         .report-sheet {
@@ -1430,6 +1435,7 @@
         .report-sheet-wide {
             max-width: none;
             padding: 2.5rem;
+            margin: 0;
         }
 
         .report-sheet-header {
@@ -1466,6 +1472,12 @@
             letter-spacing: 0.08em;
             color: #f89a55;
             font-size: 1rem;
+        }
+
+        .report-sheet-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin: 1rem 0 0.75rem;
         }
 
         .report-sheet-meta {
@@ -1529,6 +1541,10 @@
             background: transparent;
             border: 1px dashed #e1d8cd;
             color: #7a756e;
+        }
+
+        #reportsView #timeReportTable {
+            width: 100%;
         }
 
         .report-list {
@@ -3465,6 +3481,7 @@
         let sharedReportPresets = [];
         let pendingReportShareId = null;
         let reportHasLoaded = false;
+        let reportFiltersVisible = false;
         let currentView = 'racks';
         let timeViewWeekStart = new Date();
         let timeSelectionStart = null;
@@ -4561,6 +4578,7 @@
                 case 'reports':
                     document.getElementById('reportsView').style.display = 'block';
                     reportHasLoaded = false;
+                    reportFiltersVisible = false;
                     renderReportsView();
                     break;
             }
@@ -5945,19 +5963,25 @@
             const view = document.getElementById('reportsView');
             if (!view) return;
             const accessNote = document.getElementById('reportsAccessNote');
+            const filterPanel = view.querySelector('.report-filter-panel');
+            const layout = view.querySelector('.reports-layout');
             const filters = view.querySelector('.report-filters');
             const actions = view.querySelector('.report-actions');
             if (!canViewReports()) {
                 if (accessNote) accessNote.style.display = 'block';
+                if (filterPanel) filterPanel.style.display = 'none';
                 if (filters) filters.style.display = 'none';
                 if (actions) actions.style.display = 'none';
+                if (layout) layout.classList.add('reports-layout-single');
                 const table = document.getElementById('timeReportTable');
                 if (table) table.innerHTML = '';
                 return;
             }
             if (accessNote) accessNote.style.display = 'none';
-            if (filters) filters.style.display = 'grid';
-            if (actions) actions.style.display = 'flex';
+            if (filterPanel) filterPanel.style.display = reportFiltersVisible ? 'grid' : 'none';
+            if (layout) layout.classList.toggle('reports-layout-single', !reportFiltersVisible);
+            if (filters) filters.style.display = reportFiltersVisible ? 'grid' : 'none';
+            if (actions) actions.style.display = reportFiltersVisible ? 'flex' : 'none';
             ensureReportFilterDefaults();
             buildReportClientOptions();
             buildReportTechnicianOptions(reportHasLoaded ? reportEntries : []);
@@ -6423,8 +6447,18 @@
             renderReportLanding();
         }
 
+        function showReportFilters() {
+            reportHasLoaded = false;
+            reportFiltersVisible = true;
+            renderReportsView();
+            setTimeout(() => {
+                document.getElementById('reportClientFilter')?.focus();
+            }, 0);
+        }
+
         function showReportList() {
             reportHasLoaded = false;
+            reportFiltersVisible = false;
             renderReportsView();
         }
 
@@ -6611,6 +6645,9 @@
                             <div class="report-sheet-subtitle">Vyber ulozeny nebo sdileny report.</div>
                         </div>
                         <div class="report-sheet-logo">CX.TECH</div>
+                    </div>
+                    <div class="report-sheet-toolbar">
+                        <button class="btn-small" onclick="showReportFilters()">Vytvorit report</button>
                     </div>
                     <div class="report-sheet-meta">
                         <div class="report-meta-item"><span>Ulozene</span><div>${saved.length}</div></div>
@@ -6960,13 +6997,16 @@
                 : '<div class="empty-state"><p>Zadne vykazane hodiny.</p></div>';
 
             container.innerHTML = `
-                <div class="report-sheet">
+                <div class="report-sheet report-sheet-wide">
                     <div class="report-sheet-header">
                         <div>
                             <div class="report-sheet-title">${reportTitle} <span class="report-live">live</span></div>
                             <div class="report-sheet-subtitle">Vytvoril ${creator}${creatorSuffix}</div>
                         </div>
                         <div class="report-sheet-logo">CX.TECH</div>
+                    </div>
+                    <div class="report-sheet-toolbar">
+                        <button class="btn-small" onclick="showReportList()">Zpet na seznam</button>
                     </div>
                     <div class="report-sheet-meta">
                         <div class="report-meta-item"><span>Klient</span><div>${clientLabel}</div></div>
