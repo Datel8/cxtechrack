@@ -2664,7 +2664,7 @@
                 </div>
                 <div class="time-panel">
                     <div class="time-report-header">
-                        <div class="section-title">Filtry reportu</div>
+                        <div class="section-title">Pridat report</div>
                         <div class="report-filters">
                             <div class="report-field">
                                 <label for="reportClientFilter">Klient</label>
@@ -2677,6 +2677,7 @@
                             <div class="report-field">
                                 <label for="reportRangePreset">Obdobi</label>
                                 <select id="reportRangePreset" onchange="onReportRangePresetChange()">
+                                    <option value="all">Vsechno</option>
                                     <option value="current-month">Soucasny mesic</option>
                                     <option value="previous-month">Predchozi mesic</option>
                                     <option value="year">Aktualni rok</option>
@@ -2696,14 +2697,14 @@
                     <div class="report-actions">
                         <div class="report-presets">
                             <input type="text" id="reportPresetName" placeholder="Nazev reportu">
-                            <button class="btn-small" onclick="saveReportPreset()">Ulozit report</button>
+                            <button class="btn-small" onclick="saveReportPreset()">Pridat report</button>
                             <button class="btn-small" onclick="shareReportInternally()">Sdilet interne</button>
                             <button class="btn-small" onclick="createReportShareLink()">Permanentni odkaz</button>
                             <input type="text" id="reportShareLink" class="report-share-link" placeholder="Permanentni odkaz" readonly>
                             <select id="reportPresetSelect" onchange="applyReportPreset()"></select>
                             <select id="reportSharedSelect" onchange="applySharedReportPreset()"></select>
                         </div>
-                        <button class="btn-small" onclick="loadReportEntries()">Nacist</button>
+                        <button class="btn-small" onclick="loadReportEntries()">Zobrazit</button>
                     </div>
                     <div id="timeReportTable"></div>
                 </div>
@@ -5899,9 +5900,9 @@
             const endInput = document.getElementById('reportEndDate');
             if (!startInput || !endInput) return;
             if (presetSelect && !presetSelect.value) {
-                presetSelect.value = 'current-month';
+                presetSelect.value = 'all';
             }
-            const preset = presetSelect ? presetSelect.value : 'current-month';
+            const preset = presetSelect ? presetSelect.value : 'all';
             if (preset === 'custom') {
                 toggleReportDateInputs(true);
                 if (!startInput.value || !endInput.value) {
@@ -5932,6 +5933,10 @@
             let end = new Date(now);
 
             switch (preset) {
+                case 'all':
+                    start = new Date(2000, 0, 1);
+                    end = new Date(now);
+                    break;
                 case 'previous-month':
                     start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                     end = new Date(now.getFullYear(), now.getMonth(), 0);
@@ -5978,7 +5983,7 @@
         function buildReportClientOptions() {
             const select = document.getElementById('reportClientFilter');
             if (!select) return;
-            const preferred = select.value || currentClientId || 'all';
+            const preferred = select.value || 'all';
             select.innerHTML = [
                 '<option value="all">Vsechny klienty</option>',
                 ...clients.map(client => `<option value="${client.id}">${client.name}</option>`)
@@ -6331,6 +6336,8 @@
 
         function getReportRangeLabel(filters) {
             switch (filters.rangePreset) {
+                case 'all':
+                    return 'Vsechno';
                 case 'previous-month':
                     return 'Predchozi mesic';
                 case 'year':
