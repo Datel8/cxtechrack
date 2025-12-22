@@ -279,8 +279,8 @@
         .topbar-actions .btn-small,
         .topbar-actions .btn-secondary {
             width: 100%;
-            padding: 0.5rem 0.8rem;
-            font-size: 0.75rem;
+            padding: 0.6rem 0.95rem;
+            font-size: 0.85rem;
         }
 
         .auth-status {
@@ -474,25 +474,26 @@
         
         .btn {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 1.1rem;
             background: linear-gradient(135deg, var(--cx-orange), #ff6a25);
             color: var(--cx-white);
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.95rem;
+            line-height: 1.2;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            text-transform: none;
+            letter-spacing: 0.02em;
             margin-bottom: 0.5rem;
         }
         
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(248, 154, 85, 0.3);
-            background: linear-gradient(135deg, #ff6a25, var(--cx-orange));
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(248, 154, 85, 0.25);
+            background: linear-gradient(135deg, #ff6a25, #ff915a);
         }
         
         .btn:active {
@@ -508,15 +509,15 @@
         }
         
         .btn-secondary {
-            background: transparent;
-            border: 2px solid var(--cx-orange);
+            background: rgba(248, 154, 85, 0.08);
+            border: 1px solid rgba(248, 154, 85, 0.55);
             color: var(--cx-orange);
         }
         
         .btn-secondary:hover {
-            background: rgba(248, 154, 85, 0.1);
-            border-color: var(--cx-orange);
-            box-shadow: 0 0 20px rgba(248, 154, 85, 0.2);
+            background: rgba(248, 154, 85, 0.16);
+            border-color: rgba(248, 154, 85, 0.75);
+            box-shadow: 0 6px 18px rgba(248, 154, 85, 0.2);
         }
         
         /* Form elements */
@@ -1323,9 +1324,9 @@
         }
 
         .report-field label {
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 0.18em;
+            font-size: 0.7rem;
+            text-transform: none;
+            letter-spacing: 0.08em;
             color: var(--text-secondary);
         }
 
@@ -1337,7 +1338,7 @@
             border-radius: 6px;
             color: var(--text-primary);
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
         }
 
         .report-actions {
@@ -1373,7 +1374,7 @@
         }
 
         .report-list-title {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.18em;
             color: var(--text-secondary);
@@ -1405,15 +1406,15 @@
 
         .report-list-name {
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
 
         .report-list-meta {
             margin-top: 0.35rem;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
+            text-transform: none;
+            letter-spacing: 0.06em;
         }
 
         #reportsView {
@@ -1474,7 +1475,7 @@
             border-radius: 6px;
             color: var(--text-primary);
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
         }
 
         .report-share-link {
@@ -1931,22 +1932,23 @@
         }
         
         .btn-small {
-            padding: 0.75rem 1rem;
+            padding: 0.65rem 0.95rem;
             background: linear-gradient(135deg, var(--cx-orange), #ff6a25);
             color: #101010;
             border: none;
-            border-radius: 6px;
-            font-family: 'IBM Plex Mono', monospace;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.9rem;
+            line-height: 1.2;
             cursor: pointer;
             transition: all 0.3s;
             white-space: nowrap;
         }
         
         .btn-small:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(248, 154, 85, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 22px rgba(248, 154, 85, 0.25);
         }
         
         /* Client info panel */
