@@ -4577,18 +4577,18 @@
         }
 
         function updateDashboardHeroForRole() {
-            const isTech = currentUserRole === 'technician';
+            const showChartOnly = true;
             const kicker = document.getElementById('dashboardHeroKicker');
             const title = document.getElementById('dashboardHeroTitle');
             const subtitle = document.getElementById('dashboardHeroSubtitle');
             const metrics = document.getElementById('dashboardHeroMetrics');
             const chart = document.getElementById('dashboardHoursChart');
 
-            if (kicker) kicker.style.display = isTech ? 'none' : '';
-            if (title) title.style.display = isTech ? 'none' : '';
-            if (subtitle) subtitle.style.display = isTech ? 'none' : '';
-            if (metrics) metrics.style.display = isTech ? 'none' : 'grid';
-            if (chart) chart.style.display = isTech ? 'grid' : 'none';
+            if (kicker) kicker.style.display = showChartOnly ? 'none' : '';
+            if (title) title.style.display = showChartOnly ? 'none' : '';
+            if (subtitle) subtitle.style.display = showChartOnly ? 'none' : '';
+            if (metrics) metrics.style.display = showChartOnly ? 'none' : 'grid';
+            if (chart) chart.style.display = showChartOnly ? 'grid' : 'none';
         }
 
         function getEntryTechKey(entry) {
@@ -4599,10 +4599,6 @@
             const chart = document.getElementById('dashboardHoursChart');
             const grid = document.getElementById('dashboardHoursGrid');
             if (!chart || !grid) return;
-            if (currentUserRole !== 'technician') {
-                chart.style.display = 'none';
-                return;
-            }
 
             const startDate = parseDateKey(startKey);
             const endDate = parseDateKey(endKey);
