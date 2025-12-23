@@ -2087,6 +2087,36 @@
             margin: 0 auto;
         }
 
+        .report-grid-stack {
+            display: grid;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.25rem;
+            width: 100%;
+        }
+
+        .report-grid .report-sheet {
+            max-width: none;
+            margin: 0;
+        }
+
+        .report-sheet-compact {
+            padding: 1.5rem;
+        }
+
+        .report-sheet-compact .report-sheet-title {
+            font-size: 1.2rem;
+        }
+
+        .report-sheet-compact .report-sheet-meta {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .report-sheet-wide {
             max-width: none;
             padding: 2.5rem;
@@ -8630,72 +8660,153 @@
                 : '0';
             const canDelete = canManageTimeEntries();
 
-            const headerCells = [
-                '<th>Datum</th>',
-                '<th>Polozka</th>',
-                '<th>Klient</th>',
-                '<th>Hodin</th>',
-                '<th>Technik</th>',
-                '<th>Popis</th>'
-            ];
-            if (canDelete) headerCells.push('<th>Akce</th>');
-            const headerCols = headerCells.join('');
+            const buildTableHtml = (items, showClientColumn) => {
+                const headerCells = [
+                    '<th>Datum</th>',
+                    '<th>Polozka</th>'
+                ];
+                if (showClientColumn) headerCells.push('<th>Klient</th>');
+                headerCells.push('<th>Hodin</th>', '<th>Technik</th>', '<th>Popis</th>');
+                if (canDelete) headerCells.push('<th>Akce</th>');
+                const headerCols = headerCells.join('');
 
-            const rows = entries.map(entry => {
-                const clientName = entry.clientName || (clients.find(c => c.id === entry.clientId)?.name) || '-';
-                const activity = entry.category || entry.activity || '-';
-                const hoursValue = parseFloat(entry.hours);
-                const hoursLabel = Number.isFinite(hoursValue)
-                    ? (Math.round(hoursValue * 100) / 100).toString()
-                    : '0';
-                const deleteCell = canDelete
-                    ? `<td><button class="delete-btn" onclick="deleteReportEntry('${entry.id}', '${entry.clientId || ''}')">Smazat</button></td>`
-                    : '';
+                const rows = items.map(entry => {
+                    const clientName = entry.clientName || (clients.find(c => c.id === entry.clientId)?.name) || '-';
+                    const activity = entry.category || entry.activity || '-';
+                    const hoursValue = parseFloat(entry.hours);
+                    const hoursLabel = Number.isFinite(hoursValue)
+                        ? (Math.round(hoursValue * 100) / 100).toString()
+                        : '0';
+                    const deleteCell = canDelete
+                        ? `<td><button class="delete-btn" onclick="deleteReportEntry('${entry.id}', '${entry.clientId || ''}')">Smazat</button></td>`
+                        : '';
+                    return `
+                        <tr>
+                            <td>${entry.date || '-'}</td>
+                            <td>${activity}</td>
+                            ${showClientColumn ? `<td>${clientName}</td>` : ''}
+                            <td>${hoursLabel}</td>
+                            <td>${entry.userEmail || entry.userId || '-'}</td>
+                            <td>${entry.description || '-'}</td>
+                            ${deleteCell}
+                        </tr>
+                    `;
+                }).join('');
+
+                return items.length
+                    ? `
+                        <table class="time-table">
+                            <thead><tr>${headerCols}</tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    `
+                    : '<div class="empty-state"><p>Zadne vykazane hodiny.</p></div>';
+            };
+
+            const grouped = new Map();
+            entries.forEach((entry) => {
+                const key = entry.clientId || 'unknown';
+                if (!grouped.has(key)) grouped.set(key, []);
+                grouped.get(key).push(entry);
+            });
+            const selectedClientIds = filters.clientIds.includes('all')
+                ? []
+                : filters.clientIds.filter((id) => id && id !== 'all');
+            const clientIds = selectedClientIds.length ? selectedClientIds : Array.from(grouped.keys());
+            const sortedClientIds = clientIds.sort((a, b) => {
+                const nameA = (clients.find(c => c.id === a)?.name || a || '').toLowerCase();
+                const nameB = (clients.find(c => c.id === b)?.name || b || '').toLowerCase();
+                return nameA.localeCompare(nameB, 'cs');
+            });
+            const multiClient = sortedClientIds.length > 1;
+
+            if (!multiClient) {
+                const tableHtml = buildTableHtml(entries, true);
+                container.innerHTML = `
+                    <div class="report-sheet report-sheet-wide">
+                        <div class="report-sheet-header">
+                            <div>
+                                <div class="report-sheet-title">${reportTitle} <span class="report-live">live</span></div>
+                                <div class="report-sheet-subtitle">Vytvoril ${creator}${creatorSuffix}</div>
+                            </div>
+                            <div class="report-sheet-logo">CX.TECH</div>
+                        </div>
+                        <div class="report-sheet-toolbar">
+                            <button class="btn-small" onclick="showReportList()">Zpet na seznam</button>
+                        </div>
+                        <div class="report-sheet-meta">
+                            <div class="report-meta-item"><span>Klient</span><div>${clientLabel}</div></div>
+                            <div class="report-meta-item"><span>Uzivatel</span><div>${techLabel}</div></div>
+                            <div class="report-meta-item"><span>Obdobi</span><div>${rangeLabel}</div></div>
+                            <div class="report-meta-item"><span>Polozky</span><div>${entries.length}</div></div>
+                        </div>
+                        <div class="report-sheet-totals">
+                            <div>Celkem hodin: ${totalHoursLabel} h</div>
+                            <div>Report pripraven</div>
+                        </div>
+                        ${tableHtml}
+                    </div>
+                `;
+                return;
+            }
+
+            const gridCards = sortedClientIds.map((clientId) => {
+                const items = grouped.get(clientId) || [];
+                const clientName = clients.find(c => c.id === clientId)?.name || (clientId === 'unknown' ? 'Neprirazeny klient' : '-');
+                const total = items.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+                const totalLabel = Number.isFinite(total) ? (Math.round(total * 100) / 100).toString() : '0';
+                const tableHtml = buildTableHtml(items, false);
                 return `
-                    <tr>
-                        <td>${entry.date || '-'}</td>
-                        <td>${activity}</td>
-                        <td>${clientName}</td>
-                        <td>${hoursLabel}</td>
-                        <td>${entry.userEmail || entry.userId || '-'}</td>
-                        <td>${entry.description || '-'}</td>
-                        ${deleteCell}
-                    </tr>
+                    <div class="report-sheet report-sheet-compact">
+                        <div class="report-sheet-header">
+                            <div>
+                                <div class="report-sheet-title">${clientName}</div>
+                                <div class="report-sheet-subtitle">${reportTitle}</div>
+                            </div>
+                            <div class="report-sheet-logo">CX.TECH</div>
+                        </div>
+                        <div class="report-sheet-meta">
+                            <div class="report-meta-item"><span>Uzivatel</span><div>${techLabel}</div></div>
+                            <div class="report-meta-item"><span>Obdobi</span><div>${rangeLabel}</div></div>
+                            <div class="report-meta-item"><span>Polozky</span><div>${items.length}</div></div>
+                            <div class="report-meta-item"><span>Hodin</span><div>${totalLabel}</div></div>
+                        </div>
+                        <div class="report-sheet-totals">
+                            <div>Celkem hodin: ${totalLabel} h</div>
+                            <div>Report pripraven</div>
+                        </div>
+                        ${tableHtml}
+                    </div>
                 `;
             }).join('');
 
-            const tableHtml = entries.length
-                ? `
-                    <table class="time-table">
-                        <thead><tr>${headerCols}</tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                `
-                : '<div class="empty-state"><p>Zadne vykazane hodiny.</p></div>';
-
             container.innerHTML = `
-                <div class="report-sheet report-sheet-wide">
-                    <div class="report-sheet-header">
-                        <div>
-                            <div class="report-sheet-title">${reportTitle} <span class="report-live">live</span></div>
-                            <div class="report-sheet-subtitle">Vytvoril ${creator}${creatorSuffix}</div>
+                <div class="report-grid-stack">
+                    <div class="report-sheet report-sheet-wide report-sheet-compact">
+                        <div class="report-sheet-header">
+                            <div>
+                                <div class="report-sheet-title">${reportTitle} <span class="report-live">live</span></div>
+                                <div class="report-sheet-subtitle">Vytvoril ${creator}</div>
+                            </div>
+                            <div class="report-sheet-logo">CX.TECH</div>
                         </div>
-                        <div class="report-sheet-logo">CX.TECH</div>
+                        <div class="report-sheet-toolbar">
+                            <button class="btn-small" onclick="showReportList()">Zpet na seznam</button>
+                        </div>
+                        <div class="report-sheet-meta">
+                            <div class="report-meta-item"><span>Klienti</span><div>${clientLabel}</div></div>
+                            <div class="report-meta-item"><span>Uzivatel</span><div>${techLabel}</div></div>
+                            <div class="report-meta-item"><span>Obdobi</span><div>${rangeLabel}</div></div>
+                            <div class="report-meta-item"><span>Polozky</span><div>${entries.length}</div></div>
+                        </div>
+                        <div class="report-sheet-totals">
+                            <div>Celkem hodin: ${totalHoursLabel} h</div>
+                            <div>Report pripraven</div>
+                        </div>
                     </div>
-                    <div class="report-sheet-toolbar">
-                        <button class="btn-small" onclick="showReportList()">Zpet na seznam</button>
+                    <div class="report-grid">
+                        ${gridCards}
                     </div>
-                    <div class="report-sheet-meta">
-                        <div class="report-meta-item"><span>Klient</span><div>${clientLabel}</div></div>
-                        <div class="report-meta-item"><span>Uzivatel</span><div>${techLabel}</div></div>
-                        <div class="report-meta-item"><span>Obdobi</span><div>${rangeLabel}</div></div>
-                        <div class="report-meta-item"><span>Polozky</span><div>${entries.length}</div></div>
-                    </div>
-                    <div class="report-sheet-totals">
-                        <div>Celkem hodin: ${totalHoursLabel} h</div>
-                        <div>Report pripraven</div>
-                    </div>
-                    ${tableHtml}
                 </div>
             `;
         }
