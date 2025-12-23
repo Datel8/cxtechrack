@@ -89,15 +89,21 @@
             display: grid;
             grid-template-columns: 320px 1fr;
             min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .sidebar {
             background: linear-gradient(180deg, #111111, #0b0b0b 80%);
             border-right: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 1.75rem 1.4rem;
+            padding: 1.25rem 1.2rem;
             min-height: 100vh;
+            height: 100vh;
             position: relative;
-            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            overflow: hidden;
         }
 
         .sidebar-brand {
@@ -137,9 +143,18 @@
             font-size: 0.85rem;
         }
 
+        .sidebar-scroll {
+            display: grid;
+            gap: 0.6rem;
+            overflow-y: auto;
+            padding-right: 0.4rem;
+            margin-right: -0.4rem;
+            flex: 1;
+        }
+
         .sidebar-section {
-            margin-bottom: 0.35rem;
-            padding: 0.5rem 0;
+            margin-bottom: 0;
+            padding: 0.35rem 0;
         }
 
         .sidebar-section + .sidebar-section {
@@ -152,14 +167,47 @@
             text-transform: uppercase;
             letter-spacing: 0.18em;
             color: rgba(248, 154, 85, 0.85);
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.35rem;
             font-weight: 600;
             position: relative;
-            padding-left: 0.75rem;
+            padding: 0.2rem 0;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
         }
 
         .sidebar-section-title::before {
             display: none;
+        }
+
+        .sidebar-section-title:focus-visible {
+            outline: 2px solid rgba(248, 154, 85, 0.4);
+            outline-offset: 3px;
+            border-radius: 8px;
+        }
+
+        .sidebar-section-toggle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-section-body {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .sidebar-section.collapsed .sidebar-section-body {
+            display: none;
+        }
+
+        .sidebar-section.collapsed .sidebar-section-toggle {
+            transform: rotate(-90deg);
         }
 
         .section-title {
@@ -286,6 +334,22 @@
 
         .main-content {
             padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: 100vh;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .main-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+            margin-right: -0.5rem;
+            display: grid;
+            gap: 1.5rem;
         }
 
         .topbar {
@@ -607,6 +671,8 @@
         @media (max-width: 1100px) {
             .app-shell {
                 grid-template-columns: 1fr;
+                height: auto;
+                overflow: visible;
             }
 
             .sidebar {
@@ -616,6 +682,14 @@
 
             .main-content {
                 padding: 1.5rem;
+                height: auto;
+                overflow: visible;
+            }
+
+            .main-scroll {
+                overflow: visible;
+                padding-right: 0;
+                margin-right: 0;
             }
 
             .dashboard-shell {
@@ -641,8 +715,12 @@
                 width: 100%;
             }
 
-            .dashboard-section {
-                padding: 1.25rem;
+            .dashboard-section-head {
+                padding: 1rem 1.1rem;
+            }
+
+            .dashboard-section-body {
+                padding: 0 1.1rem 1.1rem;
             }
 
             .dashboard-hero-card {
@@ -1248,8 +1326,8 @@
         }
 
         .dashboard-hero-card {
-            background: linear-gradient(150deg, rgba(248, 154, 85, 0.22), rgba(10, 10, 10, 0.95));
-            border: 1px solid rgba(248, 154, 85, 0.45);
+            background: linear-gradient(140deg, rgba(248, 154, 85, 0.12), rgba(12, 12, 12, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 2rem;
             position: relative;
@@ -1262,12 +1340,7 @@
         }
 
         .dashboard-hero-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 15% 20%, rgba(248, 154, 85, 0.28), transparent 55%),
-                        radial-gradient(circle at 80% 10%, rgba(248, 154, 85, 0.2), transparent 60%);
-            opacity: 0.9;
+            display: none;
         }
 
         .dashboard-hero-content {
@@ -1635,8 +1708,9 @@
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 20px;
-            padding: 1.5rem;
+            padding: 0;
             box-shadow: var(--shadow-soft);
+            overflow: hidden;
         }
 
         .dashboard-section-alt {
@@ -1649,7 +1723,17 @@
             align-items: flex-start;
             justify-content: space-between;
             gap: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0;
+            padding: 1.1rem 1.5rem;
+            cursor: pointer;
+            list-style: none;
+            background: rgba(10, 10, 10, 0.45);
+        }
+
+        .dashboard-section-head:focus-visible {
+            outline: 2px solid rgba(248, 154, 85, 0.4);
+            outline-offset: 2px;
+            border-radius: 14px;
         }
 
         .dashboard-section-title {
@@ -1663,6 +1747,33 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
             margin-top: 0.35rem;
+        }
+
+        .dashboard-section-head::-webkit-details-marker {
+            display: none;
+        }
+
+        .dashboard-section-head::marker {
+            content: '';
+        }
+
+        .dashboard-section-toggle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .dashboard-section[open] .dashboard-section-toggle {
+            transform: rotate(90deg);
+            color: var(--cx-orange);
+        }
+
+        .dashboard-section[open] .dashboard-section-head {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .dashboard-section-body {
+            padding: 0 1.5rem 1.5rem;
         }
 
         .dashboard-view .overview-grid {
@@ -3227,95 +3338,132 @@
         </div>
     </div>
     <div class="app-shell">
-        <aside class="sidebar">
-            <button class="sidebar-brand" type="button" onclick="switchView('dashboard')">
-                <div class="brand-title"><span class="cx">CX</span><span class="dot">.</span><span class="tech">TECH</span></div>
-                <div class="brand-subtitle">Rack Manager - MSP Console</div>
-            </button>
+            <aside class="sidebar">
+        <button class="sidebar-brand" type="button" onclick="switchView('dashboard')">
+            <div class="brand-title"><span class="cx">CX</span><span class="dot">.</span><span class="tech">TECH</span></div>
+            <div class="brand-subtitle">Rack Manager - MSP Console</div>
+        </button>
 
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Klient</div>
-                <div class="client-selector-container">
-                    <select id="clientSelector" class="client-selector" onchange="switchClient()">
-                        <option value="">-- Vyberte klienta --</option>
-                    </select>
-                    <button class="btn-small" onclick="openClientModal()">+ Novy klient</button>
-                </div>
-                <div class="client-info" id="clientInfo" style="display: none;">
-                    <h4>Aktivni klient</h4>
-                    <div class="client-info-detail" id="clientName"></div>
-                    <div class="client-info-detail" id="userRole"></div>
-                    <div class="client-info-detail" id="clientContact"></div>
-                    <div class="client-info-detail" id="clientLocation"></div>
-                    <div style="margin-top: 0.5rem;">
-                        <span class="client-badge" id="clientType"></span>
+        <div class="sidebar-scroll">
+            <div class="sidebar-section" data-section="client">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    Klient
+                    <span class="sidebar-section-toggle">></span>
+                </button>
+                <div class="sidebar-section-body">
+                    <div class="client-selector-container">
+                        <select id="clientSelector" class="client-selector" onchange="switchClient()">
+                            <option value="">-- Vyberte klienta --</option>
+                        </select>
+                        <button class="btn-small" onclick="openClientModal()">+ Novy klient</button>
+                    </div>
+                    <div class="client-info" id="clientInfo" style="display: none;">
+                        <h4>Aktivni klient</h4>
+                        <div class="client-info-detail" id="clientName"></div>
+                        <div class="client-info-detail" id="userRole"></div>
+                        <div class="client-info-detail" id="clientContact"></div>
+                        <div class="client-info-detail" id="clientLocation"></div>
+                        <div style="margin-top: 0.5rem;">
+                            <span class="client-badge" id="clientType"></span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Sit</div>
-                <div class="sidebar-nav sidebar-nav-nested">
-                    <button class="view-toggle-btn nav-btn nav-btn-nested active" data-view="racks" onclick="switchView('racks', this)">Racky</button>
-                    <button class="view-toggle-btn nav-btn nav-btn-nested" data-view="network" onclick="switchView('network', this)">Sitova mapa</button>
-                    <button class="view-toggle-btn nav-btn nav-btn-nested" data-view="topology" onclick="switchView('topology', this)">Topologie</button>
-                    <button class="view-toggle-btn nav-btn nav-btn-nested" data-view="overview" onclick="switchView('overview', this)">Prehled klienta</button>
+            <div class="sidebar-section" data-section="network">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    Sit
+                    <span class="sidebar-section-toggle">></span>
+                </button>
+                <div class="sidebar-section-body">
+                    <div class="sidebar-nav sidebar-nav-nested">
+                        <button class="view-toggle-btn nav-btn nav-btn-nested active" data-view="racks" onclick="switchView('racks', this)">Racky</button>
+                        <button class="view-toggle-btn nav-btn nav-btn-nested" data-view="network" onclick="switchView('network', this)">Sitova mapa</button>
+                        <button class="view-toggle-btn nav-btn nav-btn-nested" data-view="topology" onclick="switchView('topology', this)">Topologie</button>
+                        <button class="view-toggle-btn nav-btn nav-btn-nested" data-view="overview" onclick="switchView('overview', this)">Prehled klienta</button>
+                    </div>
+                    <div class="sidebar-subsection">
+                        <div class="sidebar-subtitle">Sprava site</div>
+                        <div class="sidebar-actions">
+                            <button class="sidebar-action-btn" onclick="openRackModal()" id="addRackBtn" disabled>Novy rack</button>
+                            <button class="sidebar-action-btn" onclick="clearAllRacks()" id="clearRacksBtn" disabled>Vymazat racky</button>
+                            <button class="sidebar-action-btn" onclick="openDeviceModal()" id="addDeviceBtn" disabled>Nove zarizeni</button>
+                            <button class="sidebar-action-btn" onclick="openConnectionModal()" id="addConnectionBtn" disabled>Nove propojeni</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="sidebar-subsection">
-                    <div class="sidebar-subtitle">Sprava site</div>
+            </div>
+
+            <div class="sidebar-section" data-section="time">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    Vykazovani
+                    <span class="sidebar-section-toggle">></span>
+                </button>
+                <div class="sidebar-section-body">
+                    <div class="sidebar-nav">
+                        <button class="view-toggle-btn nav-btn" data-view="time" onclick="switchView('time', this)">Vykazovani</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section" data-section="reports">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    Reporty
+                    <span class="sidebar-section-toggle">></span>
+                </button>
+                <div class="sidebar-section-body">
+                    <div class="sidebar-nav">
+                        <button class="view-toggle-btn nav-btn" data-view="reports" onclick="switchView('reports', this)">Reporty</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section collapsed" data-section="admin">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    Admin
+                    <span class="sidebar-section-toggle">></span>
+                </button>
+                <div class="sidebar-section-body">
                     <div class="sidebar-actions">
-                        <button class="sidebar-action-btn" onclick="openRackModal()" id="addRackBtn" disabled>Novy rack</button>
-                        <button class="sidebar-action-btn" onclick="clearAllRacks()" id="clearRacksBtn" disabled>Vymazat racky</button>
-                        <button class="sidebar-action-btn" onclick="openDeviceModal()" id="addDeviceBtn" disabled>Nove zarizeni</button>
-                        <button class="sidebar-action-btn" onclick="openConnectionModal()" id="addConnectionBtn" disabled>Nove propojeni</button>
+                        <button class="sidebar-action-btn" onclick="openClientManagerModal()">Sprava klientu</button>
+                        <button class="sidebar-action-btn" id="roleManagerBtn" onclick="openRoleManagerModal()">Sprava roli</button>
+                        <button class="sidebar-action-btn" onclick="openModuleModal()">Kategorie zarizeni</button>
                     </div>
                 </div>
             </div>
 
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Vykazovani</div>
-                <div class="sidebar-nav">
-                    <button class="view-toggle-btn nav-btn" data-view="time" onclick="switchView('time', this)">Vykazovani</button>
+            <div class="sidebar-section collapsed" data-section="modules">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    Moduly
+                    <span class="sidebar-section-toggle">></span>
+                </button>
+                <div class="sidebar-section-body">
+                    <div class="sidebar-module-list">
+                        <div class="sidebar-module"><span>Monitoring</span><span class="sidebar-module-tag">soon</span></div>
+                        <div class="sidebar-module"><span>Automatizace</span><span class="sidebar-module-tag">soon</span></div>
+                        <div class="sidebar-module"><span>SLA a finance</span><span class="sidebar-module-tag">soon</span></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Reporty</div>
-                <div class="sidebar-nav">
-                    <button class="view-toggle-btn nav-btn" data-view="reports" onclick="switchView('reports', this)">Reporty</button>
+            <div class="sidebar-section collapsed" data-section="stats">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    Statistiky
+                    <span class="sidebar-section-toggle">></span>
+                </button>
+                <div class="sidebar-section-body">
+                    <div class="stat">
+                        <div class="stat-value" id="totalDevices">0</div>
+                        <div class="stat-label">Celkem zarizeni</div>
+                    </div>
+                    <div class="stat" style="margin-top: 1rem;">
+                        <div class="stat-value" id="totalRacks">0</div>
+                        <div class="stat-label">Celkem racku</div>
+                    </div>
                 </div>
             </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Admin</div>
-                <div class="sidebar-actions">
-                    <button class="sidebar-action-btn" onclick="openClientManagerModal()">Sprava klientu</button>
-                    <button class="sidebar-action-btn" id="roleManagerBtn" onclick="openRoleManagerModal()">Sprava roli</button>
-                    <button class="sidebar-action-btn" onclick="openModuleModal()">Kategorie zarizeni</button>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Moduly</div>
-                <div class="sidebar-module-list">
-                    <div class="sidebar-module"><span>Monitoring</span><span class="sidebar-module-tag">soon</span></div>
-                    <div class="sidebar-module"><span>Automatizace</span><span class="sidebar-module-tag">soon</span></div>
-                    <div class="sidebar-module"><span>SLA a finance</span><span class="sidebar-module-tag">soon</span></div>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Statistiky</div>
-                <div class="stat">
-                    <div class="stat-value" id="totalDevices">0</div>
-                    <div class="stat-label">Celkem zarizeni</div>
-                </div>
-                <div class="stat" style="margin-top: 1rem;">
-                    <div class="stat-value" id="totalRacks">0</div>
-                    <div class="stat-label">Celkem racku</div>
-                </div>
-            </div>
-        </aside>
+        </div>
+    </aside>
 
         <main class="main-content">
             <div class="topbar topbar-compact">
@@ -3337,6 +3485,7 @@
                 </div>
             </div>
 
+            <div class="main-scroll">
             <div id="dashboardView" class="rack-container dashboard-view" style="display: none;">
                 <div class="dashboard-shell">
                     <section class="dashboard-hero-card">
@@ -3383,13 +3532,15 @@
                 </div>
 
                 <div class="dashboard-body">
-                    <section class="dashboard-section">
-                        <div class="dashboard-section-head">
+                    <details class="dashboard-section">
+                        <summary class="dashboard-section-head">
                             <div>
                                 <div class="dashboard-section-title">ERP cockpit</div>
                                 <div class="dashboard-section-subtitle">Zjednoduseny prehled pro finance, lidi a provoz.</div>
                             </div>
-                        </div>
+                            <span class="dashboard-section-toggle">></span>
+                        </summary>
+                        <div class="dashboard-section-body">
                         <div class="erp-summary-grid">
                             <div class="erp-summary-card">
                                 <div class="erp-summary-title">Fakturace</div>
@@ -3422,15 +3573,18 @@
                                 </ul>
                             </div>
                         </div>
-                    </section>
+                        </div>
+                    </details>
 
-                    <section class="dashboard-section">
-                        <div class="dashboard-section-head">
+                    <details class="dashboard-section">
+                        <summary class="dashboard-section-head">
                             <div>
                                 <div class="dashboard-section-title">Karty zamestnancu</div>
                                 <div class="dashboard-section-subtitle">Pripraveno pro dochazku, role a kapacity.</div>
                             </div>
-                        </div>
+                            <span class="dashboard-section-toggle">></span>
+                        </summary>
+                        <div class="dashboard-section-body">
                         <div class="erp-employee-grid">
                             <div class="erp-employee-card">
                                 <div class="erp-employee-head">
@@ -3489,25 +3643,31 @@
                                 </div>
                             </div>
                         </div>
-                    </section>
+                        </div>
+                    </details>
 
-                    <section class="dashboard-section">
-                        <div class="dashboard-section-head">
+                    <details class="dashboard-section" open>
+                        <summary class="dashboard-section-head">
                             <div>
                                 <div class="dashboard-section-title">Operacni prehled</div>
                                 <div class="dashboard-section-subtitle">Rychle prechody do klientu, racku a site.</div>
                             </div>
-                        </div>
+                            <span class="dashboard-section-toggle">></span>
+                        </summary>
+                        <div class="dashboard-section-body">
                         <div id="dashboardGrid" class="overview-grid dashboard-grid"></div>
-                    </section>
+                        </div>
+                    </details>
 
-                    <section class="dashboard-section dashboard-section-alt">
-                        <div class="dashboard-section-head">
+                    <details class="dashboard-section dashboard-section-alt">
+                        <summary class="dashboard-section-head">
                             <div>
                                 <div class="dashboard-section-title">Moduly a integrace</div>
                                 <div class="dashboard-section-subtitle">Priprava na fakturaci, dochazku a HR.</div>
                             </div>
-                        </div>
+                            <span class="dashboard-section-toggle">></span>
+                        </summary>
+                        <div class="dashboard-section-body">
                         <div id="dashboardModulesGrid" class="msp-modules-grid"></div>
                         <div class="module-expansion">
                             <div class="module-expansion-title">Priprava na expanzi</div>
@@ -3529,7 +3689,8 @@
                                 </div>
                             </div>
                         </div>
-                    </section>
+                        </div>
+                    </details>
                 </div>
             </div>
 
@@ -3741,6 +3902,7 @@
                 <h3>Propojení</h3>
                 <div id="connectionsList">
                 </div>
+            </div>
             </div>
         </main>
     </div>
@@ -5438,6 +5600,7 @@
             renderDeviceTypeOptions();
             await syncZabbixClients();
             updateClientSelector();
+            restoreSidebarSections();
             render();
             fetchUserRole();
         }
@@ -6492,6 +6655,30 @@
             if (hourlyRateGroup) hourlyRateGroup.style.display = mode == 'retainer-hourly' ? 'block' : 'none';
             if (overageRateGroup) overageRateGroup.style.display = mode == 'retainer-hours' ? 'block' : 'none';
         }
+
+        function toggleSidebarSection(button) {
+            const section = button ? button.closest('.sidebar-section') : null;
+            if (!section) return;
+            const key = section.getAttribute('data-section');
+            const collapsed = section.classList.toggle('collapsed');
+            if (key) {
+                localStorage.setItem('sidebarSection_' + key, collapsed ? '1' : '0');
+            }
+        }
+
+        function restoreSidebarSections() {
+            const sections = document.querySelectorAll('.sidebar-section[data-section]');
+            sections.forEach((section) => {
+                const key = section.getAttribute('data-section');
+                const stored = key ? localStorage.getItem('sidebarSection_' + key) : null;
+                if (stored === '1') {
+                    section.classList.add('collapsed');
+                } else if (stored === '0') {
+                    section.classList.remove('collapsed');
+                }
+            });
+        }
+
         
         function addClient() {
             const name = document.getElementById('newClientName').value;
