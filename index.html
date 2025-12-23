@@ -1701,7 +1701,7 @@
 
         .dashboard-body {
             display: grid;
-            gap: 1.5rem;
+            gap: 0.7rem;
         }
 
         .dashboard-section {
@@ -1711,6 +1711,10 @@
             padding: 0;
             box-shadow: var(--shadow-soft);
             overflow: hidden;
+        }
+
+        .dashboard-section[open] {
+            margin-bottom: 0.6rem;
         }
 
         .dashboard-section-alt {
@@ -1764,7 +1768,7 @@
         }
 
         .dashboard-section[open] .dashboard-section-toggle {
-            transform: rotate(90deg);
+            transform: rotate(180deg);
             color: var(--cx-orange);
         }
 
@@ -3538,7 +3542,7 @@
                                 <div class="dashboard-section-title">ERP cockpit</div>
                                 <div class="dashboard-section-subtitle">Zjednoduseny prehled pro finance, lidi a provoz.</div>
                             </div>
-                            <span class="dashboard-section-toggle">></span>
+                            <span class="dashboard-section-toggle">v</span>
                         </summary>
                         <div class="dashboard-section-body">
                         <div class="erp-summary-grid">
@@ -3582,7 +3586,7 @@
                                 <div class="dashboard-section-title">Karty zamestnancu</div>
                                 <div class="dashboard-section-subtitle">Pripraveno pro dochazku, role a kapacity.</div>
                             </div>
-                            <span class="dashboard-section-toggle">></span>
+                            <span class="dashboard-section-toggle">v</span>
                         </summary>
                         <div class="dashboard-section-body">
                         <div class="erp-employee-grid">
@@ -3646,13 +3650,13 @@
                         </div>
                     </details>
 
-                    <details class="dashboard-section" open>
+                    <details class="dashboard-section">
                         <summary class="dashboard-section-head">
                             <div>
                                 <div class="dashboard-section-title">Operacni prehled</div>
                                 <div class="dashboard-section-subtitle">Rychle prechody do klientu, racku a site.</div>
                             </div>
-                            <span class="dashboard-section-toggle">></span>
+                            <span class="dashboard-section-toggle">v</span>
                         </summary>
                         <div class="dashboard-section-body">
                         <div id="dashboardGrid" class="overview-grid dashboard-grid"></div>
@@ -3665,7 +3669,7 @@
                                 <div class="dashboard-section-title">Moduly a integrace</div>
                                 <div class="dashboard-section-subtitle">Priprava na fakturaci, dochazku a HR.</div>
                             </div>
-                            <span class="dashboard-section-toggle">></span>
+                            <span class="dashboard-section-toggle">v</span>
                         </summary>
                         <div class="dashboard-section-body">
                         <div id="dashboardModulesGrid" class="msp-modules-grid"></div>
