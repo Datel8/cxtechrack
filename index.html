@@ -1216,6 +1216,17 @@
             object-fit: contain;
         }
 
+        .overview-client-logo-wrap {
+            display: grid;
+            justify-items: end;
+            gap: 0.4rem;
+        }
+
+        .overview-logo-btn {
+            font-size: 0.65rem;
+            padding: 0.35rem 0.7rem;
+        }
+
         .dashboard-view {
             display: block;
             background: transparent;
@@ -3519,7 +3530,12 @@
                                 <div class="stat-value" id="overviewClientName">-</div>
                                 <div class="stat-label">Aktivni klient</div>
                             </div>
-                            <div class="overview-client-logo" id="overviewClientLogo">LOGO</div>
+                            <div class="overview-client-logo-wrap">
+                                <div class="overview-client-logo" id="overviewClientLogo">LOGO</div>
+                                <button class="btn-small overview-logo-btn" type="button" onclick="triggerClientLogoUpload()">Nahrat logo</button>
+                                <button class="btn-small btn-secondary overview-logo-btn" type="button" onclick="clearClientLogo()">Odebrat logo</button>
+                                <input type="file" id="clientLogoInput" accept="image/*" onchange="handleClientLogoUpload(event)" style="display: none;">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3853,20 +3869,21 @@
         </div>
     </div>
     
-    <!-- Client Modal -->
+        <!-- Client Modal -->
     <div id="clientModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Nový klient</h2>
-                <button class="modal-close" onclick="closeClientModal()">×</button>
+                <h2>Novy klient</h2>
+                <button class="modal-close" onclick="closeClientModal()">X</button>
+            </div>
+            <input type="hidden" id="clientEditId">
+            <div class="form-group">
+                <label>Nazev klienta *</label>
+                <input type="text" id="newClientName" placeholder="napr. Firma ABC s.r.o.">
             </div>
             <div class="form-group">
-                <label>Název klienta *</label>
-                <input type="text" id="newClientName" placeholder="např. Firma ABC s.r.o.">
-            </div>
-            <div class="form-group">
-                <label>IČO</label>
-                <input type="text" id="newClientICO" placeholder="např. 12345678">
+                <label>ICO</label>
+                <input type="text" id="newClientICO" placeholder="napr. 12345678">
             </div>
             <div class="form-group">
                 <label>Typ klienta</label>
@@ -3877,30 +3894,54 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Kontaktní osoba</label>
-                <input type="text" id="newClientContact" placeholder="např. Jan Novák">
+                <label>Kontaktni osoba</label>
+                <input type="text" id="newClientContact" placeholder="napr. Jan Novak">
             </div>
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" id="newClientEmail" placeholder="např. info@firma.cz">
+                <input type="email" id="newClientEmail" placeholder="napr. info@firma.cz">
             </div>
             <div class="form-group">
                 <label>Telefon</label>
-                <input type="tel" id="newClientPhone" placeholder="např. +420 123 456 789">
+                <input type="tel" id="newClientPhone" placeholder="napr. +420 123 456 789">
             </div>
             <div class="form-group">
                 <label>Adresa</label>
-                <input type="text" id="newClientAddress" placeholder="např. Václavské náměstí 1, Praha">
+                <input type="text" id="newClientAddress" placeholder="napr. Vaclavske namesti 1, Praha">
             </div>
             <div class="form-group">
-                <label>Poznámky</label>
+                <label>Pricing rezim</label>
+                <select id="newClientPricingMode" onchange="updatePricingFields()">
+                    <option value="retainer-hours">Pausal s hodinami + nad pausal sazba</option>
+                    <option value="retainer-hourly">Pausal + hodinovka</option>
+                    <option value="retainer-unlimited">Pausal s neomezenymi hodinami</option>
+                </select>
+            </div>
+            <div class="form-group" id="pricingRetainerAmountGroup">
+                <label>Pausal (Kc / mesic)</label>
+                <input type="number" id="newClientRetainerAmount" placeholder="napr. 25000" min="0" step="1">
+            </div>
+            <div class="form-group" id="pricingRetainerHoursGroup">
+                <label>Hodiny v pausalu</label>
+                <input type="number" id="newClientRetainerHours" placeholder="napr. 20" min="0" step="0.5">
+            </div>
+            <div class="form-group" id="pricingHourlyRateGroup">
+                <label>Hodinova sazba (Kc)</label>
+                <input type="number" id="newClientHourlyRate" placeholder="napr. 1200" min="0" step="1">
+            </div>
+            <div class="form-group" id="pricingOverageRateGroup">
+                <label>Sazba nad pausal (Kc)</label>
+                <input type="number" id="newClientOverageRate" placeholder="napr. 1500" min="0" step="1">
+            </div>
+            <div class="form-group">
+                <label>Poznamky</label>
                 <textarea id="newClientNotes" rows="3" style="width: 100%; padding: 0.5rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; font-size: 0.875rem;"></textarea>
             </div>
-            <button class="btn" onclick="addClient()">Vytvořit klienta</button>
+            <button class="btn" id="clientSubmitBtn" onclick="addClient()">Vytvorit klienta</button>
         </div>
     </div>
-    
-    <!-- Client Manager Modal -->
+
+<!-- Client Manager Modal -->
     <div id="clientManagerModal" class="modal">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
@@ -4086,6 +4127,7 @@
         let timeSelectionEnd = null;
         let isTimeSelecting = false;
         let timeSelectionActive = false;
+        let cloudSaveTimer = null;
         try {
             pendingReportShareId = new URLSearchParams(window.location.search).get('reportShare');
         } catch (err) {
@@ -4687,6 +4729,54 @@
 
             renderMspModules();
             loadOverviewMonthHours();
+        }
+
+        function triggerClientLogoUpload() {
+            if (!currentClientId) {
+                alert('Nejprve vyberte klienta');
+                return;
+            }
+            const input = document.getElementById('clientLogoInput');
+            if (!input) return;
+            input.value = '';
+            input.click();
+        }
+
+        function handleClientLogoUpload(event) {
+            const input = event && event.target ? event.target : null;
+            const file = input && input.files ? input.files[0] : null;
+            if (!file) return;
+            if (!file.type || !file.type.startsWith('image/')) {
+                alert('Vyberte obrazek (PNG/JPG/SVG).');
+                return;
+            }
+            const maxBytes = 400 * 1024;
+            if (file.size > maxBytes) {
+                alert('Logo je prilis velke. Max 400 KB.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(loadEvent) {
+                const dataUrl = loadEvent && loadEvent.target ? loadEvent.target.result : '';
+                const client = clients.find((item) => item.id === currentClientId);
+                if (!client || !dataUrl) return;
+                client.logoUrl = dataUrl;
+                client.logoUpdatedAt = new Date().toISOString();
+                saveData();
+                renderClientOverview();
+                updateClientInfo();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearClientLogo() {
+            const client = clients.find((item) => item.id === currentClientId);
+            if (!client) return;
+            delete client.logoUrl;
+            delete client.logo;
+            saveData();
+            renderClientOverview();
+            updateClientInfo();
         }
 
         async function loadOverviewMonthHours() {
@@ -5327,6 +5417,8 @@
             if (currentClientId) {
                 localStorage.setItem('rackManagerLastClient', currentClientId);
             }
+
+            scheduleCloudSave();
         }
         
         // Load data for specific client
@@ -6263,12 +6355,29 @@
         }
         
         // Client management functions
-        function openClientModal() {
-            document.getElementById('clientModal').classList.add('active');
+        function openClientModal(clientId) {
+            const modal = document.getElementById('clientModal');
+            if (!modal) return;
+            const submitBtn = document.getElementById('clientSubmitBtn');
+            const editInput = document.getElementById('clientEditId');
+            if (clientId) {
+                const client = clients.find(item => item.id === clientId);
+                if (!client) return;
+                fillClientForm(client);
+                if (editInput) editInput.value = client.id;
+                if (submitBtn) submitBtn.textContent = 'Ulozit klienta';
+            } else {
+                clearClientForm();
+                if (editInput) editInput.value = '';
+                if (submitBtn) submitBtn.textContent = 'Vytvorit klienta';
+            }
+            updatePricingFields();
+            modal.classList.add('active');
         }
         
         function closeClientModal() {
-            document.getElementById('clientModal').classList.remove('active');
+            const modal = document.getElementById('clientModal');
+            if (modal) modal.classList.remove('active');
             clearClientForm();
         }
         
@@ -6290,6 +6399,57 @@
             document.getElementById('newClientPhone').value = '';
             document.getElementById('newClientAddress').value = '';
             document.getElementById('newClientNotes').value = '';
+            const pricingMode = document.getElementById('newClientPricingMode');
+            const retainerAmount = document.getElementById('newClientRetainerAmount');
+            const retainerHours = document.getElementById('newClientRetainerHours');
+            const hourlyRate = document.getElementById('newClientHourlyRate');
+            const overageRate = document.getElementById('newClientOverageRate');
+            const editInput = document.getElementById('clientEditId');
+            const submitBtn = document.getElementById('clientSubmitBtn');
+            if (pricingMode) pricingMode.value = 'retainer-hours';
+            if (retainerAmount) retainerAmount.value = '';
+            if (retainerHours) retainerHours.value = '';
+            if (hourlyRate) hourlyRate.value = '';
+            if (overageRate) overageRate.value = '';
+            if (editInput) editInput.value = '';
+            if (submitBtn) submitBtn.textContent = 'Vytvorit klienta';
+            updatePricingFields();
+        }
+
+        function fillClientForm(client) {
+            if (!client) return;
+            document.getElementById('newClientName').value = client.name || '';
+            document.getElementById('newClientICO').value = client.ico || '';
+            document.getElementById('newClientType').value = client.type || 'standard';
+            document.getElementById('newClientContact').value = client.contact || '';
+            document.getElementById('newClientEmail').value = client.email || '';
+            document.getElementById('newClientPhone').value = client.phone || '';
+            document.getElementById('newClientAddress').value = client.address || '';
+            document.getElementById('newClientNotes').value = client.notes || '';
+            const pricingMode = document.getElementById('newClientPricingMode');
+            const retainerAmount = document.getElementById('newClientRetainerAmount');
+            const retainerHours = document.getElementById('newClientRetainerHours');
+            const hourlyRate = document.getElementById('newClientHourlyRate');
+            const overageRate = document.getElementById('newClientOverageRate');
+            if (pricingMode) pricingMode.value = client.pricingMode || 'retainer-hours';
+            if (retainerAmount) retainerAmount.value = client.retainerAmount || '';
+            if (retainerHours) retainerHours.value = client.retainerHours || '';
+            if (hourlyRate) hourlyRate.value = client.hourlyRate || '';
+            if (overageRate) overageRate.value = client.overageRate || '';
+            updatePricingFields();
+        }
+
+        function updatePricingFields() {
+            const mode = document.getElementById('newClientPricingMode')?.value || 'retainer-hours';
+            const retainerAmountGroup = document.getElementById('pricingRetainerAmountGroup');
+            const retainerHoursGroup = document.getElementById('pricingRetainerHoursGroup');
+            const hourlyRateGroup = document.getElementById('pricingHourlyRateGroup');
+            const overageRateGroup = document.getElementById('pricingOverageRateGroup');
+
+            if (retainerAmountGroup) retainerAmountGroup.style.display = 'block';
+            if (retainerHoursGroup) retainerHoursGroup.style.display = mode == 'retainer-hours' ? 'block' : 'none';
+            if (hourlyRateGroup) hourlyRateGroup.style.display = mode == 'retainer-hourly' ? 'block' : 'none';
+            if (overageRateGroup) overageRateGroup.style.display = mode == 'retainer-hours' ? 'block' : 'none';
         }
         
         function addClient() {
@@ -6301,14 +6461,19 @@
             const phone = document.getElementById('newClientPhone').value;
             const address = document.getElementById('newClientAddress').value;
             const notes = document.getElementById('newClientNotes').value;
+            const pricingMode = document.getElementById('newClientPricingMode')?.value || 'retainer-hours';
+            const retainerAmount = parseFloat(document.getElementById('newClientRetainerAmount')?.value || '') || 0;
+            const retainerHours = parseFloat(document.getElementById('newClientRetainerHours')?.value || '') || 0;
+            const hourlyRate = parseFloat(document.getElementById('newClientHourlyRate')?.value || '') || 0;
+            const overageRate = parseFloat(document.getElementById('newClientOverageRate')?.value || '') || 0;
+            const editId = document.getElementById('clientEditId')?.value || '';
             
             if (!name) {
-                alert('Název klienta je povinný');
+                alert('Nazev klienta je povinny');
                 return;
             }
-            
-            const client = {
-                id: Date.now().toString(),
+
+            const payload = {
                 name,
                 ico,
                 type,
@@ -6317,7 +6482,30 @@
                 phone,
                 address,
                 notes,
-                createdAt: new Date().toISOString()
+                pricingMode,
+                retainerAmount,
+                retainerHours,
+                hourlyRate,
+                overageRate,
+                updatedAt: new Date().toISOString()
+            };
+
+            if (editId) {
+                const existing = clients.find(client => client.id === editId);
+                if (!existing) return;
+                Object.assign(existing, payload);
+                saveData();
+                updateClientSelector();
+                closeClientModal();
+                render();
+                renderClientList();
+                return;
+            }
+            
+            const client = {
+                id: Date.now().toString(),
+                createdAt: new Date().toISOString(),
+                ...payload
             };
             
             clients.push(client);
@@ -6378,6 +6566,7 @@
                         <div class="client-card-header">
                             <div class="client-card-name">${client.name}</div>
                             <div class="client-actions" onclick="event.stopPropagation()">
+                                <button class="btn-icon" onclick="openClientModal('${client.id}')">E</button>
                                 <button class="btn-icon danger" onclick="deleteClient('${client.id}')">🗑</button>
                             </div>
                         </div>
@@ -8675,6 +8864,55 @@
         function setupRealtimeSync() {
             return;
         }
+
+        function getLocalGlobalUpdatedAt() {
+            return parseInt(localStorage.getItem('rackManagerGlobalUpdatedAtMs') || '0', 10) || 0;
+        }
+
+        function setLocalGlobalUpdatedAt(value) {
+            if (!value) return;
+            localStorage.setItem('rackManagerGlobalUpdatedAtMs', String(value));
+        }
+
+        function hasLocalData() {
+            try {
+                const list = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
+                return Array.isArray(list) && list.length > 0;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function applyCloudData(data, silent) {
+            const payload = data || {};
+            const cloudClients = payload.clients || [];
+            const cloudClientData = payload.clientData || {};
+            const cloudLastClientId = payload.lastClientId || null;
+
+            localStorage.setItem('rackManagerClients', JSON.stringify(cloudClients));
+            localStorage.setItem('rackManagerClientData', JSON.stringify(cloudClientData));
+            if (cloudLastClientId) {
+                localStorage.setItem('rackManagerLastClient', cloudLastClientId);
+            } else {
+                localStorage.removeItem('rackManagerLastClient');
+            }
+            setLocalGlobalUpdatedAt(payload.updatedAtMs || 0);
+
+            if (typeof init === 'function') {
+                init();
+            }
+            if (!silent) {
+                alert('Data byla nactena z Firestore');
+            }
+        }
+
+        function scheduleCloudSave() {
+            if (!window.db || !window.auth || !auth.currentUser) return;
+            if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
+            cloudSaveTimer = setTimeout(function() {
+                saveToCloud(true);
+            }, 1200);
+        }
         
         // Add Firebase status indicator to UI
         function addFirebaseStatusIndicator() {
@@ -8929,6 +9167,9 @@
       if (window.onAuthRoleChanged) {
         window.onAuthRoleChanged(user);
       }
+      if (user && typeof syncCloudOnLogin === 'function') {
+        syncCloudOnLogin();
+      }
     });
 
     function requireAuth() {
@@ -8954,11 +9195,16 @@
 
   // --- Firestore doc, kde budeme drzet data ---
   var GLOBAL_PATH = "rackManager/global";
-
-  // ☁ Ulozit vsechna data z localStorage do Firestore
-  async function saveToCloud() {
+  // Ulozit vsechna data z localStorage do Firestore
+  async function saveToCloud(silent) {
     try {
-      var user = requireAuth();
+      var user = auth && auth.currentUser ? auth.currentUser : null;
+      if (!user) {
+        if (!silent) {
+          alert('Nejprve se prihlaste.');
+        }
+        return;
+      }
 
       var clients = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
       var clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
@@ -8974,48 +9220,69 @@
       };
 
       await db.doc(GLOBAL_PATH).set(payload, { merge: true });
-      alert("✅ Data byla ulozena do Firestore");
+      setLocalGlobalUpdatedAt(payload.updatedAtMs);
+      if (!silent) {
+        alert('Data byla ulozena do Firestore');
+      }
     } catch (err) {
-      if (err.message === "NOT_AUTHENTICATED") return;
-      console.error("Chyba při ukládání:", err);
-      alert("❌ Chyba pri ukladani do cloudu: " + err.message);
+      if (err.message == 'NOT_AUTHENTICATED') return;
+      console.error('Chyba pri ukladani:', err);
+      if (!silent) {
+        alert('Chyba pri ukladani do cloudu: ' + err.message);
+      }
     }
   }
-
-  // ☁ Nacist vsechna data z Firestore do localStorage
-  async function loadFromCloud() {
+  // Nacist vsechna data z Firestore do localStorage
+  async function loadFromCloud(silent) {
     try {
-      requireAuth();
+      if (!auth || !auth.currentUser) {
+        if (!silent) {
+          alert('Nejprve se prihlaste.');
+        }
+        return false;
+      }
 
       var snap = await db.doc(GLOBAL_PATH).get();
       if (!snap.exists) {
-        alert("⚠ V cloudu zatim nejsou zadna data");
+        if (!silent) {
+          alert('V cloudu zatim nejsou zadna data');
+        }
+        return false;
+      }
+
+      applyCloudData(snap.data() || {}, silent);
+      return true;
+    } catch (err) {
+      if (err.message == 'NOT_AUTHENTICATED') return false;
+      console.error('Chyba pri nacitani:', err);
+      if (!silent) {
+        alert('Chyba pri nacitani z cloudu: ' + err.message);
+      }
+      return false;
+    }
+  }
+
+  async function syncCloudOnLogin() {
+    try {
+      if (!auth || !auth.currentUser || !db) return;
+      var snap = await db.doc(GLOBAL_PATH).get();
+      if (!snap.exists) {
+        if (hasLocalData()) {
+          saveToCloud(true);
+        }
         return;
       }
 
       var data = snap.data() || {};
-      var clients = data.clients || [];
-      var clientData = data.clientData || {};
-      var lastClientId = data.lastClientId || null;
-
-      localStorage.setItem('rackManagerClients', JSON.stringify(clients));
-      localStorage.setItem('rackManagerClientData', JSON.stringify(clientData));
-      if (lastClientId) {
-        localStorage.setItem('rackManagerLastClient', lastClientId);
+      var remoteUpdated = data.updatedAtMs || 0;
+      var localUpdated = getLocalGlobalUpdatedAt();
+      if (remoteUpdated >= localUpdated) {
+        applyCloudData(data, true);
       } else {
-        localStorage.removeItem('rackManagerLastClient');
+        saveToCloud(true);
       }
-
-      // přerenderovat UI podle nových dat
-      if (typeof init === "function") {
-        init();
-      }
-
-      alert("✅ Data byla nactena z Firestore");
     } catch (err) {
-      if (err.message === "NOT_AUTHENTICATED") return;
-      console.error("Chyba při načítání:", err);
-      alert("❌ Chyba pri nacitani z cloudu: " + err.message);
+      console.warn('Cloud sync failed:', err);
     }
   }
 </script>
