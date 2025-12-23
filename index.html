@@ -2608,23 +2608,34 @@
         .time-week-grid {
             display: grid;
             grid-template-columns: 70px repeat(7, 1fr);
-            gap: 0.35rem;
+            gap: 0;
         }
 
         .time-week-header {
             margin-bottom: 0.4rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         .time-header-cell {
             background: var(--panel-surface);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 0;
             padding: 0.5rem;
             text-align: center;
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.12em;
             color: var(--text-secondary);
+        }
+
+        .time-header-cell:last-child {
+            border-right: 0;
+        }
+
+        .time-week-header > :nth-child(8n) {
+            border-right: 0;
         }
 
         .time-header-cell strong {
@@ -2649,12 +2660,15 @@
             user-select: none;
             max-height: 560px;
             overflow: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         .time-hour-cell {
-            background: var(--panel-surface);
+            background: var(--panel-surface-2);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 0;
             padding: 0.35rem 0.5rem;
             font-size: 0.7rem;
             color: var(--text-secondary);
@@ -2663,9 +2677,9 @@
         }
 
         .time-slot {
-            background: #101010;
+            background: var(--panel-surface);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 0;
             cursor: pointer;
             transition: all 0.2s ease;
             position: relative;
@@ -2693,10 +2707,79 @@
         .time-slot.has-entry::after {
             content: '';
             position: absolute;
-            inset: 4px;
-            border-radius: 4px;
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid rgba(34, 197, 94, 0.5);
+            inset: 0;
+            border-radius: 0;
+            background: var(--entry-color, rgba(248, 154, 85, 0.25));
+            border: 0;
+            opacity: 0.85;
+        }
+
+        .time-slot.is-entry-start::after {
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+
+        .time-slot.is-entry-end::after {
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        .time-week-grid > :nth-child(8n) {
+            border-right: 0;
+        }
+
+        .time-week-grid > :nth-last-child(-n + 8) {
+            border-bottom: 0;
+        }
+
+        .time-client-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .time-client-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.45rem 0.6rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--panel-surface);
+            font-size: 0.75rem;
+        }
+
+        .time-client-card strong {
+            font-size: 0.8rem;
+        }
+
+        .time-client-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--client-color, var(--accent-primary));
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+            flex: 0 0 auto;
+        }
+
+        .time-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 154, 85, 0.35);
+            background: rgba(14, 22, 38, 0.6);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .time-toggle input {
+            accent-color: var(--accent-primary);
         }
 
         .time-activity-manager {
@@ -3903,6 +3986,10 @@
                 <div class="rack-header">
                     <h2>Vykazovani hodin</h2>
                     <div class="rack-stats">
+                        <label class="time-toggle">
+                            <input type="checkbox" id="timeAllClientsToggle" onchange="toggleTimeAllClients()">
+                            <span>Vsechny klienty</span>
+                        </label>
                         <button class="btn-small" onclick="exportTimeReport()">Export PDF</button>
                     </div>
                 </div>
@@ -3918,6 +4005,7 @@
                     </div>
                     <div class="time-panel">
                         <div class="time-summary" id="timeSummary"></div>
+                        <div class="time-client-summary" id="timeClientSummary"></div>
                         <button class="btn" id="addTimeEntryBtn" onclick="openTimeEntryModal()">Novy zapis</button>
                         <div class="role-note" style="margin-top: 0.75rem;">Tip: oznac si rozsah v kalendari tahem mysi.</div>
                         <div class="time-activity-manager">
@@ -4463,6 +4551,7 @@
         let timeSelectionEnd = null;
         let isTimeSelecting = false;
         let timeSelectionActive = false;
+        let timeViewAllClients = false;
         let cloudSaveTimer = null;
         try {
             pendingReportShareId = new URLSearchParams(window.location.search).get('reportShare');
@@ -4581,8 +4670,31 @@
         const TIME_GRID_START = 0;
         const TIME_GRID_END = 23;
         const HPP_MONTHLY_TARGET = 160;
+        const CLIENT_COLOR_PALETTE = [
+            '#f89a55',
+            '#60a5fa',
+            '#34d399',
+            '#f472b6',
+            '#facc15',
+            '#a78bfa',
+            '#22d3ee',
+            '#fb7185'
+        ];
 
         let timeActivities = [];
+
+        function getClientColor(clientId) {
+            if (!clientId) return CLIENT_COLOR_PALETTE[0];
+            const index = clients.findIndex((client) => client.id === clientId);
+            const safeIndex = index >= 0 ? index : 0;
+            return CLIENT_COLOR_PALETTE[safeIndex % CLIENT_COLOR_PALETTE.length];
+        }
+
+        function getClientLabel(clientId) {
+            if (!clientId) return 'Neprirazeny klient';
+            const client = clients.find((item) => item.id === clientId);
+            return client ? client.name : 'Neprirazeny klient';
+        }
 
         function getRolePermissions(role) {
             return ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.readonly;
@@ -5761,6 +5873,7 @@
             await syncZabbixClients();
             updateClientSelector();
             restoreSidebarSections();
+            restoreTimeAllClientsToggle();
             render();
             fetchUserRole();
             setupClientModalCloseHandlers();
@@ -7404,6 +7517,22 @@
             loadTimeEntriesForWeek();
         }
 
+        function restoreTimeAllClientsToggle() {
+            const stored = localStorage.getItem('rackManagerTimeAllClients');
+            timeViewAllClients = stored === '1';
+            const toggle = document.getElementById('timeAllClientsToggle');
+            if (toggle) {
+                toggle.checked = timeViewAllClients;
+            }
+        }
+
+        function toggleTimeAllClients() {
+            const toggle = document.getElementById('timeAllClientsToggle');
+            timeViewAllClients = !!(toggle && toggle.checked);
+            localStorage.setItem('rackManagerTimeAllClients', timeViewAllClients ? '1' : '0');
+            loadTimeEntriesForWeek();
+        }
+
         function onTimeReportScopeChange() {
             loadReportEntries();
         }
@@ -7430,7 +7559,7 @@
         }
 
         async function loadTimeEntriesForWeek() {
-            if (!currentClientId) {
+            if (!currentClientId && !timeViewAllClients) {
                 timeEntries = [];
                 renderTimeTracking();
                 return;
@@ -7442,11 +7571,18 @@
             }
 
             const bounds = getWeekBounds(timeViewWeekStart || new Date());
-            let ref = db.collection('clients')
-                .doc(currentClientId)
-                .collection('timeEntries')
-                .where('date', '>=', bounds.start)
-                .where('date', '<=', bounds.end);
+            let ref = null;
+            if (timeViewAllClients) {
+                ref = db.collectionGroup('timeEntries')
+                    .where('date', '>=', bounds.start)
+                    .where('date', '<=', bounds.end);
+            } else {
+                ref = db.collection('clients')
+                    .doc(currentClientId)
+                    .collection('timeEntries')
+                    .where('date', '>=', bounds.start)
+                    .where('date', '<=', bounds.end);
+            }
 
             if (!canViewAllTimeEntries()) {
                 ref = ref.where('userId', '==', auth.currentUser.uid);
@@ -7456,6 +7592,9 @@
                 const snapshot = await ref.orderBy('date', 'desc').get();
                 timeEntries = snapshot.docs.map(doc => ({
                     id: doc.id,
+                    ...(timeViewAllClients
+                        ? { clientId: doc.ref.parent?.parent?.id || null }
+                        : { clientId: currentClientId }),
                     ...doc.data()
                 }));
                 renderTimeTracking();
@@ -7676,12 +7815,17 @@
                     dayDate.setDate(weekStart.getDate() + dayIndex);
                     const dateKey = formatDateKey(dayDate);
                     const dayEntries = entriesByDate[dateKey] || [];
-                    const hasEntry = dayEntries.some(entry =>
+                    const entryMatch = dayEntries.find(entry =>
                         Number.isFinite(entry.startHour) &&
                         Number.isFinite(entry.endHour) &&
                         hour >= entry.startHour &&
                         hour <= entry.endHour
                     );
+                    const hasEntry = !!entryMatch;
+                    const entryColor = entryMatch ? getClientColor(entryMatch.clientId) : '';
+                    const entryTitle = entryMatch
+                        ? `${getClientLabel(entryMatch.clientId)} | ${entryMatch.category || entryMatch.activity || '-'} (${entryMatch.hours || 0} h)`
+                        : '';
 
                     const inRange = selection &&
                         dateKey >= selection.startDate &&
@@ -7699,6 +7843,8 @@
                     const classes = [
                         'time-slot',
                         hasEntry ? 'has-entry' : '',
+                        hasEntry && entryMatch && hour === entryMatch.startHour ? 'is-entry-start' : '',
+                        hasEntry && entryMatch && hour === entryMatch.endHour ? 'is-entry-end' : '',
                         inRange ? 'in-range' : '',
                         isStart ? 'range-start' : '',
                         isEnd ? 'range-end' : '',
@@ -7709,7 +7855,9 @@
                         ? `onmousedown="startTimeSelection('${dateKey}', ${hour})" onmouseenter="updateTimeSelection('${dateKey}', ${hour})" onmouseup="finishTimeSelection('${dateKey}', ${hour})"`
                         : '';
 
-                    cells += `<div class="${classes}" ${handlers}></div>`;
+                    const style = entryColor ? `style="--entry-color: ${entryColor}"` : '';
+                    const title = entryTitle ? `title="${entryTitle}"` : '';
+                    cells += `<div class="${classes}" ${handlers} ${style} ${title}></div>`;
                 }
             }
 
@@ -7887,9 +8035,11 @@
 
         function renderTimeSummary() {
             const summary = document.getElementById('timeSummary');
+            const clientSummary = document.getElementById('timeClientSummary');
             if (!summary) return;
-            if (!currentClientId) {
+            if (!currentClientId && !timeViewAllClients) {
                 summary.innerHTML = '';
+                if (clientSummary) clientSummary.innerHTML = '';
                 return;
             }
 
@@ -7921,6 +8071,29 @@
                     </div>
                 ` : ''}
             `;
+
+            if (!clientSummary) return;
+            const totalsByClient = {};
+            timeEntries.forEach((entry) => {
+                const clientId = entry.clientId || currentClientId || 'unknown';
+                totalsByClient[clientId] = (totalsByClient[clientId] || 0) + (parseFloat(entry.hours) || 0);
+            });
+            const cards = Object.keys(totalsByClient)
+                .sort((a, b) => (totalsByClient[b] || 0) - (totalsByClient[a] || 0))
+                .map((clientId) => {
+                    const label = getClientLabel(clientId);
+                    const total = Math.round((totalsByClient[clientId] || 0) * 100) / 100;
+                    const color = getClientColor(clientId);
+                    return `
+                        <div class="time-client-card" style="--client-color: ${color}">
+                            <span class="time-client-color" aria-hidden="true"></span>
+                            <span>${label}</span>
+                            <strong>${total} h</strong>
+                        </div>
+                    `;
+                })
+                .join('');
+            clientSummary.innerHTML = cards || '';
         }
 
         function ensureReportFilterDefaults() {
@@ -8992,6 +9165,10 @@
         }
 
         function exportTimeReport() {
+            if (timeViewAllClients) {
+                alert('Export funguje jen pro jednoho klienta.');
+                return;
+            }
             if (!currentClientId) {
                 alert('Nejprve vyberte klienta');
                 return;
