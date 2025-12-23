@@ -1216,6 +1216,12 @@
             object-fit: contain;
         }
 
+        
+        .overview-client-pricing {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
         .overview-client-logo-wrap {
             display: grid;
             justify-items: end;
@@ -2801,6 +2807,12 @@
             color: var(--text-secondary);
         }
         
+        
+        .client-card-pricing {
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
         .client-actions {
             position: absolute;
             top: 1rem;
@@ -3529,6 +3541,8 @@
                             <div class="overview-client-meta">
                                 <div class="stat-value" id="overviewClientName">-</div>
                                 <div class="stat-label">Aktivni klient</div>
+                                <div class="overview-client-pricing" id="overviewClientPricing">-</div>
+
                             </div>
                             <div class="overview-client-logo-wrap">
                                 <div class="overview-client-logo" id="overviewClientLogo">LOGO</div>
@@ -4643,15 +4657,42 @@
             grid.innerHTML = cards.join('');
         }
 
+        function buildPricingSummary(client) {
+            if (!client) return '-';
+            const mode = client.pricingMode || 'retainer-hours';
+            const retainerAmount = Number(client.retainerAmount) || 0;
+            const retainerHours = Number(client.retainerHours) || 0;
+            const hourlyRate = Number(client.hourlyRate) || 0;
+            const overageRate = Number(client.overageRate) || 0;
+
+            if (mode === 'retainer-hourly') {
+                const amount = retainerAmount ? `${retainerAmount} Kc` : '-';
+                const rate = hourlyRate ? `${hourlyRate} Kc/h` : '-';
+                return `Pausal ${amount} + ${rate}`;
+            }
+            if (mode === 'retainer-unlimited') {
+                const amount = retainerAmount ? `${retainerAmount} Kc` : '-';
+                return `Pausal ${amount}, neomezeno`;
+            }
+            const amount = retainerAmount ? `${retainerAmount} Kc` : '-';
+            const hours = retainerHours ? `${retainerHours} h` : '- h';
+            const over = overageRate ? `${overageRate} Kc/h` : '-';
+            return `Pausal ${amount} / ${hours}, nad ${over}`;
+        }
+
         function renderClientOverview() {
             const grid = document.getElementById('overviewGrid');
             const name = document.getElementById('overviewClientName');
             const logo = document.getElementById('overviewClientLogo');
+            const pricingEl = document.getElementById('overviewClientPricing');
             if (!grid) return;
 
             const client = clients.find((c) => c.id === currentClientId);
             if (name) {
                 name.textContent = client ? client.name : '-';
+            }
+            if (pricingEl) {
+                pricingEl.textContent = client ? buildPricingSummary(client) : '-';
             }
             if (logo) {
                 const logoUrl = client ? (client.logoUrl || client.logo) : '';
@@ -6575,6 +6616,7 @@
                             <span>🖥️ ${data.devices.length} zařízení</span>
                             <span class="client-badge">${client.type}</span>
                         </div>
+                        <div class="client-card-pricing">Pricing: ${buildPricingSummary(client)}</div>
                         ${client.contact ? `<div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">👤 ${client.contact}</div>` : ''}
                     </div>
                 `;
