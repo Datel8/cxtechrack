@@ -7609,18 +7609,23 @@
             }
 
             const bounds = getWeekBounds(timeViewWeekStart || new Date());
-            let ref = null;
             if (timeViewAllClients) {
-                ref = db.collectionGroup('timeEntries')
-                    .where('date', '>=', bounds.start)
-                    .where('date', '<=', bounds.end);
-            } else {
-                ref = db.collection('clients')
-                    .doc(currentClientId)
-                    .collection('timeEntries')
-                    .where('date', '>=', bounds.start)
-                    .where('date', '<=', bounds.end);
+                try {
+                    timeEntries = await loadTimeEntriesForAllClients(bounds);
+                    renderTimeTracking();
+                } catch (err) {
+                    console.warn('Time entries load failed (all clients):', err);
+                    timeEntries = [];
+                    renderTimeTracking();
+                }
+                return;
             }
+
+            let ref = db.collection('clients')
+                .doc(currentClientId)
+                .collection('timeEntries')
+                .where('date', '>=', bounds.start)
+                .where('date', '<=', bounds.end);
 
             if (!canViewAllTimeEntries()) {
                 ref = ref.where('userId', '==', auth.currentUser.uid);
@@ -7630,9 +7635,7 @@
                 const snapshot = await ref.orderBy('date', 'desc').get();
                 timeEntries = snapshot.docs.map(doc => ({
                     id: doc.id,
-                    ...(timeViewAllClients
-                        ? { clientId: doc.ref.parent?.parent?.id || null }
-                        : { clientId: currentClientId }),
+                    clientId: currentClientId,
                     ...doc.data()
                 }));
                 renderTimeTracking();
@@ -7641,6 +7644,35 @@
                 timeEntries = [];
                 renderTimeTracking();
             }
+        }
+
+        async function loadTimeEntriesForAllClients(bounds) {
+            if (!window.db || !window.auth || !auth.currentUser) return [];
+            const entries = [];
+            const fetches = clients.map(async (client) => {
+                try {
+                    let ref = db.collection('clients')
+                        .doc(client.id)
+                        .collection('timeEntries')
+                        .where('date', '>=', bounds.start)
+                        .where('date', '<=', bounds.end);
+                    if (!canViewAllTimeEntries()) {
+                        ref = ref.where('userId', '==', auth.currentUser.uid);
+                    }
+                    const snapshot = await ref.orderBy('date', 'desc').get();
+                    snapshot.docs.forEach((doc) => {
+                        entries.push({
+                            id: doc.id,
+                            clientId: client.id,
+                            ...doc.data()
+                        });
+                    });
+                } catch (err) {
+                    console.warn('Time entries load failed for client:', client.id, err);
+                }
+            });
+            await Promise.all(fetches);
+            return entries;
         }
 
         async function fetchReportEntries(filters) {
