@@ -871,6 +871,28 @@
             display: flex;
             gap: 2rem;
         }
+
+        .time-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 154, 85, 0.35);
+            background: rgba(14, 22, 38, 0.6);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .time-filter select {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            font-family: 'IBM Plex Mono', monospace;
+        }
         
         .stat {
             text-align: center;
@@ -2725,6 +2747,21 @@
             border-color: transparent;
         }
 
+        .time-slot-label {
+            position: absolute;
+            top: 4px;
+            left: 6px;
+            right: 6px;
+            font-size: 0.6rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events: none;
+            z-index: 1;
+        }
+
         .time-slot.is-entry-start::after {
             border-top-left-radius: 6px;
             border-top-right-radius: 6px;
@@ -4000,6 +4037,10 @@
                 <div class="rack-header">
                     <h2>Vykazovani hodin</h2>
                     <div class="rack-stats">
+                        <div class="time-filter" id="timeTechnicianFilterWrap">
+                            <label for="timeTechnicianFilter">Technik</label>
+                            <select id="timeTechnicianFilter" onchange="updateTimeTechnicianFilter()"></select>
+                        </div>
                         <label class="time-toggle">
                             <input type="checkbox" id="timeAllClientsToggle" onchange="toggleTimeAllClients()">
                             <span>Vsechny klienty</span>
@@ -4570,6 +4611,7 @@
         let isTimeSelecting = false;
         let timeSelectionActive = false;
         let timeViewAllClients = false;
+        let timeTechnicianFilter = 'all';
         let cloudSaveTimer = null;
         try {
             pendingReportShareId = new URLSearchParams(window.location.search).get('reportShare');
@@ -4716,6 +4758,14 @@
             return client ? client.name : 'Neprirazeny klient';
         }
 
+        function getFilteredTimeEntries() {
+            let entries = [...timeEntries];
+            if (timeTechnicianFilter && timeTechnicianFilter !== 'all') {
+                entries = entries.filter((entry) => (entry.userEmail || entry.userId) === timeTechnicianFilter);
+            }
+            return entries;
+        }
+
         function getRolePermissions(role) {
             return ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.readonly;
         }
@@ -4830,6 +4880,7 @@
             currentUserRole = ROLE_PERMISSIONS[role] ? role : 'readonly';
             updateRoleLabel();
             applyRolePermissions();
+            applyTimeDefaultsForRole();
             renderDashboard();
         }
 
@@ -7571,6 +7622,52 @@
             loadTimeEntriesForWeek();
         }
 
+        function applyTimeDefaultsForRole() {
+            if (currentUserRole !== 'technician') return;
+            const stored = localStorage.getItem('rackManagerTimeAllClients');
+            if (stored === null) {
+                timeViewAllClients = true;
+                localStorage.setItem('rackManagerTimeAllClients', '1');
+                const toggle = document.getElementById('timeAllClientsToggle');
+                if (toggle) toggle.checked = true;
+            }
+        }
+
+        function updateTimeTechnicianFilter() {
+            const select = document.getElementById('timeTechnicianFilter');
+            timeTechnicianFilter = select?.value || 'all';
+            renderTimeTracking();
+        }
+
+        function buildTimeTechnicianOptions() {
+            const wrap = document.getElementById('timeTechnicianFilterWrap');
+            const select = document.getElementById('timeTechnicianFilter');
+            if (!wrap || !select) return;
+
+            if (!canViewAllTimeEntries()) {
+                wrap.style.display = 'none';
+                return;
+            }
+
+            wrap.style.display = 'inline-flex';
+            const techs = new Map();
+            timeEntries.forEach((entry) => {
+                const key = entry.userEmail || entry.userId;
+                if (!key) return;
+                techs.set(key, key);
+            });
+            const sorted = Array.from(techs.keys()).sort((a, b) => a.localeCompare(b, 'cs'));
+            const options = ['<option value="all">Vsechny technici</option>']
+                .concat(sorted.map((key) => `<option value="${key}">${key}</option>`))
+                .join('');
+            select.innerHTML = options;
+
+            if (timeTechnicianFilter !== 'all' && !techs.has(timeTechnicianFilter)) {
+                timeTechnicianFilter = 'all';
+            }
+            select.value = timeTechnicianFilter;
+        }
+
         function onTimeReportScopeChange() {
             loadReportEntries();
         }
@@ -7761,6 +7858,7 @@
             renderTimeWeek();
             renderTimeSummary();
             renderTimeActivities();
+            buildTimeTechnicianOptions();
             applyRolePermissions();
         }
 
@@ -7847,7 +7945,8 @@
 
             const weekdays = ['Po', 'Ut', 'St', 'Ct', 'Pa', 'So', 'Ne'];
             const entriesByDate = {};
-            timeEntries.forEach(entry => {
+            const filteredEntries = getFilteredTimeEntries();
+            filteredEntries.forEach(entry => {
                 if (!entriesByDate[entry.date]) {
                     entriesByDate[entry.date] = [];
                 }
@@ -7929,7 +8028,10 @@
 
                     const style = entryColor ? `style="--entry-color: ${entryColor}"` : '';
                     const title = entryTitle ? `title="${entryTitle}"` : '';
-                    cells += `<div class="${classes}" ${handlers} ${style} ${title}></div>`;
+                    const label = entryMatch && hour === entryMatch.startHour
+                        ? `<span class="time-slot-label">${getClientLabel(entryMatch.clientId)}</span>`
+                        : '';
+                    cells += `<div class="${classes}" ${handlers} ${style} ${title}>${label}</div>`;
                 }
             }
 
@@ -8115,15 +8217,16 @@
                 return;
             }
 
-            const weekTotal = timeEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+            const filteredEntries = getFilteredTimeEntries();
+            const weekTotal = filteredEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
             const todayKey = formatDateKey(new Date());
-            const todayTotal = timeEntries
+            const todayTotal = filteredEntries
                 .filter(entry => entry.date === todayKey)
                 .reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
 
             const range = getTimeSelectionRange();
             const rangeTotal = range
-                ? timeEntries.filter(entry => entry.date >= range.startDate && entry.date <= range.endDate)
+                ? filteredEntries.filter(entry => entry.date >= range.startDate && entry.date <= range.endDate)
                     .reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0)
                 : null;
 
@@ -8146,7 +8249,7 @@
 
             if (!clientSummary) return;
             const totalsByClient = {};
-            timeEntries.forEach((entry) => {
+            filteredEntries.forEach((entry) => {
                 const clientId = entry.clientId || currentClientId || 'unknown';
                 totalsByClient[clientId] = (totalsByClient[clientId] || 0) + (parseFloat(entry.hours) || 0);
             });
@@ -9245,7 +9348,7 @@
                 alert('Nejprve vyberte klienta');
                 return;
             }
-            const entries = [...timeEntries];
+            const entries = getFilteredTimeEntries();
             const weekLabel = document.getElementById('timeCalendarTitle')?.textContent || '';
             const tableRows = entries.map(entry => `
                 <tr>
