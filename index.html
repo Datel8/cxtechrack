@@ -887,11 +887,17 @@
         }
 
         .time-filter select {
-            background: transparent;
+            background: rgba(12, 18, 32, 0.9);
             border: none;
             color: var(--text-primary);
             font-size: 0.75rem;
             font-family: 'IBM Plex Mono', monospace;
+            padding: 0.1rem 0.2rem;
+        }
+
+        .time-filter select option {
+            background: #0f172a;
+            color: var(--text-primary);
         }
         
         .stat {
@@ -1955,26 +1961,6 @@
             margin-top: 1rem;
         }
 
-        .report-pricing-actions {
-            justify-content: flex-start;
-            margin-top: 0.5rem;
-        }
-
-        .report-pricing-note {
-            margin-top: 0.35rem;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-        }
-
-        .report-pricing-grid {
-            gap: 0.75rem;
-        }
-
-        .report-pricing {
-            margin-top: 0.35rem;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
 
         .report-actions-right {
             display: flex;
@@ -4078,7 +4064,6 @@
             <div id="reportsView" class="time-tracking" style="display: none;">
                 <div class="rack-header">
                     <h2>Live reporty</h2>
-                    <div class="report-pricing" id="reportPricingSummary">Pricing: -</div>
                 </div>
                 <div id="reportsAccessNote" class="empty-state" style="display: none;">
                     <p>Reporty jsou dostupne jen pro administratory.</p>
@@ -4130,40 +4115,6 @@
                                         <label for="reportEndDate">Do</label>
                                         <input type="date" id="reportEndDate" onchange="onReportDateChange()">
                                     </div>
-                                </div>
-                            </div>
-                            <div class="report-filter-divider"></div>
-                            <div class="report-filter-section">
-                                <div class="report-filter-section-title">Pricing nastaveni</div>
-                                <div class="report-form-grid report-pricing-grid">
-                                    <div class="report-form-row">
-                                        <label for="reportPricingMode">Pricing rezim</label>
-                                        <select id="reportPricingMode" onchange="updateReportPricingFields()">
-                                            <option value="retainer-hours">Pausal s hodinami + nad pausal sazba</option>
-                                            <option value="retainer-hourly">Pausal + hodinovka</option>
-                                            <option value="retainer-unlimited">Pausal s neomezenymi hodinami</option>
-                                        </select>
-                                    </div>
-                                    <div class="report-form-row" id="reportPricingRetainerAmountGroup">
-                                        <label for="reportRetainerAmount">Pausal (Kc / mesic)</label>
-                                        <input type="number" id="reportRetainerAmount" placeholder="napr. 25000" min="0" step="1">
-                                    </div>
-                                    <div class="report-form-row" id="reportPricingRetainerHoursGroup">
-                                        <label for="reportRetainerHours">Hodiny v pausalu</label>
-                                        <input type="number" id="reportRetainerHours" placeholder="napr. 20" min="0" step="0.5">
-                                    </div>
-                                    <div class="report-form-row" id="reportPricingHourlyRateGroup">
-                                        <label for="reportHourlyRate">Hodinova sazba (Kc)</label>
-                                        <input type="number" id="reportHourlyRate" placeholder="napr. 1200" min="0" step="1">
-                                    </div>
-                                    <div class="report-form-row" id="reportPricingOverageRateGroup">
-                                        <label for="reportOverageRate">Sazba nad pausal (Kc)</label>
-                                        <input type="number" id="reportOverageRate" placeholder="napr. 1500" min="0" step="1">
-                                    </div>
-                                </div>
-                                <div class="report-pricing-note" id="reportPricingHint">Nejdriv vyberte klienta.</div>
-                                <div class="report-actions report-pricing-actions">
-                                    <button class="btn-small" id="reportPricingSave" onclick="saveReportPricing()" disabled>Ulozit pricing</button>
                                 </div>
                             </div>
                             <div class="report-actions">
@@ -6038,7 +5989,6 @@
             const dashboardIco = document.getElementById('dashboardIco');
             const dashboardLogo = document.getElementById('dashboardLogoPrimary');
             const pricingInfo = document.getElementById('clientPricing');
-            const reportPricing = document.getElementById('reportPricingSummary');
             if (client) {
                 document.getElementById('clientInfo').style.display = 'block';
                 document.getElementById('clientName').textContent = client.name + (client.ico ? ` (ICO: ${client.ico})` : '');
@@ -6047,8 +5997,6 @@
                 document.getElementById('clientLocation').textContent = client.address ? `Adresa: ${client.address}` : '';
                 document.getElementById('clientType').textContent = client.type.toUpperCase();
                 if (pricingInfo) pricingInfo.textContent = `Pricing: ${buildPricingSummary(client)}`;
-                if (reportPricing) reportPricing.textContent = `Pricing: ${buildPricingSummary(client)}`;
-                loadReportPricingForm(client);
                 if (dashboardContact) dashboardContact.textContent = client.contact || 'Neuvedeno';
                 if (dashboardLocation) dashboardLocation.textContent = client.address || 'Neuvedeno';
                 if (dashboardType) dashboardType.textContent = client.type ? client.type.toUpperCase() : '-';
@@ -6066,8 +6014,6 @@
                 if (dashboardIco) dashboardIco.textContent = '-';
                 if (dashboardLogo) dashboardLogo.textContent = 'LOGO';
                 if (pricingInfo) pricingInfo.textContent = '';
-                if (reportPricing) reportPricing.textContent = 'Pricing: -';
-                loadReportPricingForm(null);
             }
         }
         
@@ -7039,83 +6985,6 @@
             if (overageRateGroup) overageRateGroup.style.display = mode == 'retainer-hours' ? 'block' : 'none';
         }
 
-        function updateReportPricingFields() {
-            const mode = document.getElementById('reportPricingMode')?.value || 'retainer-hours';
-            const retainerAmountGroup = document.getElementById('reportPricingRetainerAmountGroup');
-            const retainerHoursGroup = document.getElementById('reportPricingRetainerHoursGroup');
-            const hourlyRateGroup = document.getElementById('reportPricingHourlyRateGroup');
-            const overageRateGroup = document.getElementById('reportPricingOverageRateGroup');
-
-            if (retainerAmountGroup) retainerAmountGroup.style.display = 'block';
-            if (retainerHoursGroup) retainerHoursGroup.style.display = mode === 'retainer-hours' ? 'block' : 'none';
-            if (hourlyRateGroup) hourlyRateGroup.style.display = mode === 'retainer-hourly' ? 'block' : 'none';
-            if (overageRateGroup) overageRateGroup.style.display = mode === 'retainer-hours' ? 'block' : 'none';
-        }
-
-        function loadReportPricingForm(client) {
-            const hasClient = !!client;
-            const modeEl = document.getElementById('reportPricingMode');
-            const retainerAmountEl = document.getElementById('reportRetainerAmount');
-            const retainerHoursEl = document.getElementById('reportRetainerHours');
-            const hourlyRateEl = document.getElementById('reportHourlyRate');
-            const overageRateEl = document.getElementById('reportOverageRate');
-            const saveBtn = document.getElementById('reportPricingSave');
-            const hint = document.getElementById('reportPricingHint');
-
-            if (modeEl) {
-                modeEl.value = client?.pricingMode || 'retainer-hours';
-                modeEl.disabled = !hasClient;
-            }
-            if (retainerAmountEl) {
-                retainerAmountEl.value = client?.retainerAmount || '';
-                retainerAmountEl.disabled = !hasClient;
-            }
-            if (retainerHoursEl) {
-                retainerHoursEl.value = client?.retainerHours || '';
-                retainerHoursEl.disabled = !hasClient;
-            }
-            if (hourlyRateEl) {
-                hourlyRateEl.value = client?.hourlyRate || '';
-                hourlyRateEl.disabled = !hasClient;
-            }
-            if (overageRateEl) {
-                overageRateEl.value = client?.overageRate || '';
-                overageRateEl.disabled = !hasClient;
-            }
-            if (saveBtn) saveBtn.disabled = !hasClient;
-            if (hint) {
-                hint.textContent = hasClient ? 'Upravy se ulozi ke klientovi.' : 'Nejdriv vyberte klienta.';
-            }
-            updateReportPricingFields();
-        }
-
-        function saveReportPricing() {
-            if (!currentClientId) {
-                alert('Nejdriv vyberte klienta.');
-                return;
-            }
-            const client = clients.find((c) => c.id === currentClientId);
-            if (!client) return;
-
-            const mode = document.getElementById('reportPricingMode')?.value || 'retainer-hours';
-            const retainerAmount = parseFloat(document.getElementById('reportRetainerAmount')?.value || '') || 0;
-            const retainerHours = parseFloat(document.getElementById('reportRetainerHours')?.value || '') || 0;
-            const hourlyRate = parseFloat(document.getElementById('reportHourlyRate')?.value || '') || 0;
-            const overageRate = parseFloat(document.getElementById('reportOverageRate')?.value || '') || 0;
-
-            Object.assign(client, {
-                pricingMode: mode,
-                retainerAmount,
-                retainerHours,
-                hourlyRate,
-                overageRate,
-                updatedAt: new Date().toISOString()
-            });
-
-            saveData();
-            updateClientInfo();
-            renderClientOverview();
-        }
 
         function toggleSidebarSection(button) {
             const section = button ? button.closest('.sidebar-section') : null;
@@ -7866,7 +7735,6 @@
             const view = document.getElementById('reportsView');
             if (!view) return;
             const client = clients.find((c) => c.id === currentClientId);
-            const reportPricing = document.getElementById('reportPricingSummary');
             const accessNote = document.getElementById('reportsAccessNote');
             const filterPanel = view.querySelector('.report-filter-panel');
             const layout = view.querySelector('.reports-layout');
@@ -7874,10 +7742,6 @@
             const filters = view.querySelector('.report-filters');
             const actions = view.querySelector('.report-actions');
             const showFilters = reportFiltersVisible && !reportHasLoaded;
-            if (reportPricing) {
-                reportPricing.textContent = client ? `Pricing: ${buildPricingSummary(client)}` : 'Pricing: -';
-            }
-            loadReportPricingForm(client || null);
             if (!canViewReports()) {
                 if (accessNote) accessNote.style.display = 'block';
                 if (filterPanel) filterPanel.style.display = 'none';
@@ -7952,6 +7816,7 @@
                 }
                 entriesByDate[entry.date].push(entry);
             });
+            const segmentsByDate = buildTimeSegmentsByDate(filteredEntries);
 
             let headerHtml = '<div class="time-header-cell">Hod</div>';
             for (let i = 0; i < 7; i++) {
@@ -7985,16 +7850,20 @@
                     dayDate.setDate(weekStart.getDate() + dayIndex);
                     const dateKey = formatDateKey(dayDate);
                     const dayEntries = entriesByDate[dateKey] || [];
-                    const entryMatch = dayEntries.find(entry =>
-                        Number.isFinite(entry.startHour) &&
-                        Number.isFinite(entry.endHour) &&
-                        hour >= entry.startHour &&
-                        hour <= entry.endHour
+                    const daySegments = segmentsByDate[dateKey] || [];
+                    const segmentMatch = daySegments.find(segment =>
+                        Number.isFinite(segment.startHour) &&
+                        Number.isFinite(segment.endHour) &&
+                        hour >= segment.startHour &&
+                        hour <= segment.endHour
                     );
-                    const hasEntry = !!entryMatch;
-                    const entryColor = entryMatch ? getClientColor(entryMatch.clientId) : '';
-                    const entryTitle = entryMatch
-                        ? `${getClientLabel(entryMatch.clientId)} | ${entryMatch.category || entryMatch.activity || '-'} (${entryMatch.hours || 0} h)`
+                    const hasEntry = !!segmentMatch;
+                    const entryColor = segmentMatch ? getClientColor(segmentMatch.clientId) : '';
+                    const segmentHours = segmentMatch
+                        ? Math.max(0, (segmentMatch.endHour - segmentMatch.startHour + 1))
+                        : 0;
+                    const entryTitle = segmentMatch
+                        ? `${getClientLabel(segmentMatch.clientId)} (${segmentHours} h)`
                         : '';
 
                     const inRange = selection &&
@@ -8014,8 +7883,8 @@
                         'time-slot',
                         dayIndex % 2 === 0 ? 'day-even' : 'day-odd',
                         hasEntry ? 'has-entry' : '',
-                        hasEntry && entryMatch && hour === entryMatch.startHour ? 'is-entry-start' : '',
-                        hasEntry && entryMatch && hour === entryMatch.endHour ? 'is-entry-end' : '',
+                        hasEntry && segmentMatch && hour === segmentMatch.startHour ? 'is-entry-start' : '',
+                        hasEntry && segmentMatch && hour === segmentMatch.endHour ? 'is-entry-end' : '',
                         inRange ? 'in-range' : '',
                         isStart ? 'range-start' : '',
                         isEnd ? 'range-end' : '',
@@ -8028,14 +7897,53 @@
 
                     const style = entryColor ? `style="--entry-color: ${entryColor}"` : '';
                     const title = entryTitle ? `title="${entryTitle}"` : '';
-                    const label = entryMatch && hour === entryMatch.startHour
-                        ? `<span class="time-slot-label">${getClientLabel(entryMatch.clientId)}</span>`
+                    const label = segmentMatch && hour === segmentMatch.startHour
+                        ? `<span class="time-slot-label">${getClientLabel(segmentMatch.clientId)}</span>`
                         : '';
                     cells += `<div class="${classes}" ${handlers} ${style} ${title}>${label}</div>`;
                 }
             }
 
             grid.innerHTML = cells;
+        }
+
+        function buildTimeSegmentsByDate(entries) {
+            const buckets = {};
+            (entries || []).forEach((entry) => {
+                if (!entry.date) return;
+                if (!Number.isFinite(entry.startHour) || !Number.isFinite(entry.endHour)) return;
+                const clientId = entry.clientId || currentClientId || 'unknown';
+                if (!buckets[entry.date]) buckets[entry.date] = {};
+                if (!buckets[entry.date][clientId]) buckets[entry.date][clientId] = [];
+                buckets[entry.date][clientId].push({
+                    start: entry.startHour,
+                    end: entry.endHour
+                });
+            });
+
+            const segments = {};
+            Object.keys(buckets).forEach((dateKey) => {
+                segments[dateKey] = [];
+                const clientsForDate = buckets[dateKey];
+                Object.keys(clientsForDate).forEach((clientId) => {
+                    const ranges = clientsForDate[clientId].sort((a, b) => a.start - b.start);
+                    let current = null;
+                    ranges.forEach((range) => {
+                        if (!current) {
+                            current = { clientId, startHour: range.start, endHour: range.end };
+                            return;
+                        }
+                        if (range.start <= current.endHour + 1) {
+                            current.endHour = Math.max(current.endHour, range.end);
+                        } else {
+                            segments[dateKey].push(current);
+                            current = { clientId, startHour: range.start, endHour: range.end };
+                        }
+                    });
+                    if (current) segments[dateKey].push(current);
+                });
+            });
+            return segments;
         }
 
         function startTimeSelection(dateKey, hour) {
