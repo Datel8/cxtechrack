@@ -2630,6 +2630,10 @@
             color: var(--text-secondary);
         }
 
+        .time-header-cell.day-odd {
+            background: var(--panel-surface-2);
+        }
+
         .time-header-cell:last-child {
             border-right: 0;
         }
@@ -2659,10 +2663,9 @@
             grid-auto-rows: 28px;
             user-select: none;
             max-height: 560px;
-            overflow: auto;
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            overflow: hidden;
+            overflow: auto;
         }
 
         .time-hour-cell {
@@ -2683,6 +2686,10 @@
             cursor: pointer;
             transition: all 0.2s ease;
             position: relative;
+        }
+
+        .time-slot.day-odd {
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .time-slot:hover {
@@ -2712,6 +2719,10 @@
             background: var(--entry-color, rgba(248, 154, 85, 0.25));
             border: 0;
             opacity: 0.85;
+        }
+
+        .time-slot.has-entry {
+            border-color: transparent;
         }
 
         .time-slot.is-entry-start::after {
@@ -3063,6 +3074,9 @@
             font-weight: 600;
             color: var(--accent-cyan);
             font-family: 'IBM Plex Mono', monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
         }
         
         .client-card-stats {
@@ -4334,6 +4348,10 @@
                 <input type="text" id="newClientAddress" placeholder="napr. Vaclavske namesti 1, Praha">
             </div>
             <div class="form-group">
+                <label>Barva klienta</label>
+                <input type="color" id="newClientColor" value="#f89a55">
+            </div>
+            <div class="form-group">
                 <label>Pricing rezim</label>
                 <select id="newClientPricingMode" onchange="updatePricingFields()">
                     <option value="retainer-hours">Pausal s hodinami + nad pausal sazba</option>
@@ -4685,7 +4703,9 @@
 
         function getClientColor(clientId) {
             if (!clientId) return CLIENT_COLOR_PALETTE[0];
-            const index = clients.findIndex((client) => client.id === clientId);
+            const client = clients.find((item) => item.id === clientId);
+            if (client && client.color) return client.color;
+            const index = clients.findIndex((item) => item.id === clientId);
             const safeIndex = index >= 0 ? index : 0;
             return CLIENT_COLOR_PALETTE[safeIndex % CLIENT_COLOR_PALETTE.length];
         }
@@ -4766,6 +4786,7 @@
             const addTimeEntryBtn = document.getElementById('addTimeEntryBtn');
             const reportsNavBtn = document.querySelector('.view-toggle-btn[data-view="reports"]');
             const dashboardReportsBtn = document.getElementById('dashboardReportsBtn');
+            const timeAllToggle = document.getElementById('timeAllClientsToggle');
 
             moduleButtons.forEach((button) => {
                 button.disabled = !canManageCategories();
@@ -4781,6 +4802,16 @@
             }
             if (!canViewReports() && currentView === 'reports') {
                 switchView('dashboard');
+            }
+
+            if (timeAllToggle) {
+                const canViewAll = canViewAllTimeEntries();
+                timeAllToggle.disabled = !canViewAll;
+                if (!canViewAll && timeViewAllClients) {
+                    timeViewAllClients = false;
+                    timeAllToggle.checked = false;
+                    localStorage.setItem('rackManagerTimeAllClients', '0');
+                }
             }
 
             if (!currentClientId) {
@@ -6901,6 +6932,7 @@
             document.getElementById('newClientEmail').value = '';
             document.getElementById('newClientPhone').value = '';
             document.getElementById('newClientAddress').value = '';
+            document.getElementById('newClientColor').value = '#f89a55';
             document.getElementById('newClientNotes').value = '';
             const pricingMode = document.getElementById('newClientPricingMode');
             const retainerAmount = document.getElementById('newClientRetainerAmount');
@@ -6928,6 +6960,7 @@
             document.getElementById('newClientEmail').value = client.email || '';
             document.getElementById('newClientPhone').value = client.phone || '';
             document.getElementById('newClientAddress').value = client.address || '';
+            document.getElementById('newClientColor').value = client.color || '#f89a55';
             document.getElementById('newClientNotes').value = client.notes || '';
             const pricingMode = document.getElementById('newClientPricingMode');
             const retainerAmount = document.getElementById('newClientRetainerAmount');
@@ -7065,6 +7098,7 @@
             const email = document.getElementById('newClientEmail').value;
             const phone = document.getElementById('newClientPhone').value;
             const address = document.getElementById('newClientAddress').value;
+            const color = document.getElementById('newClientColor')?.value || '#f89a55';
             const notes = document.getElementById('newClientNotes').value;
             const pricingMode = document.getElementById('newClientPricingMode')?.value || 'retainer-hours';
             const retainerAmount = parseFloat(document.getElementById('newClientRetainerAmount')?.value || '') || 0;
@@ -7086,6 +7120,7 @@
                 email,
                 phone,
                 address,
+                color,
                 notes,
                 pricingMode,
                 retainerAmount,
@@ -7169,7 +7204,10 @@
                 return `
                     <div class="client-card" onclick="selectClientFromList('${client.id}')">
                         <div class="client-card-header">
-                            <div class="client-card-name">${client.name}</div>
+                            <div class="client-card-name">
+                                <span class="time-client-color" style="--client-color: ${getClientColor(client.id)}"></span>
+                                ${client.name}
+                            </div>
                             <div class="client-actions" onclick="event.stopPropagation()">
                                 <button class="btn-icon" onclick="openClientModal('${client.id}')">E</button>
                                 <button class="btn-icon danger" onclick="deleteClient('${client.id}')">🗑</button>
@@ -7791,8 +7829,9 @@
                 const dateKey = formatDateKey(dayDate);
                 const dayEntries = entriesByDate[dateKey] || [];
                 const totalHours = dayEntries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0);
+                const dayClass = (i % 2 === 0) ? 'day-even' : 'day-odd';
                 headerHtml += `
-                    <div class="time-header-cell">
+                    <div class="time-header-cell ${dayClass}">
                         ${weekdays[i]}
                         <strong>${dateKey.split('-')[2]}.${dateKey.split('-')[1]}.</strong>
                         <span>${totalHours} h</span>
@@ -7842,6 +7881,7 @@
 
                     const classes = [
                         'time-slot',
+                        dayIndex % 2 === 0 ? 'day-even' : 'day-odd',
                         hasEntry ? 'has-entry' : '',
                         hasEntry && entryMatch && hour === entryMatch.startHour ? 'is-entry-start' : '',
                         hasEntry && entryMatch && hour === entryMatch.endHour ? 'is-entry-end' : '',
