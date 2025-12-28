@@ -3013,6 +3013,18 @@
             transform: translateY(-1px);
             box-shadow: 0 8px 22px rgba(248, 154, 85, 0.25);
         }
+
+        .btn-small.btn-secondary {
+            background: rgba(248, 154, 85, 0.08);
+            border: 1px solid rgba(248, 154, 85, 0.55);
+            color: var(--cx-orange);
+        }
+
+        .btn-small.btn-secondary:hover {
+            background: rgba(248, 154, 85, 0.16);
+            border-color: rgba(248, 154, 85, 0.75);
+            box-shadow: 0 6px 18px rgba(248, 154, 85, 0.2);
+        }
         
         /* Client info panel */
         .client-info {
@@ -3122,6 +3134,261 @@
             right: 1rem;
             display: flex;
             gap: 0.5rem;
+        }
+
+        .clients-view {
+            display: grid;
+            grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+            gap: 1.5rem;
+            min-height: 0;
+        }
+
+        .clients-list-panel {
+            background: var(--panel-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.25rem;
+            display: grid;
+            grid-template-rows: auto auto 1fr;
+            gap: 1rem;
+            min-height: 0;
+        }
+
+        .clients-list-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .clients-list-head h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .clients-list-count {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-secondary);
+            margin-top: 0.2rem;
+        }
+
+        .clients-search input {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--panel-surface-2);
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .clients-search input:focus {
+            outline: none;
+            border-color: rgba(248, 154, 85, 0.6);
+            box-shadow: 0 0 0 2px rgba(248, 154, 85, 0.15);
+        }
+
+        .client-list {
+            overflow-y: auto;
+            padding-right: 0.35rem;
+            margin-right: -0.35rem;
+        }
+
+        .client-card.is-active {
+            border-color: rgba(248, 154, 85, 0.6);
+            box-shadow: 0 0 0 1px rgba(248, 154, 85, 0.2);
+        }
+
+        .client-detail-panel {
+            background: var(--panel-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .client-detail-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+
+        .client-detail-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+
+        .client-detail-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.35rem;
+        }
+
+        .client-detail-actions {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .client-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .client-detail-card {
+            background: var(--panel-surface-2);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1rem;
+            display: grid;
+            gap: 0.6rem;
+        }
+
+        .client-detail-card h3 {
+            margin: 0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-secondary);
+        }
+
+        .client-detail-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .client-detail-row span {
+            color: var(--text-secondary);
+        }
+
+        .client-detail-row strong {
+            font-weight: 600;
+        }
+
+        .client-detail-notes {
+            display: block;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .client-color-chip {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--client-color, #f89a55);
+            display: inline-block;
+            margin-right: 0.4rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .client-detail-chart {
+            background: var(--panel-surface-2);
+            border: 1px dashed rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            padding: 1.25rem;
+        }
+
+        .client-detail-chart-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .client-detail-chart-placeholder {
+            height: 160px;
+            border-radius: 12px;
+            background: linear-gradient(120deg, rgba(248, 154, 85, 0.12), rgba(255, 255, 255, 0.04));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .client-form-panel {
+            background: var(--panel-surface-2);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.5rem;
+            display: grid;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .client-form-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .client-form-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .client-form-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .client-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .client-form-section {
+            background: rgba(10, 16, 28, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 1rem;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .client-form-section-wide {
+            grid-column: 1 / -1;
+        }
+
+        .client-form-section h3 {
+            margin: 0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-secondary);
+        }
+
+        .client-form-fields .form-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .client-form-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 1100px) {
+            .clients-view {
+                grid-template-columns: 1fr;
+            }
         }
         
         .btn-icon {
@@ -3553,7 +3820,8 @@
                         <select id="clientSelector" class="client-selector" onchange="switchClient()">
                             <option value="">-- Vyberte klienta --</option>
                         </select>
-                        <button class="btn-small" onclick="openClientModal()">+ Novy klient</button>
+                        <button class="btn-small" data-client-form-trigger="true" onclick="openClientModal()">+ Novy klient</button>
+                        <button class="btn-small btn-secondary" type="button" onclick="openClientManagerModal()">Seznam klientu</button>
                     </div>
                     <div class="client-info" id="clientInfo" style="display: none;">
                         <h4>Aktivni klient</h4>
@@ -3565,7 +3833,7 @@
                         <div style="margin-top: 0.5rem;">
                             <span class="client-badge" id="clientType"></span>
                         </div>
-                        <button class="btn-small client-edit-btn" type="button" onclick="openClientModal(currentClientId)">Upravit klienta</button>
+                        <button class="btn-small client-edit-btn" data-client-form-trigger="true" type="button" onclick="openClientModal(currentClientId)">Upravit klienta</button>
                     </div>
                 </div>
             </div>
@@ -3939,6 +4207,171 @@
                 </div>
             </div>
 
+            <div id="clientsView" class="clients-view" style="display: none;">
+                <aside class="clients-list-panel">
+                    <div class="clients-list-head">
+                        <div>
+                            <h2>Klienti</h2>
+                            <div class="clients-list-count" id="clientsCount">0 klientu</div>
+                        </div>
+                        <button class="btn-small" data-client-form-trigger="true" onclick="openClientModal()">+ Pridat klienta</button>
+                    </div>
+                    <div class="clients-search">
+                        <input type="text" id="clientSearch" placeholder="Hledat klienta..." onkeyup="searchClients()">
+                    </div>
+                    <div id="clientList" class="client-list"></div>
+                </aside>
+                <section class="client-detail-panel">
+                    <div id="clientDetailEmpty" class="empty-state">
+                        <p>Vyber klienta ze seznamu.</p>
+                    </div>
+                    <div id="clientDetailContent" style="display: none;">
+                        <div class="client-detail-header">
+                            <div>
+                                <div class="client-detail-title" id="clientDetailName">-</div>
+                                <div class="client-detail-meta" id="clientDetailMeta">-</div>
+                            </div>
+                            <div class="client-detail-actions">
+                                <button class="btn-small" data-client-form-trigger="true" onclick="openClientModal(currentClientId)">Upravit</button>
+                                <button class="btn-small btn-secondary" onclick="switchView('overview')">Prehled klienta</button>
+                            </div>
+                        </div>
+                        <div class="client-detail-grid">
+                            <div class="client-detail-card">
+                                <h3>Zakladni informace</h3>
+                                <div class="client-detail-row"><span>Typ</span><strong id="clientDetailType">-</strong></div>
+                                <div class="client-detail-row"><span>ICO</span><strong id="clientDetailIco">-</strong></div>
+                                <div class="client-detail-row"><span>Barva</span><strong id="clientDetailColor">-</strong></div>
+                            </div>
+                            <div class="client-detail-card">
+                                <h3>Kontakt</h3>
+                                <div class="client-detail-row"><span>Kontaktni osoba</span><strong id="clientDetailContact">-</strong></div>
+                                <div class="client-detail-row"><span>E-mail</span><strong id="clientDetailEmail">-</strong></div>
+                                <div class="client-detail-row"><span>Telefon</span><strong id="clientDetailPhone">-</strong></div>
+                            </div>
+                            <div class="client-detail-card">
+                                <h3>Adresa</h3>
+                                <div class="client-detail-row"><span>Adresa</span><strong id="clientDetailAddress">-</strong></div>
+                            </div>
+                            <div class="client-detail-card">
+                                <h3>Pricing</h3>
+                                <div class="client-detail-row"><span>Nastaveni</span><strong id="clientDetailPricing">-</strong></div>
+                            </div>
+                            <div class="client-detail-card">
+                                <h3>Infrastruktura</h3>
+                                <div class="client-detail-row"><span>Racky</span><strong id="clientDetailRacks">0</strong></div>
+                                <div class="client-detail-row"><span>Zarizeni</span><strong id="clientDetailDevices">0</strong></div>
+                                <div class="client-detail-row"><span>Propojeni</span><strong id="clientDetailConnections">0</strong></div>
+                            </div>
+                            <div class="client-detail-card">
+                                <h3>Poznamky</h3>
+                                <div class="client-detail-row client-detail-notes" id="clientDetailNotes">-</div>
+                            </div>
+                        </div>
+                        <div class="client-detail-chart">
+                            <div class="client-detail-chart-title">Vykazy a kapacity</div>
+                            <div class="client-detail-chart-placeholder">Graf bude doplnen.</div>
+                        </div>
+                    </div>
+
+                    <div id="clientFormPanel" class="client-form-panel" style="display: none;">
+                        <div class="client-form-header">
+                            <div>
+                                <div class="client-form-title" id="clientFormTitle">Novy klient</div>
+                                <div class="client-form-subtitle" id="clientFormSubtitle">Vypln zakladni a financni udaje klienta.</div>
+                            </div>
+                            <button class="btn-small btn-secondary" type="button" onclick="closeClientModal()">Zavrit</button>
+                        </div>
+                        <input type="hidden" id="clientEditId">
+                        <div class="client-form-grid">
+                            <div class="client-form-section">
+                                <h3>Zakladni informace</h3>
+                                <div class="client-form-fields">
+                                    <div class="form-group">
+                                        <label>Nazev klienta *</label>
+                                        <input type="text" id="newClientName" placeholder="napr. Firma ABC s.r.o.">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>E-mail</label>
+                                        <input type="email" id="newClientEmail" placeholder="napr. info@firma.cz">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>ICO</label>
+                                        <input type="text" id="newClientICO" placeholder="napr. 12345678">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Typ klienta</label>
+                                        <select id="newClientType">
+                                            <option value="standard">Standard</option>
+                                            <option value="premium">Premium</option>
+                                            <option value="enterprise">Enterprise</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Barva klienta</label>
+                                        <input type="color" id="newClientColor" value="#f89a55">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="client-form-section">
+                                <h3>Kontaktni informace</h3>
+                                <div class="client-form-fields">
+                                    <div class="form-group">
+                                        <label>Kontaktni osoba</label>
+                                        <input type="text" id="newClientContact" placeholder="napr. Jan Novak">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Telefon</label>
+                                        <input type="tel" id="newClientPhone" placeholder="napr. +420 123 456 789">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Adresa</label>
+                                        <input type="text" id="newClientAddress" placeholder="napr. Vaclavske namesti 1, Praha">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Poznamky</label>
+                                        <textarea id="newClientNotes" rows="4"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="client-form-section client-form-section-wide">
+                                <h3>Pricing</h3>
+                                <div class="client-form-fields">
+                                    <div class="form-group">
+                                        <label>Pricing rezim</label>
+                                        <select id="newClientPricingMode" onchange="updatePricingFields()">
+                                            <option value="retainer-hours">Pausal s hodinami + nad pausal sazba</option>
+                                            <option value="retainer-hourly">Pausal + hodinovka</option>
+                                            <option value="retainer-unlimited">Pausal s neomezenymi hodinami</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="pricingRetainerAmountGroup">
+                                        <label>Pausal (Kc / mesic)</label>
+                                        <input type="number" id="newClientRetainerAmount" placeholder="napr. 25000" min="0" step="1">
+                                    </div>
+                                    <div class="form-group" id="pricingRetainerHoursGroup">
+                                        <label>Hodiny v pausalu</label>
+                                        <input type="number" id="newClientRetainerHours" placeholder="napr. 20" min="0" step="0.5">
+                                    </div>
+                                    <div class="form-group" id="pricingHourlyRateGroup">
+                                        <label>Hodinova sazba (Kc)</label>
+                                        <input type="number" id="newClientHourlyRate" placeholder="napr. 1200" min="0" step="1">
+                                    </div>
+                                    <div class="form-group" id="pricingOverageRateGroup">
+                                        <label>Sazba nad pausal (Kc)</label>
+                                        <input type="number" id="newClientOverageRate" placeholder="napr. 1500" min="0" step="1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="client-form-actions">
+                            <button class="btn" id="clientSubmitBtn" onclick="addClient()">Ulozit klienta</button>
+                            <button class="btn btn-secondary" type="button" onclick="closeClientModal()">Zahodit</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
             <div id="overviewView" class="rack-container" style="display: none;">
                 <div class="rack-header">
                     <h2>Prehled klienta</h2>
@@ -4299,100 +4732,7 @@
         </div>
     </div>
     
-        <!-- Client Modal -->
-    <div id="clientModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Novy klient</h2>
-                <button class="modal-close" onclick="closeClientModal()">X</button>
-            </div>
-            <input type="hidden" id="clientEditId">
-            <div class="form-group">
-                <label>Nazev klienta *</label>
-                <input type="text" id="newClientName" placeholder="napr. Firma ABC s.r.o.">
-            </div>
-            <div class="form-group">
-                <label>ICO</label>
-                <input type="text" id="newClientICO" placeholder="napr. 12345678">
-            </div>
-            <div class="form-group">
-                <label>Typ klienta</label>
-                <select id="newClientType">
-                    <option value="standard">Standard</option>
-                    <option value="premium">Premium</option>
-                    <option value="enterprise">Enterprise</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Kontaktni osoba</label>
-                <input type="text" id="newClientContact" placeholder="napr. Jan Novak">
-            </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="newClientEmail" placeholder="napr. info@firma.cz">
-            </div>
-            <div class="form-group">
-                <label>Telefon</label>
-                <input type="tel" id="newClientPhone" placeholder="napr. +420 123 456 789">
-            </div>
-            <div class="form-group">
-                <label>Adresa</label>
-                <input type="text" id="newClientAddress" placeholder="napr. Vaclavske namesti 1, Praha">
-            </div>
-            <div class="form-group">
-                <label>Barva klienta</label>
-                <input type="color" id="newClientColor" value="#f89a55">
-            </div>
-            <div class="form-group">
-                <label>Pricing rezim</label>
-                <select id="newClientPricingMode" onchange="updatePricingFields()">
-                    <option value="retainer-hours">Pausal s hodinami + nad pausal sazba</option>
-                    <option value="retainer-hourly">Pausal + hodinovka</option>
-                    <option value="retainer-unlimited">Pausal s neomezenymi hodinami</option>
-                </select>
-            </div>
-            <div class="form-group" id="pricingRetainerAmountGroup">
-                <label>Pausal (Kc / mesic)</label>
-                <input type="number" id="newClientRetainerAmount" placeholder="napr. 25000" min="0" step="1">
-            </div>
-            <div class="form-group" id="pricingRetainerHoursGroup">
-                <label>Hodiny v pausalu</label>
-                <input type="number" id="newClientRetainerHours" placeholder="napr. 20" min="0" step="0.5">
-            </div>
-            <div class="form-group" id="pricingHourlyRateGroup">
-                <label>Hodinova sazba (Kc)</label>
-                <input type="number" id="newClientHourlyRate" placeholder="napr. 1200" min="0" step="1">
-            </div>
-            <div class="form-group" id="pricingOverageRateGroup">
-                <label>Sazba nad pausal (Kc)</label>
-                <input type="number" id="newClientOverageRate" placeholder="napr. 1500" min="0" step="1">
-            </div>
-            <div class="form-group">
-                <label>Poznamky</label>
-                <textarea id="newClientNotes" rows="3" style="width: 100%; padding: 0.5rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; font-size: 0.875rem;"></textarea>
-            </div>
-            <button class="btn" id="clientSubmitBtn" onclick="addClient()">Vytvorit klienta</button>
-        </div>
-    </div>
-
-<!-- Client Manager Modal -->
-    <div id="clientManagerModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header">
-                <h2>Správa klientů</h2>
-                <button class="modal-close" onclick="closeClientManagerModal()">×</button>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                <input type="text" id="clientSearch" placeholder="Hledat klienta..." style="flex: 1; padding: 0.5rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);" onkeyup="searchClients()">
-                <button class="btn-small" onclick="openClientModal()">+ Nový klient</button>
-            </div>
-            <div id="clientList" class="client-list">
-                <!-- Clients will be rendered here -->
-            </div>
-        </div>
-    </div>
-    
-    <!-- Role Manager Modal -->
+        <!-- Role Manager Modal -->
     <div id="roleManagerModal" class="modal">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
@@ -5946,7 +6286,7 @@
         }
         
         // Switch client
-        function switchClient() {
+        function switchClient(options = {}) {
             const selector = document.getElementById('clientSelector');
             const clientId = selector.value;
             
@@ -5968,7 +6308,9 @@
             render();
             fetchUserRole();
             initTimeTracking();
-            switchView('overview');
+            if (!options.skipView) {
+                switchView(options.view || 'overview');
+            }
         }
         
         // Update client selector
@@ -6053,12 +6395,17 @@
             document.getElementById('timeView').style.display = 'none';
             document.getElementById('reportsView').style.display = 'none';
             document.getElementById('dashboardView').style.display = 'none';
+            document.getElementById('clientsView').style.display = 'none';
             
             // Show selected view
             switch(view) {
                 case 'dashboard':
                     document.getElementById('dashboardView').style.display = 'block';
                     renderDashboard();
+                    break;
+                case 'clients':
+                    document.getElementById('clientsView').style.display = 'grid';
+                    renderClientDetailsPanel();
                     break;
                 case 'racks':
                     document.getElementById('racksView').style.display = 'block';
@@ -6870,55 +7217,68 @@
         
         // Client management functions
         function openClientModal(clientId) {
-            const modal = document.getElementById('clientModal');
-            if (!modal) return;
+            switchView('clients');
+            const panel = document.getElementById('clientFormPanel');
             const submitBtn = document.getElementById('clientSubmitBtn');
             const editInput = document.getElementById('clientEditId');
+            const title = document.getElementById('clientFormTitle');
+            const subtitle = document.getElementById('clientFormSubtitle');
+            if (!panel) return;
             if (clientId) {
                 const client = clients.find(item => item.id === clientId);
                 if (!client) return;
                 fillClientForm(client);
                 if (editInput) editInput.value = client.id;
                 if (submitBtn) submitBtn.textContent = 'Ulozit klienta';
+                if (title) title.textContent = 'Upravit klienta';
+                if (subtitle) subtitle.textContent = 'Uprav kontaktni a pricing nastaveni klienta.';
             } else {
                 clearClientForm();
                 if (editInput) editInput.value = '';
                 if (submitBtn) submitBtn.textContent = 'Vytvorit klienta';
+                if (title) title.textContent = 'Novy klient';
+                if (subtitle) subtitle.textContent = 'Vypln zakladni a financni udaje klienta.';
             }
             updatePricingFields();
-            modal.classList.add('active');
+            panel.style.display = 'grid';
+            const detail = document.getElementById('clientDetailContent');
+            const empty = document.getElementById('clientDetailEmpty');
+            if (detail) detail.style.display = 'none';
+            if (empty) empty.style.display = 'none';
         }
         
         function closeClientModal() {
-            const modal = document.getElementById('clientModal');
-            if (modal) modal.classList.remove('active');
+            const panel = document.getElementById('clientFormPanel');
+            if (panel) panel.style.display = 'none';
             clearClientForm();
+            renderClientDetailsPanel();
         }
 
         function setupClientModalCloseHandlers() {
-            const modal = document.getElementById('clientModal');
-            if (!modal) return;
-
-            modal.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    closeClientModal();
-                }
+            document.addEventListener('click', (event) => {
+                const panel = document.getElementById('clientFormPanel');
+                if (!panel || panel.style.display === 'none') return;
+                if (panel.contains(event.target)) return;
+                if (event.target.closest('[data-client-form-trigger]')) return;
+                closeClientModal();
             });
 
             document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && modal.classList.contains('active')) {
+                const panel = document.getElementById('clientFormPanel');
+                if (event.key === 'Escape' && panel && panel.style.display !== 'none') {
                     closeClientModal();
                 }
             });
         }
         
         function openClientManagerModal() {
-            renderClientList();
-            document.getElementById('clientManagerModal').classList.add('active');
+            switchView('clients');
+            closeClientModal();
+            renderClientDetailsPanel();
         }
         
         function closeClientManagerModal() {
-            document.getElementById('clientManagerModal').classList.remove('active');
+            renderClientDetailsPanel();
         }
         
         function clearClientForm() {
@@ -7056,9 +7416,8 @@
                 Object.assign(existing, payload);
                 saveData();
                 updateClientSelector();
-                closeClientModal();
                 render();
-                renderClientList();
+                closeClientModal();
                 return;
             }
             
@@ -7071,11 +7430,13 @@
             clients.push(client);
             saveData();
             updateClientSelector();
-            closeClientModal();
             
             // Automatically select the new client
-            document.getElementById('clientSelector').value = client.id;
-            switchClient();
+            const selector = document.getElementById('clientSelector');
+            if (selector) selector.value = client.id;
+            const skipView = currentView === 'clients';
+            switchClient({ skipView });
+            closeClientModal();
         }
         
         function deleteClient(clientId) {
@@ -7106,7 +7467,11 @@
         
         function renderClientList() {
             const list = document.getElementById('clientList');
-            const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
+            const searchInput = document.getElementById('clientSearch');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const countEl = document.getElementById('clientsCount');
+            if (countEl) countEl.textContent = `${clients.length} klientu`;
+            if (!list) return;
             
             const filteredClients = clients.filter(client => 
                 client.name.toLowerCase().includes(searchTerm) ||
@@ -7115,40 +7480,105 @@
             );
             
             if (filteredClients.length === 0) {
-                list.innerHTML = '<div class="empty-state"><p>Žádní klienti nenalezeni</p></div>';
+                list.innerHTML = '<div class="empty-state"><p>Zadni klienti nenalezeni</p></div>';
                 return;
             }
             
             list.innerHTML = filteredClients.map(client => {
                 const data = clientData[client.id] || { racks: [], devices: [] };
+                const isActive = client.id === currentClientId;
                 return `
-                    <div class="client-card" onclick="selectClientFromList('${client.id}')">
+                    <div class="client-card${isActive ? ' is-active' : ''}" onclick="selectClientFromList('${client.id}')">
                         <div class="client-card-header">
                             <div class="client-card-name">
                                 <span class="time-client-color" style="--client-color: ${getClientColor(client.id)}"></span>
                                 ${client.name}
                             </div>
                             <div class="client-actions" onclick="event.stopPropagation()">
-                                <button class="btn-icon" onclick="openClientModal('${client.id}')">E</button>
-                                <button class="btn-icon danger" onclick="deleteClient('${client.id}')">🗑</button>
+                                <button class="btn-icon" data-client-form-trigger="true" onclick="openClientModal('${client.id}')">E</button>
+                                <button class="btn-icon danger" onclick="deleteClient('${client.id}')">X</button>
                             </div>
                         </div>
                         <div class="client-card-stats">
-                            <span>📦 ${data.racks.length} racků</span>
-                            <span>🖥️ ${data.devices.length} zařízení</span>
-                            <span class="client-badge">${client.type}</span>
+                            <span>${data.racks.length} racky</span>
+                            <span>${data.devices.length} zarizeni</span>
+                            <span class="client-badge">${(client.type || 'standard')}</span>
                         </div>
                         <div class="client-card-pricing">Pricing: ${buildPricingSummary(client)}</div>
-                        ${client.contact ? `<div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">👤 ${client.contact}</div>` : ''}
+                        ${client.contact ? `<div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">Kontakt: ${client.contact}</div>` : ''}
                     </div>
                 `;
             }).join('');
         }
-        
+
+        function renderClientDetailsPanel() {
+            const detail = document.getElementById('clientDetailContent');
+            const empty = document.getElementById('clientDetailEmpty');
+            const form = document.getElementById('clientFormPanel');
+            if (!detail || !empty) return;
+
+            renderClientList();
+
+            if (form && form.style.display !== 'none') {
+                return;
+            }
+
+            const client = clients.find(c => c.id === currentClientId);
+            if (!client) {
+                detail.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            const snapshot = getClientSnapshot(client.id);
+            const nameEl = document.getElementById('clientDetailName');
+            const metaEl = document.getElementById('clientDetailMeta');
+            const typeEl = document.getElementById('clientDetailType');
+            const icoEl = document.getElementById('clientDetailIco');
+            const colorEl = document.getElementById('clientDetailColor');
+            const contactEl = document.getElementById('clientDetailContact');
+            const emailEl = document.getElementById('clientDetailEmail');
+            const phoneEl = document.getElementById('clientDetailPhone');
+            const addressEl = document.getElementById('clientDetailAddress');
+            const pricingEl = document.getElementById('clientDetailPricing');
+            const racksEl = document.getElementById('clientDetailRacks');
+            const devicesEl = document.getElementById('clientDetailDevices');
+            const connectionsEl = document.getElementById('clientDetailConnections');
+            const notesEl = document.getElementById('clientDetailNotes');
+
+            if (nameEl) nameEl.textContent = client.name || '-';
+            if (metaEl) {
+                const metaParts = [];
+                if (client.contact) metaParts.push(`Kontakt: ${client.contact}`);
+                if (client.email) metaParts.push(`E-mail: ${client.email}`);
+                if (client.phone) metaParts.push(`Telefon: ${client.phone}`);
+                metaEl.textContent = metaParts.length ? metaParts.join(' | ') : 'Bez kontaktu';
+            }
+            if (typeEl) typeEl.textContent = client.type ? client.type.toUpperCase() : '-';
+            if (icoEl) icoEl.textContent = client.ico || '-';
+            if (colorEl) {
+                const colorValue = client.color || '#f89a55';
+                colorEl.innerHTML = `<span class="client-color-chip" style="--client-color: ${colorValue}"></span>${colorValue}`;
+            }
+            if (contactEl) contactEl.textContent = client.contact || '-';
+            if (emailEl) emailEl.textContent = client.email || '-';
+            if (phoneEl) phoneEl.textContent = client.phone || '-';
+            if (addressEl) addressEl.textContent = client.address || '-';
+            if (pricingEl) pricingEl.textContent = buildPricingSummary(client);
+            if (racksEl) racksEl.textContent = snapshot.racks.length;
+            if (devicesEl) devicesEl.textContent = snapshot.devices.length;
+            if (connectionsEl) connectionsEl.textContent = snapshot.connections.length;
+            if (notesEl) notesEl.textContent = client.notes || '-';
+
+            empty.style.display = 'none';
+            detail.style.display = 'block';
+        }
+
         function selectClientFromList(clientId) {
-            document.getElementById('clientSelector').value = clientId;
-            switchClient();
-            closeClientManagerModal();
+            const selector = document.getElementById('clientSelector');
+            if (selector) selector.value = clientId;
+            switchClient({ skipView: true });
+            renderClientDetailsPanel();
         }
         
         function searchClients() {
@@ -7162,6 +7592,7 @@
             renderConnections();
             updateStats();
             renderDashboard();
+            renderClientDetailsPanel();
         }
         
         // Render racks
