@@ -4844,6 +4844,10 @@
                     <label>Scopes (oddeleno mezerou)</label>
                     <input type="text" id="m365Scopes" placeholder="openid profile email offline_access User.Read">
                 </div>
+                <div class="form-group">
+                    <label>Povolene domeny (oddeleno carkou)</label>
+                    <input type="text" id="m365AllowedDomains" placeholder="cxtech.cz, example.com">
+                </div>
             </div>
             <div class="m365-actions">
                 <button class="btn btn-secondary" onclick="clearM365Config()">Vymazat</button>
@@ -5215,6 +5219,13 @@
             return (email || '').trim().toLowerCase().replace(/\./g, '_');
         }
 
+        function formatAuthProviderLabel(providerId) {
+            if (providerId === 'google.com') return 'Google';
+            if (providerId === 'microsoft.com') return 'Microsoft 365';
+            if (providerId === 'password') return 'Magic link';
+            return providerId || '-';
+        }
+
         function applyRolePermissions() {
             const addRackBtn = document.getElementById('addRackBtn');
             const clearRacksBtn = document.getElementById('clearRacksBtn');
@@ -5318,10 +5329,18 @@
                     role = 'admin';
                 }
 
+                const providerData = auth.currentUser.providerData || [];
+                const providerIds = providerData.map((item) => item.providerId).filter(Boolean);
+                const primaryProvider = providerIds[0] || auth.currentUser.providerId || '';
+                const providerLabel = formatAuthProviderLabel(primaryProvider);
+
                 await userRef.set({
                     role: role,
                     email: auth.currentUser.email || '',
                     name: auth.currentUser.displayName || '',
+                    providerId: primaryProvider,
+                    providerLabel: providerLabel,
+                    providers: providerIds,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
@@ -5365,7 +5384,8 @@
                 clientId: '',
                 clientSecret: '',
                 redirectUri: '',
-                scopes: 'openid profile email offline_access User.Read'
+                scopes: 'openid profile email offline_access User.Read',
+                allowedDomains: ['cxtech.cz']
             };
             try {
                 const stored = JSON.parse(localStorage.getItem('rackManagerM365Config') || '{}');
@@ -5388,6 +5408,7 @@
             const secretInput = document.getElementById('m365ClientSecret');
             const redirectInput = document.getElementById('m365RedirectUri');
             const scopesInput = document.getElementById('m365Scopes');
+            const allowedDomainsInput = document.getElementById('m365AllowedDomains');
             const defaultRedirect = window.location.origin + window.location.pathname;
 
             if (enableSelect) enableSelect.value = config.enabled ? '1' : '0';
@@ -5396,6 +5417,9 @@
             if (secretInput) secretInput.value = config.clientSecret || '';
             if (redirectInput) redirectInput.value = config.redirectUri || defaultRedirect;
             if (scopesInput) scopesInput.value = config.scopes || '';
+            if (allowedDomainsInput) {
+                allowedDomainsInput.value = (config.allowedDomains || []).join(', ');
+            }
         }
 
         function openM365Modal() {
@@ -5421,6 +5445,7 @@
             const secretInput = document.getElementById('m365ClientSecret');
             const redirectInput = document.getElementById('m365RedirectUri');
             const scopesInput = document.getElementById('m365Scopes');
+            const allowedDomainsInput = document.getElementById('m365AllowedDomains');
 
             const config = {
                 enabled: enableSelect ? enableSelect.value === '1' : true,
@@ -5428,14 +5453,23 @@
                 clientId: clientInput ? clientInput.value.trim() : '',
                 clientSecret: secretInput ? secretInput.value.trim() : '',
                 redirectUri: redirectInput ? redirectInput.value.trim() : '',
-                scopes: scopesInput ? scopesInput.value.trim() : ''
+                scopes: scopesInput ? scopesInput.value.trim() : '',
+                allowedDomains: normalizeDomainList(allowedDomainsInput ? allowedDomainsInput.value : '')
             };
+
+            if (config.tenantId && !isGuid(config.tenantId)) {
+                alert('Tenant ID ma neplatny format.');
+                return;
+            }
 
             if (!config.redirectUri) {
                 config.redirectUri = window.location.origin + window.location.pathname;
             }
 
             setM365Config(config);
+            if (window.updateAuthUI && window.auth) {
+                window.updateAuthUI(window.auth.currentUser);
+            }
             closeM365Modal();
         }
 
@@ -5443,6 +5477,41 @@
             localStorage.removeItem('rackManagerM365Config');
             scheduleCloudSave();
             populateM365Form();
+            if (window.updateAuthUI && window.auth) {
+                window.updateAuthUI(window.auth.currentUser);
+            }
+        }
+
+        function isGuid(value) {
+            return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
+        }
+
+        function normalizeDomain(value) {
+            return (value || '').trim().toLowerCase().replace(/^@/, '');
+        }
+
+        function normalizeDomainList(value) {
+            return (value || '')
+                .split(/[\s,;]+/)
+                .map(normalizeDomain)
+                .filter(Boolean)
+                .filter((item, index, arr) => arr.indexOf(item) === index);
+        }
+
+        function getAllowedDomains() {
+            const config = getM365Config();
+            return Array.isArray(config.allowedDomains)
+                ? config.allowedDomains.map(normalizeDomain).filter(Boolean)
+                : [];
+        }
+
+        function isDomainAllowed(email) {
+            const domains = getAllowedDomains();
+            if (!domains.length) return true;
+            const parts = (email || '').toLowerCase().split('@');
+            const domain = parts.length > 1 ? parts[1] : '';
+            if (!domain) return false;
+            return domains.includes(domain);
         }
 
         async function loadRoleManagerList() {
@@ -5538,10 +5607,13 @@
             const userRows = entries.map(([uid, user]) => {
                 const email = user.email || uid;
                 const name = user.name || '';
+                const providerId = user.providerId || (user.providers && user.providers[0]) || '';
+                const providerLabel = user.providerLabel || formatAuthProviderLabel(providerId);
                 return `
                     <tr>
                         <td>${name || '-'}</td>
                         <td>${email}</td>
+                        <td>${providerLabel}</td>
                         <td>
                             <select class="role-select" onchange="updateUserRole('${uid}', this.value)">
                                 ${roleOptions}
@@ -5570,6 +5642,7 @@
                             <tr>
                                 <th>Uzivatel</th>
                                 <th>Email / UID</th>
+                                <th>Prihlaseni</th>
                                 <th>Role</th>
                             </tr>
                         </thead>
@@ -10600,10 +10673,51 @@
 
     function loginWithGoogle() {
       var provider = new firebase.auth.GoogleAuthProvider();
+      var allowedDomains = window.getAllowedDomains ? window.getAllowedDomains() : [];
+      if (allowedDomains.length === 1) {
+        provider.setCustomParameters({ hd: allowedDomains[0] });
+      }
       auth.signInWithPopup(provider).catch(function (error) {
         console.error('Auth error:', error);
         alert('Chyba pri prihlaseni: ' + error.message);
       });
+    }
+
+    function getM365TenantFromResult(result) {
+      if (!result || !result.additionalUserInfo || !result.additionalUserInfo.profile) return '';
+      var profile = result.additionalUserInfo.profile;
+      return profile.tid || profile.tenantId || profile.tenant_id || profile.tenant || '';
+    }
+
+    function validateM365Tenant(result) {
+      var config = window.getM365Config ? window.getM365Config() : null;
+      if (!config || !config.tenantId) return true;
+      if (!window.isGuid || !window.isGuid(config.tenantId)) {
+        console.warn('Tenant ID format invalid, skip validation.');
+        return true;
+      }
+      var expected = (config.tenantId || '').toLowerCase();
+      var actual = (getM365TenantFromResult(result) || '').toLowerCase();
+      if (!actual) {
+        alert('Nepodarilo se overit tenant ID z Microsoft prihlaseni.');
+        return false;
+      }
+      if (actual !== expected) {
+        alert('Prihlaseni z jineho tenantu neni povoleno.');
+        return false;
+      }
+      return true;
+    }
+
+    function handleM365AuthResult(result) {
+      if (!result || !result.user) return;
+      var providerId = result.additionalUserInfo && result.additionalUserInfo.providerId
+        ? result.additionalUserInfo.providerId
+        : '';
+      if (providerId !== 'microsoft.com') return;
+      if (!validateM365Tenant(result)) {
+        auth.signOut();
+      }
     }
 
     function loginWithMicrosoft() {
@@ -10626,10 +10740,20 @@
       if (config && config.tenantId) {
         provider.setCustomParameters({ tenant: config.tenantId });
       }
-      auth.signInWithPopup(provider).catch(function (error) {
-        console.error('M365 auth error:', error);
-        alert('Chyba pri prihlaseni pres Microsoft 365: ' + error.message);
-      });
+      auth.signInWithPopup(provider)
+        .then(function(result) {
+          handleM365AuthResult(result);
+        })
+        .catch(function (error) {
+          var code = error && error.code ? error.code : '';
+          if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request') {
+            alert('Popup byl blokovan, pouziji presmerovani.');
+            auth.signInWithRedirect(provider);
+            return;
+          }
+          console.error('M365 auth error:', error);
+          alert('Chyba pri prihlaseni pres Microsoft 365: ' + error.message);
+        });
     }
 
     function sendMagicLink() {
@@ -10637,6 +10761,10 @@
       var email = input ? input.value.trim() : '';
       if (!email || !email.includes('@')) {
         alert('Zadejte platny email');
+        return;
+      }
+      if (window.isDomainAllowed && !window.isDomainAllowed(email)) {
+        alert('Tato domena nema povoleny pristup.');
         return;
       }
       var actionCodeSettings = {
@@ -10699,6 +10827,9 @@
     });
 
     auth.onAuthStateChanged(function (user) {
+      if (user && !enforceAllowedDomains(user)) {
+        return;
+      }
       updateAuthUI(user);
       if (window.onAuthRoleChanged) {
         window.onAuthRoleChanged(user);
@@ -10707,6 +10838,16 @@
         syncCloudOnLogin();
       }
     });
+
+    auth.getRedirectResult()
+      .then(function(result) {
+        handleM365AuthResult(result);
+      })
+      .catch(function(err) {
+        if (err && err.code) {
+          console.warn('Redirect auth error:', err.code);
+        }
+      });
 
     function requireAuth() {
       var user = auth.currentUser;
@@ -10717,6 +10858,19 @@
       return user;
     }
 
+    function enforceAllowedDomains(user) {
+      if (!user || !window.isDomainAllowed) return true;
+      var email = user.email || '';
+      var allowed = window.getAllowedDomains ? window.getAllowedDomains() : [];
+      if (allowed.length === 0) return true;
+      if (!email || !window.isDomainAllowed(email)) {
+        alert('Pristup je omezen pouze na povolene domeny.');
+        auth.signOut();
+        return false;
+      }
+      return true;
+    }
+
     window.loginWithGoogle = loginWithGoogle;
     window.loginWithMicrosoft = loginWithMicrosoft;
     window.sendMagicLink = sendMagicLink;
@@ -10725,6 +10879,10 @@
     window.closeUserMenu = closeUserMenu;
     window.requireAuth = requireAuth;
     window.enableLocalAdmin = enableLocalAdmin;
+    window.isGuid = isGuid;
+    window.updateAuthUI = updateAuthUI;
+    window.getAllowedDomains = getAllowedDomains;
+    window.isDomainAllowed = isDomainAllowed;
   }).catch(function(err) {
     console.error('Firebase config error:', err);
     alert('Firebase config error: ' + err.message);
