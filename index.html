@@ -145,7 +145,7 @@
 
         .sidebar-scroll {
             display: grid;
-            gap: 0.15rem;
+            gap: 0.1rem;
             overflow-y: auto;
             padding-right: 0.4rem;
             margin-right: -0.4rem;
@@ -154,31 +154,38 @@
 
         .sidebar-section {
             margin-bottom: 0;
-            padding: 0.05rem 0;
+            padding: 0;
         }
 
         .sidebar-section + .sidebar-section {
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding-top: 0.15rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 0.1rem;
         }
 
         .sidebar-section-title {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             text-transform: uppercase;
-            letter-spacing: 0.18em;
+            letter-spacing: 0.16em;
             color: rgba(248, 154, 85, 0.85);
             margin-bottom: 0.05rem;
             font-weight: 600;
             position: relative;
-            padding: 0.05rem 0;
+            padding: 0.35rem 0.5rem;
             background: transparent;
-            border: none;
+            border: 1px solid transparent;
+            border-radius: 10px;
             width: 100%;
             text-align: left;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .sidebar-section-title:hover {
+            background: rgba(14, 22, 38, 0.45);
+            border-color: rgba(255, 255, 255, 0.08);
         }
 
         .sidebar-section-title::before {
@@ -192,15 +199,15 @@
         }
 
         .sidebar-section-toggle {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, color 0.2s ease;
         }
 
         .sidebar-section-label {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
 
         .sidebar-section-icon {
@@ -212,15 +219,25 @@
 
         .sidebar-section-body {
             display: grid;
-            gap: 0.25rem;
+            gap: 0.2rem;
         }
 
         .sidebar-section.collapsed .sidebar-section-body {
             display: none;
         }
 
+        .sidebar-section.collapsed .sidebar-section-title {
+            background: rgba(10, 16, 28, 0.35);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
         .sidebar-section.collapsed .sidebar-section-toggle {
-            transform: rotate(-90deg);
+            transform: rotate(0deg);
+        }
+
+        .sidebar-section:not(.collapsed) .sidebar-section-toggle {
+            transform: rotate(180deg);
+            color: rgba(248, 154, 85, 0.85);
         }
 
         .section-title {
@@ -3064,6 +3081,10 @@
             font-weight: 600;
             text-transform: uppercase;
             margin-right: 0.5rem;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .no-client-warning {
@@ -3087,6 +3108,7 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 1rem;
+            padding-right: 7rem;
             transition: all 0.3s;
             cursor: pointer;
             position: relative;
@@ -3120,6 +3142,8 @@
             margin-top: 0.5rem;
             font-size: 0.875rem;
             color: var(--text-secondary);
+            align-items: center;
+            flex-wrap: wrap;
         }
         
         
@@ -3395,7 +3419,8 @@
             background: transparent;
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
-            width: 30px;
+            height: 30px;
+            min-width: 30px;
             height: 30px;
             border-radius: 4px;
             cursor: pointer;
@@ -3403,6 +3428,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0 0.35rem;
         }
         
         .btn-icon:hover {
@@ -7495,8 +7524,8 @@
                                 ${client.name}
                             </div>
                             <div class="client-actions" onclick="event.stopPropagation()">
-                                <button class="btn-icon" data-client-form-trigger="true" onclick="openClientModal('${client.id}')">E</button>
-                                <button class="btn-icon danger" onclick="deleteClient('${client.id}')">X</button>
+                                <button class="btn-icon" data-client-form-trigger="true" title="Upravit klienta" onclick="openClientModal('${client.id}')">Upr</button>
+                                <button class="btn-icon danger" title="Smazat klienta" onclick="deleteClient('${client.id}')">Smaz</button>
                             </div>
                         </div>
                         <div class="client-card-stats">
