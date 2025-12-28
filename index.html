@@ -10698,6 +10698,7 @@
       }
       var expected = (config.tenantId || '').toLowerCase();
       var actual = (getM365TenantFromResult(result) || '').toLowerCase();
+      console.log('[M365] Tenant check', { expected: expected, actual: actual });
       if (!actual) {
         alert('Nepodarilo se overit tenant ID z Microsoft prihlaseni.');
         return false;
@@ -10715,6 +10716,10 @@
         ? result.additionalUserInfo.providerId
         : '';
       if (providerId !== 'microsoft.com') return;
+      console.log('[M365] Auth result', {
+        providerId: providerId,
+        tenantId: getM365TenantFromResult(result)
+      });
       if (!validateM365Tenant(result)) {
         auth.signOut();
       }
@@ -10726,6 +10731,11 @@
         alert('M365 prihlaseni je vypnute v nastaveni.');
         return;
       }
+      console.log('[M365] Login start', {
+        tenantId: config ? config.tenantId : '',
+        redirectUri: config ? config.redirectUri : '',
+        scopes: config ? config.scopes : ''
+      });
       var provider = new firebase.auth.OAuthProvider('microsoft.com');
       var scopes = [];
       if (config && config.scopes) {
