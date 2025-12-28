@@ -701,6 +701,25 @@
             margin-top: 1rem;
         }
 
+        .m365-note {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .m365-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .m365-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
         @media (max-width: 1100px) {
             .app-shell {
                 grid-template-columns: 1fr;
@@ -3818,9 +3837,10 @@
     <div id="authOverlay" class="auth-overlay">
         <div class="auth-card">
             <h2>Prihlaseni</h2>
-            <p>Pro pristup do MSP konzole se prihlaste pres Google ucet.</p>
+            <p>Pro pristup do MSP konzole se prihlaste pres Google nebo Microsoft ucet.</p>
             <div class="auth-stack">
                 <button class="btn" onclick="loginWithGoogle()">Prihlasit pres Google</button>
+                <button class="btn btn-secondary" id="loginMicrosoftOverlayBtn" onclick="loginWithMicrosoft()">Prihlasit pres Microsoft 365</button>
                 <input type="email" id="emailLoginInput" placeholder="email@firma.cz">
                 <button class="btn btn-secondary" onclick="sendMagicLink()">Poslat magic link</button>
                 <div class="auth-hint">Magic link prijde na e-mail.</div>
@@ -3957,6 +3977,7 @@
                     <div class="sidebar-actions">
                         <button class="sidebar-action-btn" onclick="openClientManagerModal()">Sprava klientu</button>
                         <button class="sidebar-action-btn" id="roleManagerBtn" onclick="openRoleManagerModal()">Sprava roli</button>
+                        <button class="sidebar-action-btn" id="m365ManagerBtn" onclick="openM365Modal()">M365 nastaveni</button>
                         <button class="sidebar-action-btn" onclick="openModuleModal()">Kategorie zarizeni</button>
                     </div>
                 </div>
@@ -4024,6 +4045,7 @@
                         </div>
                         <div class="user-menu-actions">
                             <button class="btn-small" id="loginBtn" onclick="loginWithGoogle(); closeUserMenu()">Prihlasit</button>
+                            <button class="btn-small btn-secondary" id="loginMicrosoftBtn" onclick="loginWithMicrosoft(); closeUserMenu()">Microsoft 365</button>
                             <button class="btn btn-secondary" id="logoutBtn" onclick="logout(); closeUserMenu()" style="display: none;">Odhlasit</button>
                         </div>
                     </div>
@@ -4786,6 +4808,50 @@
         </div>
     </div>
 
+    <!-- M365 Modal -->
+    <div id="m365Modal" class="modal">
+        <div class="modal-content" style="max-width: 720px;">
+            <div class="modal-header">
+                <h2>Microsoft 365</h2>
+                <button class="modal-close" onclick="closeM365Modal()">X</button>
+            </div>
+            <div class="m365-note">Nastavte udaje pro prihlaseni a integraci Microsoft 365.<br>Pro OAuth je nutne mit zapnuty provider microsoft.com ve Firebase.</div>
+            <div class="m365-grid">
+                <div class="form-group">
+                    <label>Povolit prihlaseni pres M365</label>
+                    <select id="m365EnableLogin" class="role-select">
+                        <option value="1">Ano</option>
+                        <option value="0">Ne</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tenant ID</label>
+                    <input type="text" id="m365TenantId" placeholder="napr. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>Client ID (Application ID)</label>
+                    <input type="text" id="m365ClientId" placeholder="napr. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>Client Secret</label>
+                    <input type="password" id="m365ClientSecret" placeholder="ulozte jen na bezpecnem backendu">
+                </div>
+                <div class="form-group">
+                    <label>Redirect URI</label>
+                    <input type="text" id="m365RedirectUri" placeholder="napr. https://app.example.com/">
+                </div>
+                <div class="form-group">
+                    <label>Scopes (oddeleno mezerou)</label>
+                    <input type="text" id="m365Scopes" placeholder="openid profile email offline_access User.Read">
+                </div>
+            </div>
+            <div class="m365-actions">
+                <button class="btn btn-secondary" onclick="clearM365Config()">Vymazat</button>
+                <button class="btn" onclick="saveM365Config()">Ulozit nastaveni</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Rack Modal -->
     <div id="rackModal" class="modal">
         <div class="modal-content">
@@ -5156,6 +5222,7 @@
             const addConnectionBtn = document.getElementById('addConnectionBtn');
             const moduleButtons = document.querySelectorAll('[onclick="openModuleModal()"]');
             const roleManagerBtn = document.getElementById('roleManagerBtn');
+            const m365ManagerBtn = document.getElementById('m365ManagerBtn');
             const addTimeEntryBtn = document.getElementById('addTimeEntryBtn');
             const reportsNavBtn = document.querySelector('.view-toggle-btn[data-view="reports"]');
             const dashboardReportsBtn = document.getElementById('dashboardReportsBtn');
@@ -5166,6 +5233,9 @@
             });
             if (roleManagerBtn) {
                 roleManagerBtn.disabled = !canManageRoles();
+            }
+            if (m365ManagerBtn) {
+                m365ManagerBtn.disabled = !canManageRoles();
             }
             if (reportsNavBtn) {
                 reportsNavBtn.style.display = canViewReports() ? 'block' : 'none';
@@ -5286,6 +5356,93 @@
 
         function closeRoleManagerModal() {
             document.getElementById('roleManagerModal').classList.remove('active');
+        }
+
+        function getM365Config() {
+            const defaults = {
+                enabled: true,
+                tenantId: '',
+                clientId: '',
+                clientSecret: '',
+                redirectUri: '',
+                scopes: 'openid profile email offline_access User.Read'
+            };
+            try {
+                const stored = JSON.parse(localStorage.getItem('rackManagerM365Config') || '{}');
+                return { ...defaults, ...(stored || {}) };
+            } catch (err) {
+                return { ...defaults };
+            }
+        }
+
+        function setM365Config(config) {
+            localStorage.setItem('rackManagerM365Config', JSON.stringify(config || {}));
+            scheduleCloudSave();
+        }
+
+        function populateM365Form() {
+            const config = getM365Config();
+            const enableSelect = document.getElementById('m365EnableLogin');
+            const tenantInput = document.getElementById('m365TenantId');
+            const clientInput = document.getElementById('m365ClientId');
+            const secretInput = document.getElementById('m365ClientSecret');
+            const redirectInput = document.getElementById('m365RedirectUri');
+            const scopesInput = document.getElementById('m365Scopes');
+            const defaultRedirect = window.location.origin + window.location.pathname;
+
+            if (enableSelect) enableSelect.value = config.enabled ? '1' : '0';
+            if (tenantInput) tenantInput.value = config.tenantId || '';
+            if (clientInput) clientInput.value = config.clientId || '';
+            if (secretInput) secretInput.value = config.clientSecret || '';
+            if (redirectInput) redirectInput.value = config.redirectUri || defaultRedirect;
+            if (scopesInput) scopesInput.value = config.scopes || '';
+        }
+
+        function openM365Modal() {
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat nastaveni');
+                return;
+            }
+            const modal = document.getElementById('m365Modal');
+            if (!modal) return;
+            populateM365Form();
+            modal.classList.add('active');
+        }
+
+        function closeM365Modal() {
+            const modal = document.getElementById('m365Modal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function saveM365Config() {
+            const enableSelect = document.getElementById('m365EnableLogin');
+            const tenantInput = document.getElementById('m365TenantId');
+            const clientInput = document.getElementById('m365ClientId');
+            const secretInput = document.getElementById('m365ClientSecret');
+            const redirectInput = document.getElementById('m365RedirectUri');
+            const scopesInput = document.getElementById('m365Scopes');
+
+            const config = {
+                enabled: enableSelect ? enableSelect.value === '1' : true,
+                tenantId: tenantInput ? tenantInput.value.trim() : '',
+                clientId: clientInput ? clientInput.value.trim() : '',
+                clientSecret: secretInput ? secretInput.value.trim() : '',
+                redirectUri: redirectInput ? redirectInput.value.trim() : '',
+                scopes: scopesInput ? scopesInput.value.trim() : ''
+            };
+
+            if (!config.redirectUri) {
+                config.redirectUri = window.location.origin + window.location.pathname;
+            }
+
+            setM365Config(config);
+            closeM365Modal();
+        }
+
+        function clearM365Config() {
+            localStorage.removeItem('rackManagerM365Config');
+            scheduleCloudSave();
+            populateM365Form();
         }
 
         async function loadRoleManagerList() {
@@ -10225,6 +10382,7 @@
             const cloudClients = payload.clients || [];
             const cloudClientData = payload.clientData || {};
             const cloudLastClientId = payload.lastClientId || null;
+            const cloudM365Config = payload.m365Config || null;
 
             localStorage.setItem('rackManagerClients', JSON.stringify(cloudClients));
             localStorage.setItem('rackManagerClientData', JSON.stringify(cloudClientData));
@@ -10232,6 +10390,9 @@
                 localStorage.setItem('rackManagerLastClient', cloudLastClientId);
             } else {
                 localStorage.removeItem('rackManagerLastClient');
+            }
+            if (cloudM365Config) {
+                localStorage.setItem('rackManagerM365Config', JSON.stringify(cloudM365Config));
             }
             setLocalGlobalUpdatedAt(payload.updatedAtMs || 0);
 
@@ -10346,15 +10507,21 @@
     function updateAuthUI(user) {
       var statusEl = document.getElementById('authStatus');
       var loginBtn = document.getElementById('loginBtn');
+      var loginMicrosoftBtn = document.getElementById('loginMicrosoftBtn');
+      var loginMicrosoftOverlayBtn = document.getElementById('loginMicrosoftOverlayBtn');
       var logoutBtn = document.getElementById('logoutBtn');
       var overlay = document.getElementById('authOverlay');
       var avatarEl = document.getElementById('userMenuAvatar');
+      var m365Config = window.getM365Config ? window.getM365Config() : null;
+      var allowM365 = !m365Config || m365Config.enabled !== false;
 
       if (!statusEl || !loginBtn || !logoutBtn) return;
 
       if (!user && isLocalAdminActive()) {
         updateLocalAdminUI(true);
         loginBtn.style.display = 'none';
+        if (loginMicrosoftBtn) loginMicrosoftBtn.style.display = 'none';
+        if (loginMicrosoftOverlayBtn) loginMicrosoftOverlayBtn.style.display = allowM365 ? 'block' : 'none';
         logoutBtn.style.display = 'none';
         if (window.applyRolePermissions) {
           window.applyRolePermissions();
@@ -10366,11 +10533,15 @@
         var providerId = user.providerData && user.providerData[0] ? user.providerData[0].providerId : '';
         var providerName = providerId === 'google.com'
           ? 'Google'
-          : providerId === 'password'
-            ? 'Magic link'
-            : providerId || '';
+          : providerId === 'microsoft.com'
+            ? 'Microsoft 365'
+            : providerId === 'password'
+              ? 'Magic link'
+              : providerId || '';
         statusEl.textContent = 'Prihlasen: ' + (user.email || user.uid) + (providerName ? ' (' + providerName + ')' : '');
         loginBtn.style.display = 'none';
+        if (loginMicrosoftBtn) loginMicrosoftBtn.style.display = 'none';
+        if (loginMicrosoftOverlayBtn) loginMicrosoftOverlayBtn.style.display = allowM365 ? 'block' : 'none';
         logoutBtn.style.display = 'inline-block';
         if (avatarEl) {
           var label = user.displayName || user.email || user.uid || '';
@@ -10401,6 +10572,8 @@
       } else {
         statusEl.textContent = 'Neprihlasen';
         loginBtn.style.display = 'inline-block';
+        if (loginMicrosoftBtn) loginMicrosoftBtn.style.display = allowM365 ? 'inline-block' : 'none';
+        if (loginMicrosoftOverlayBtn) loginMicrosoftOverlayBtn.style.display = allowM365 ? 'block' : 'none';
         logoutBtn.style.display = 'none';
         if (avatarEl) avatarEl.textContent = 'NA';
         if (overlay) overlay.classList.remove('hidden');
@@ -10430,6 +10603,32 @@
       auth.signInWithPopup(provider).catch(function (error) {
         console.error('Auth error:', error);
         alert('Chyba pri prihlaseni: ' + error.message);
+      });
+    }
+
+    function loginWithMicrosoft() {
+      var config = window.getM365Config ? window.getM365Config() : null;
+      if (config && config.enabled === false) {
+        alert('M365 prihlaseni je vypnute v nastaveni.');
+        return;
+      }
+      var provider = new firebase.auth.OAuthProvider('microsoft.com');
+      var scopes = [];
+      if (config && config.scopes) {
+        scopes = config.scopes.split(/[\s,]+/).filter(Boolean);
+      }
+      if (scopes.length === 0) {
+        scopes = ['openid', 'profile', 'email', 'offline_access', 'User.Read'];
+      }
+      scopes.forEach(function(scope) {
+        provider.addScope(scope);
+      });
+      if (config && config.tenantId) {
+        provider.setCustomParameters({ tenant: config.tenantId });
+      }
+      auth.signInWithPopup(provider).catch(function (error) {
+        console.error('M365 auth error:', error);
+        alert('Chyba pri prihlaseni pres Microsoft 365: ' + error.message);
       });
     }
 
@@ -10519,6 +10718,7 @@
     }
 
     window.loginWithGoogle = loginWithGoogle;
+    window.loginWithMicrosoft = loginWithMicrosoft;
     window.sendMagicLink = sendMagicLink;
     window.logout = logout;
     window.toggleUserMenu = toggleUserMenu;
@@ -10546,11 +10746,13 @@
       var clients = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
       var clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
       var lastClientId = localStorage.getItem('rackManagerLastClient') || null;
+      var m365Config = JSON.parse(localStorage.getItem('rackManagerM365Config') || '{}');
 
       var payload = {
         clients: clients,
         clientData: clientData,
         lastClientId: lastClientId,
+        m365Config: m365Config,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         updatedAtMs: Date.now(),
         updatedBy: user.email || user.uid
