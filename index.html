@@ -11818,7 +11818,11 @@
       auth.fetchSignInMethodsForEmail(email)
         .then(function(methods) {
           if (!methods || methods.length === 0) {
-            alert('Nenasel jsem existujici metodu prihlaseni pro tento email.');
+            var domainInfo = '';
+            if (window.isDomainAllowed && !window.isDomainAllowed(email)) {
+              domainInfo = ' Email je mimo povolene domeny.';
+            }
+            alert('Nenasel jsem existujici metodu prihlaseni pro tento email (' + email + ').' + domainInfo);
             return;
           }
           var method = methods[0];
@@ -11850,9 +11854,14 @@
             scopes.forEach(function(scope) {
               provider.addScope(scope);
             });
+            var linkParams = { prompt: 'select_account' };
             if (config && config.tenantId) {
-              provider.setCustomParameters({ tenant: config.tenantId });
+              linkParams.tenant = config.tenantId;
             }
+            if (email) {
+              linkParams.login_hint = email;
+            }
+            provider.setCustomParameters(linkParams);
             return auth.signInWithPopup(provider)
               .then(function(result) {
                 if (!result || !result.user) return;
@@ -11985,9 +11994,11 @@
       scopes.forEach(function(scope) {
         provider.addScope(scope);
       });
+      var customParams = { prompt: 'select_account' };
       if (tenantToUse) {
-        provider.setCustomParameters({ tenant: tenantToUse });
+        customParams.tenant = tenantToUse;
       }
+      provider.setCustomParameters(customParams);
       auth.signInWithPopup(provider)
         .then(function(result) {
           handleM365AuthResult(result);
