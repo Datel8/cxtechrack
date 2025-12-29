@@ -444,17 +444,18 @@
         }
 
         .user-menu-btn {
-            width: 44px;
-            height: 44px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             border: 1px solid rgba(248, 154, 85, 0.4);
-            background: rgba(12, 18, 32, 0.9);
+            background: linear-gradient(140deg, rgba(20, 30, 52, 0.95), rgba(10, 16, 28, 0.92));
             color: var(--text-primary);
             display: grid;
             place-items: center;
             cursor: pointer;
             position: relative;
             transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 8px 18px rgba(6, 10, 18, 0.45);
         }
 
         .user-menu-btn:hover {
@@ -465,21 +466,21 @@
 
         .user-menu-avatar {
             font-weight: 700;
-            font-size: 0.75rem;
-            letter-spacing: 0.12em;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
         }
 
         .user-menu-logout {
             position: absolute;
-            right: -6px;
-            bottom: -6px;
-            width: 24px;
-            height: 24px;
+            right: -4px;
+            bottom: -4px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             border: none;
             background: var(--cx-orange);
             color: #111;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             font-weight: 700;
             letter-spacing: 0.08em;
             display: none;
@@ -3996,6 +3997,7 @@
                 <div class="sidebar-section-body">
                     <div class="sidebar-actions">
                         <button class="sidebar-action-btn" onclick="openClientManagerModal()">Sprava klientu</button>
+                        <button class="sidebar-action-btn" id="userManagerBtn" onclick="openRoleManagerModal()">Sprava uzivatelu</button>
                         <button class="sidebar-action-btn" id="roleManagerBtn" onclick="openRoleManagerModal()">Sprava roli</button>
                         <button class="sidebar-action-btn" id="m365ManagerBtn" onclick="openM365Modal()">M365 nastaveni</button>
                         <button class="sidebar-action-btn" onclick="openModuleModal()">Kategorie zarizeni</button>
@@ -4056,7 +4058,7 @@
                 <div class="topbar-user">
                     <button class="user-menu-btn" id="userMenuBtn" onclick="toggleUserMenu()" aria-label="Uzivatelske nastaveni" type="button">
                         <span class="user-menu-avatar" id="userMenuAvatar">NA</span>
-                        <span class="user-menu-logout" id="userMenuLogout" onclick="logout(); closeUserMenu(); event.stopPropagation();" title="Odhlasit">OUT</span>
+                        <span class="user-menu-logout" id="userMenuLogout" onclick="logout(); closeUserMenu(); event.stopPropagation();" title="Odhlasit" aria-label="Odhlasit">⏻</span>
                     </button>
                     <div class="user-menu-panel" id="userMenuPanel">
                         <div class="user-menu-title">Ucet</div>
@@ -5257,6 +5259,7 @@
             const addConnectionBtn = document.getElementById('addConnectionBtn');
             const moduleButtons = document.querySelectorAll('[onclick="openModuleModal()"]');
             const roleManagerBtn = document.getElementById('roleManagerBtn');
+            const userManagerBtn = document.getElementById('userManagerBtn');
             const m365ManagerBtn = document.getElementById('m365ManagerBtn');
             const addTimeEntryBtn = document.getElementById('addTimeEntryBtn');
             const reportsNavBtn = document.querySelector('.view-toggle-btn[data-view="reports"]');
@@ -5268,6 +5271,9 @@
             });
             if (roleManagerBtn) {
                 roleManagerBtn.disabled = !canManageRoles();
+            }
+            if (userManagerBtn) {
+                userManagerBtn.disabled = !canManageRoles();
             }
             if (m365ManagerBtn) {
                 m365ManagerBtn.disabled = !canManageRoles();
