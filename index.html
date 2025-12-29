@@ -453,6 +453,7 @@
             display: grid;
             place-items: center;
             cursor: pointer;
+            position: relative;
             transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
@@ -466,6 +467,25 @@
             font-weight: 700;
             font-size: 0.75rem;
             letter-spacing: 0.12em;
+        }
+
+        .user-menu-logout {
+            position: absolute;
+            right: -6px;
+            bottom: -6px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: none;
+            background: var(--cx-orange);
+            color: #111;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
         }
 
         .user-menu-panel {
@@ -4034,8 +4054,9 @@
         <main class="main-content">
             <div class="topbar topbar-compact">
                 <div class="topbar-user">
-                    <button class="user-menu-btn" id="userMenuBtn" onclick="toggleUserMenu()" aria-label="Uzivatelske nastaveni">
+                    <button class="user-menu-btn" id="userMenuBtn" onclick="toggleUserMenu()" aria-label="Uzivatelske nastaveni" type="button">
                         <span class="user-menu-avatar" id="userMenuAvatar">NA</span>
+                        <span class="user-menu-logout" id="userMenuLogout" onclick="logout(); closeUserMenu(); event.stopPropagation();" title="Odhlasit">OUT</span>
                     </button>
                     <div class="user-menu-panel" id="userMenuPanel">
                         <div class="user-menu-title">Ucet</div>
@@ -10591,6 +10612,7 @@
       var loginBtn = document.getElementById('loginBtn');
       var loginMicrosoftBtn = document.getElementById('loginMicrosoftBtn');
       var loginMicrosoftOverlayBtn = document.getElementById('loginMicrosoftOverlayBtn');
+      var userMenuLogout = document.getElementById('userMenuLogout');
       var logoutBtn = document.getElementById('logoutBtn');
       var overlay = document.getElementById('authOverlay');
       var avatarEl = document.getElementById('userMenuAvatar');
@@ -10605,6 +10627,7 @@
         if (loginMicrosoftBtn) loginMicrosoftBtn.style.display = 'none';
         if (loginMicrosoftOverlayBtn) loginMicrosoftOverlayBtn.style.display = allowM365 ? 'block' : 'none';
         logoutBtn.style.display = 'none';
+        if (userMenuLogout) userMenuLogout.style.display = 'none';
         if (window.applyRolePermissions) {
           window.applyRolePermissions();
         }
@@ -10625,6 +10648,7 @@
         if (loginMicrosoftBtn) loginMicrosoftBtn.style.display = 'none';
         if (loginMicrosoftOverlayBtn) loginMicrosoftOverlayBtn.style.display = allowM365 ? 'block' : 'none';
         logoutBtn.style.display = 'inline-block';
+        if (userMenuLogout) userMenuLogout.style.display = 'flex';
         if (avatarEl) {
           var label = user.displayName || user.email || user.uid || '';
           var parts = label.split(/\s+|@/).filter(Boolean);
@@ -10657,6 +10681,7 @@
         if (loginMicrosoftBtn) loginMicrosoftBtn.style.display = allowM365 ? 'inline-block' : 'none';
         if (loginMicrosoftOverlayBtn) loginMicrosoftOverlayBtn.style.display = allowM365 ? 'block' : 'none';
         logoutBtn.style.display = 'none';
+        if (userMenuLogout) userMenuLogout.style.display = 'none';
         if (avatarEl) avatarEl.textContent = 'NA';
         if (overlay) overlay.classList.remove('hidden');
         document.body.classList.add('auth-locked');
