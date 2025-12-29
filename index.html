@@ -5761,7 +5761,12 @@
 
                 const providerData = auth.currentUser.providerData || [];
                 const providerIds = providerData.map((item) => item.providerId).filter(Boolean);
-                const primaryProvider = providerIds[0] || auth.currentUser.providerId || '';
+                const preferredProvider = providerIds.includes('microsoft.com')
+                    ? 'microsoft.com'
+                    : providerIds.includes('google.com')
+                        ? 'google.com'
+                        : providerIds[0];
+                const primaryProvider = preferredProvider || auth.currentUser.providerId || '';
                 const providerLabel = formatAuthProviderLabel(primaryProvider);
 
                 await userRef.set({
@@ -11785,9 +11790,89 @@
         provider.setCustomParameters({ hd: allowedDomains[0] });
       }
       auth.signInWithPopup(provider).catch(function (error) {
+        if (handleAccountLinking(error)) {
+          return;
+        }
         console.error('Auth error:', error);
         alert('Chyba pri prihlaseni: ' + error.message);
       });
+    }
+
+    function getCredentialFromAuthError(error) {
+      if (!error) return null;
+      if (error.credential) return error.credential;
+      if (firebase.auth && firebase.auth.OAuthProvider && typeof firebase.auth.OAuthProvider.credentialFromError === 'function') {
+        return firebase.auth.OAuthProvider.credentialFromError(error);
+      }
+      return null;
+    }
+
+    function handleAccountLinking(error) {
+      if (!error || error.code !== 'auth/account-exists-with-different-credential') return false;
+      var email = error.email;
+      var pendingCred = getCredentialFromAuthError(error);
+      if (!email || !pendingCred) {
+        alert('Ucet uz existuje pod jinym prihlasenim. Prihlaste se puvodnim providerem a propojte ucty.');
+        return true;
+      }
+      auth.fetchSignInMethodsForEmail(email)
+        .then(function(methods) {
+          if (!methods || methods.length === 0) {
+            alert('Nenasel jsem existujici metodu prihlaseni pro tento email.');
+            return;
+          }
+          var method = methods[0];
+          if (method === 'google.com') {
+            var googleProvider = new firebase.auth.GoogleAuthProvider();
+            var allowed = window.getAllowedDomains ? window.getAllowedDomains() : [];
+            if (allowed.length === 1) {
+              googleProvider.setCustomParameters({ hd: allowed[0] });
+            }
+            return auth.signInWithPopup(googleProvider)
+              .then(function(result) {
+                if (!result || !result.user) return;
+                return result.user.linkWithCredential(pendingCred);
+              })
+              .then(function() {
+                alert('Ucet byl propojen. Nyni se muzete prihlasit pres oba providery.');
+              });
+          }
+          if (method === 'microsoft.com') {
+            var config = window.getM365Config ? window.getM365Config() : null;
+            var provider = new firebase.auth.OAuthProvider('microsoft.com');
+            var scopes = [];
+            if (config && config.scopes) {
+              scopes = config.scopes.split(/[\s,]+/).filter(Boolean);
+            }
+            if (scopes.length === 0) {
+              scopes = ['openid', 'profile', 'email', 'offline_access', 'User.Read'];
+            }
+            scopes.forEach(function(scope) {
+              provider.addScope(scope);
+            });
+            if (config && config.tenantId) {
+              provider.setCustomParameters({ tenant: config.tenantId });
+            }
+            return auth.signInWithPopup(provider)
+              .then(function(result) {
+                if (!result || !result.user) return;
+                return result.user.linkWithCredential(pendingCred);
+              })
+              .then(function() {
+                alert('Ucet byl propojen. Nyni se muzete prihlasit pres oba providery.');
+              });
+          }
+          if (method === 'password') {
+            alert('Tento ucet pouziva magic link. Prihlaste se magic linkem a pote zkuste M365 znovu.');
+            return;
+          }
+          alert('Ucet uz existuje pod jinym providerem: ' + method);
+        })
+        .catch(function(err) {
+          console.error('Linking error:', err);
+          alert('Chyba pri propojovani uctu: ' + (err.message || err));
+        });
+      return true;
     }
 
     function getM365TenantFromResult(result) {
@@ -11826,8 +11911,13 @@
         ? result.additionalUserInfo.providerId
         : '';
       if (providerId !== 'microsoft.com') return;
-      var credential = firebase.auth.OAuthProvider.credentialFromResult(result);
-      var accessToken = credential && credential.accessToken ? credential.accessToken : '';
+      var accessToken = '';
+      if (result && result.credential && result.credential.accessToken) {
+        accessToken = result.credential.accessToken;
+      } else if (firebase.auth && firebase.auth.OAuthProvider && typeof firebase.auth.OAuthProvider.credentialFromResult === 'function') {
+        var credential = firebase.auth.OAuthProvider.credentialFromResult(result);
+        accessToken = credential && credential.accessToken ? credential.accessToken : '';
+      }
       if (accessToken) {
         setM365AccessToken(accessToken);
       }
@@ -11880,6 +11970,9 @@
           handleM365AuthResult(result);
         })
         .catch(function (error) {
+          if (handleAccountLinking(error)) {
+            return;
+          }
           var code = error && error.code ? error.code : '';
           if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request') {
             alert('Popup byl blokovan, pouziji presmerovani.');
