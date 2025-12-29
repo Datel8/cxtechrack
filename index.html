@@ -12098,16 +12098,16 @@
       }
     });
 
-    auth.onAuthStateChanged(function (user) {
+    auth.onAuthStateChanged(async function (user) {
+      if (user && typeof syncCloudOnLogin === 'function') {
+        await syncCloudOnLogin();
+      }
       if (user && !enforceAllowedDomains(user)) {
         return;
       }
       updateAuthUI(user);
       if (window.onAuthRoleChanged) {
         window.onAuthRoleChanged(user);
-      }
-      if (user && typeof syncCloudOnLogin === 'function') {
-        syncCloudOnLogin();
       }
     });
 
