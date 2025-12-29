@@ -2449,6 +2449,262 @@
             margin-top: 1rem;
         }
 
+        #teamsView {
+            background: #f4f2ee;
+            border: none;
+            padding: 1.5rem;
+            border-radius: 18px;
+            color: #1c1c1c;
+        }
+
+        #teamsView .rack-header {
+            margin-bottom: 1.25rem;
+        }
+
+        .teams-subtitle {
+            margin-top: 0.25rem;
+            font-size: 0.9rem;
+            color: #6f6a63;
+        }
+
+        .teams-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .teams-status {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            color: #6f6a63;
+        }
+
+        .teams-status.error {
+            color: #b2542d;
+        }
+
+        .teams-layout {
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) minmax(0, 2.2fr) minmax(220px, 1fr);
+            gap: 1.25rem;
+            align-items: start;
+        }
+
+        .teams-panel {
+            background: #ffffff;
+            border: 1px solid #eee5da;
+            border-radius: 16px;
+            padding: 1rem;
+            min-height: 200px;
+        }
+
+        .teams-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .teams-tab {
+            flex: 1 1 0;
+            border: 1px solid #e7dfd4;
+            background: #fdfbf9;
+            color: #7a756e;
+            border-radius: 999px;
+            padding: 0.45rem 0.8rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .teams-tab.active {
+            background: #1f1d1b;
+            color: #ffffff;
+            border-color: #1f1d1b;
+        }
+
+        .teams-list-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #8b857d;
+            margin: 0.75rem 0 0.5rem;
+        }
+
+        .teams-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            max-height: 420px;
+            overflow: auto;
+            padding-right: 0.3rem;
+        }
+
+        .teams-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 0.6rem 0.75rem;
+            cursor: pointer;
+            background: #faf7f3;
+            color: #1c1c1c;
+        }
+
+        .teams-item small {
+            color: #8b857d;
+            font-size: 0.7rem;
+        }
+
+        .teams-item.active {
+            border-color: #f0b58f;
+            background: #fff3e9;
+        }
+
+        .teams-thread-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 600px;
+        }
+
+        .teams-thread-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-bottom: 1px solid #eee5da;
+            padding-bottom: 0.75rem;
+        }
+
+        .teams-thread-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .teams-thread-meta {
+            font-size: 0.8rem;
+            color: #8b857d;
+            margin-top: 0.15rem;
+        }
+
+        .teams-thread {
+            flex: 1 1 auto;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding-right: 0.4rem;
+        }
+
+        .teams-message {
+            background: #ffffff;
+            border: 1px solid #eee5da;
+            border-radius: 14px;
+            padding: 0.75rem 0.85rem;
+        }
+
+        .teams-message-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #8b857d;
+            margin-bottom: 0.35rem;
+        }
+
+        .teams-message-body {
+            font-size: 0.9rem;
+            color: #1c1c1c;
+            white-space: pre-wrap;
+        }
+
+        .teams-attachments {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .teams-attachment {
+            border: 1px solid #edd8c7;
+            background: #fff7f0;
+            color: #b2542d;
+            padding: 0.35rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .teams-composer {
+            border-top: 1px solid #eee5da;
+            padding-top: 0.75rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .teams-composer textarea {
+            flex: 1 1 auto;
+            min-height: 80px;
+            border: 1px solid #e7dfd4;
+            border-radius: 12px;
+            padding: 0.6rem 0.7rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .teams-preview-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .teams-preview-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .teams-preview-empty {
+            font-size: 0.8rem;
+            color: #8b857d;
+        }
+
+        .teams-preview-frame {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #eee5da;
+        }
+
+        .teams-preview-frame iframe {
+            width: 100%;
+            height: 360px;
+            border: 0;
+            background: #ffffff;
+        }
+
+        .teams-preview-actions {
+            margin-top: auto;
+        }
+
+        .teams-empty {
+            font-size: 0.85rem;
+            color: #8b857d;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        @media (max-width: 1200px) {
+            .teams-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .teams-thread-panel {
+                min-height: auto;
+            }
+        }
+
         @media (max-width: 1100px) {
             .reports-layout {
                 grid-template-columns: 1fr;
@@ -3983,6 +4239,23 @@
                 </div>
             </div>
 
+            <div class="sidebar-section collapsed" data-section="teams">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    <span class="sidebar-section-label">
+                        <svg class="sidebar-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+                        </svg>
+                        <span>Teams</span>
+                    </span>
+                    <span class="sidebar-section-toggle" aria-hidden="true"></span>
+                </button>
+                <div class="sidebar-section-body">
+                    <div class="sidebar-nav">
+                        <button class="view-toggle-btn nav-btn" data-view="teams" onclick="switchView('teams', this)">Teams hub</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="sidebar-section collapsed" data-section="admin">
                 <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
                     <span class="sidebar-section-label">
@@ -4638,6 +4911,69 @@
                     </section>
                 </div>
             </div>
+
+            <div id="teamsView" class="teams-view" style="display: none;">
+                <div class="rack-header">
+                    <div>
+                        <h2>Teams hub</h2>
+                        <div class="teams-subtitle">Channely a chaty z Microsoft 365, vcetne posilani zprav a nahledu souboru.</div>
+                    </div>
+                    <div class="teams-actions">
+                        <button class="btn-small btn-secondary" onclick="openTeamsChatModal()">Novy chat</button>
+                        <button class="btn-small btn-secondary" onclick="openTeamsChannelModal()">Novy kanal</button>
+                        <button class="btn-small" onclick="refreshTeamsData(true)">Obnovit</button>
+                    </div>
+                </div>
+                <div id="teamsStatus" class="teams-status"></div>
+                <div id="teamsAccessNote" class="empty-state" style="display: none;">
+                    <p>Pro Teams je nutne prihlaseni pres Microsoft 365 a spravne scopes.</p>
+                    <button class="btn-small" onclick="loginWithMicrosoft()">Prihlasit pres Microsoft 365</button>
+                </div>
+                <div class="teams-layout" id="teamsLayout">
+                    <aside class="teams-panel teams-sidebar">
+                        <div class="teams-tabs">
+                            <button class="teams-tab active" data-tab="chats" onclick="switchTeamsTab('chats')">Chaty</button>
+                            <button class="teams-tab" data-tab="channels" onclick="switchTeamsTab('channels')">Kanaly</button>
+                        </div>
+                        <div id="teamsChatsWrap">
+                            <div class="teams-list-title">Chaty</div>
+                            <div id="teamsChatList" class="teams-list"></div>
+                        </div>
+                        <div id="teamsChannelsWrap" style="display: none;">
+                            <div class="teams-list-title">Tymy</div>
+                            <div id="teamsTeamList" class="teams-list"></div>
+                            <div class="teams-list-title">Kanaly</div>
+                            <div id="teamsChannelList" class="teams-list"></div>
+                        </div>
+                    </aside>
+                    <section class="teams-panel teams-thread-panel">
+                        <div class="teams-thread-header">
+                            <div>
+                                <div class="teams-thread-title" id="teamsThreadTitle">Vyber chat nebo kanal</div>
+                                <div class="teams-thread-meta" id="teamsThreadMeta">-</div>
+                            </div>
+                            <div class="teams-thread-actions">
+                                <button class="btn-small" onclick="refreshTeamsMessages()">Obnovit</button>
+                            </div>
+                        </div>
+                        <div class="teams-thread" id="teamsThreadMessages"></div>
+                        <div class="teams-composer">
+                            <textarea id="teamsMessageInput" placeholder="Napis zpravu..."></textarea>
+                            <button class="btn" id="teamsSendBtn" onclick="sendTeamsMessage()">Odeslat</button>
+                        </div>
+                    </section>
+                    <aside class="teams-panel teams-preview-panel">
+                        <div class="teams-preview-title">Nahled souboru</div>
+                        <div id="teamsPreviewEmpty" class="teams-preview-empty">Vyber soubor z konverzace.</div>
+                        <div id="teamsPreviewFrameWrap" class="teams-preview-frame" style="display: none;">
+                            <iframe id="teamsPreviewFrame" title="Teams file preview"></iframe>
+                        </div>
+                        <div class="teams-preview-actions">
+                            <button class="btn-small btn-secondary" id="teamsPreviewOpenBtn" onclick="openTeamsPreviewInNewTab()" style="display: none;">Otevrit v novem okne</button>
+                        </div>
+                    </aside>
+                </div>
+            </div>
             
             <div id="topologyView" style="display: none;">
                 <!-- Topology view will be dynamically generated -->
@@ -4838,7 +5174,7 @@
                 <h2>Microsoft 365</h2>
                 <button class="modal-close" onclick="closeM365Modal()">X</button>
             </div>
-            <div class="m365-note">Nastavte udaje pro prihlaseni a integraci Microsoft 365.<br>Pro OAuth je nutne mit zapnuty provider microsoft.com ve Firebase.</div>
+            <div class="m365-note">Nastavte udaje pro prihlaseni a integraci Microsoft 365.<br>Pro OAuth je nutne mit zapnuty provider microsoft.com ve Firebase.<br>Pro Teams doporucene scopes: Chat.ReadWrite Chat.Create ChannelMessage.Read.All ChannelMessage.Send Team.ReadBasic.All Channel.ReadBasic.All Channel.Create User.Read.All Files.Read.All Sites.Read.All.</div>
             <div class="m365-grid">
                 <div class="form-group">
                     <label>Povolit prihlaseni pres M365</label>
@@ -4879,6 +5215,56 @@
                 <button class="btn btn-secondary" onclick="clearM365Config()">Vymazat</button>
                 <button class="btn" onclick="saveM365Config()">Ulozit nastaveni</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Teams Chat Modal -->
+    <div id="teamsChatModal" class="modal">
+        <div class="modal-content" style="max-width: 520px;">
+            <div class="modal-header">
+                <h2>Novy chat</h2>
+                <button class="modal-close" onclick="closeTeamsChatModal()">X</button>
+            </div>
+            <div class="form-group">
+                <label>Nazev / tema</label>
+                <input type="text" id="teamsChatTopic" placeholder="napr. Projekt Alpha">
+            </div>
+            <div class="form-group">
+                <label>Ucastnici (emaily, oddelene carkou)</label>
+                <input type="text" id="teamsChatMembers" placeholder="user1@cxtech.cz, user2@cxtech.cz">
+            </div>
+            <div class="role-note">Pri vytvoreni se automaticky prida aktualni uzivatel.</div>
+            <button class="btn" onclick="createTeamsChat()">Vytvorit chat</button>
+        </div>
+    </div>
+
+    <!-- Teams Channel Modal -->
+    <div id="teamsChannelModal" class="modal">
+        <div class="modal-content" style="max-width: 520px;">
+            <div class="modal-header">
+                <h2>Novy kanal</h2>
+                <button class="modal-close" onclick="closeTeamsChannelModal()">X</button>
+            </div>
+            <div class="form-group">
+                <label>Team</label>
+                <select id="teamsChannelTeamSelect"></select>
+            </div>
+            <div class="form-group">
+                <label>Nazev kanalu</label>
+                <input type="text" id="teamsChannelName" placeholder="napr. Support">
+            </div>
+            <div class="form-group">
+                <label>Popis</label>
+                <input type="text" id="teamsChannelDescription" placeholder="Volitelny popis kanalu">
+            </div>
+            <div class="form-group">
+                <label>Typ pristupu</label>
+                <select id="teamsChannelMembership">
+                    <option value="standard">Standard</option>
+                    <option value="private">Private</option>
+                </select>
+            </div>
+            <button class="btn" onclick="createTeamsChannel()">Vytvorit kanal</button>
         </div>
     </div>
 
@@ -5031,6 +5417,20 @@
         let timeSelectionActive = false;
         let timeViewAllClients = false;
         let timeTechnicianFilter = 'all';
+        let teamsState = {
+            tab: 'chats',
+            chats: [],
+            teams: [],
+            channelsByTeam: {},
+            selectedChatId: null,
+            selectedTeamId: null,
+            selectedChannelId: null,
+            messages: [],
+            previewUrl: '',
+            previewName: '',
+            lastLoadedAt: 0,
+            loading: false
+        };
         let cloudSaveTimer = null;
         try {
             pendingReportShareId = new URLSearchParams(window.location.search).get('reportShare');
@@ -6694,6 +7094,7 @@
             document.getElementById('reportsView').style.display = 'none';
             document.getElementById('dashboardView').style.display = 'none';
             document.getElementById('clientsView').style.display = 'none';
+            document.getElementById('teamsView').style.display = 'none';
             
             // Show selected view
             switch(view) {
@@ -6734,9 +7135,666 @@
                     reportFiltersVisible = false;
                     renderReportsView();
                     break;
+                case 'teams':
+                    document.getElementById('teamsView').style.display = 'block';
+                    renderTeamsView();
+                    break;
             }
         }
-        
+
+        // Teams integration
+        function getM365AccessToken() {
+            return sessionStorage.getItem('rackManagerM365AccessToken') || '';
+        }
+
+        function setM365AccessToken(token) {
+            if (!token) {
+                clearM365AccessToken();
+                return;
+            }
+            sessionStorage.setItem('rackManagerM365AccessToken', token);
+            sessionStorage.setItem('rackManagerM365AccessTokenAt', String(Date.now()));
+        }
+
+        function clearM365AccessToken() {
+            sessionStorage.removeItem('rackManagerM365AccessToken');
+            sessionStorage.removeItem('rackManagerM365AccessTokenAt');
+        }
+
+        function setTeamsStatus(message, isError) {
+            var statusEl = document.getElementById('teamsStatus');
+            if (!statusEl) return;
+            statusEl.textContent = message || '';
+            if (isError) {
+                statusEl.classList.add('error');
+            } else {
+                statusEl.classList.remove('error');
+            }
+        }
+
+        function renderTeamsView() {
+            var accessNote = document.getElementById('teamsAccessNote');
+            var layout = document.getElementById('teamsLayout');
+            var hasUser = window.auth && auth.currentUser;
+            var token = getM365AccessToken();
+            var hasToken = token && token.length > 20;
+
+            if (!hasUser) {
+                if (accessNote) accessNote.style.display = 'block';
+                if (layout) layout.style.display = 'none';
+                setTeamsStatus('Prihlaste se pro pristup k Teams.', true);
+                return;
+            }
+
+            if (!hasToken) {
+                if (accessNote) accessNote.style.display = 'block';
+                if (layout) layout.style.display = 'none';
+                setTeamsStatus('Chybi M365 pristupovy token. Prihlaste se pres Microsoft 365.', true);
+                return;
+            }
+
+            if (accessNote) accessNote.style.display = 'none';
+            if (layout) layout.style.display = 'grid';
+            setTeamsStatus('');
+            switchTeamsTab(teamsState.tab);
+            if (!teamsState.lastLoadedAt || Date.now() - teamsState.lastLoadedAt > 60000) {
+                loadTeamsData({ force: true });
+            }
+        }
+
+        async function graphRequest(path, options) {
+            var token = getM365AccessToken();
+            if (!token) {
+                throw new Error('M365 token missing.');
+            }
+            var config = options || {};
+            var response = await fetch('https://graph.microsoft.com/v1.0' + path, {
+                method: config.method || 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: config.body || null
+            });
+            if (response.status === 204) {
+                return {};
+            }
+            var text = await response.text();
+            var data = {};
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (err) {
+                data = { raw: text };
+            }
+            if (!response.ok) {
+                var message = data && data.error && data.error.message ? data.error.message : response.statusText;
+                var error = new Error(message || 'Graph error');
+                error.status = response.status;
+                error.code = data && data.error && data.error.code ? data.error.code : response.status;
+                throw error;
+            }
+            return data;
+        }
+
+        function handleTeamsError(err) {
+            if (!err) return;
+            var message = err.message || 'Graph error';
+            if (err.status === 401 || err.code === 'InvalidAuthenticationToken') {
+                message = 'Token pro Teams expiroval. Prihlaste se znovu.';
+            }
+            if (err.status === 403) {
+                message = 'Chybi scopes pro Teams. Zkontrolujte M365 nastaveni.';
+            }
+            setTeamsStatus(message, true);
+        }
+
+        function switchTeamsTab(tab) {
+            teamsState.tab = tab === 'channels' ? 'channels' : 'chats';
+            var chatWrap = document.getElementById('teamsChatsWrap');
+            var channelWrap = document.getElementById('teamsChannelsWrap');
+            if (chatWrap) chatWrap.style.display = teamsState.tab === 'chats' ? 'block' : 'none';
+            if (channelWrap) channelWrap.style.display = teamsState.tab === 'channels' ? 'block' : 'none';
+            document.querySelectorAll('.teams-tab').forEach(function(btn) {
+                var isActive = btn.getAttribute('data-tab') === teamsState.tab;
+                btn.classList.toggle('active', isActive);
+            });
+            renderTeamsLists();
+            if (teamsState.tab === 'channels') {
+                if (teamsState.teams.length === 0) {
+                    loadTeamsData({ force: false });
+                } else if (!teamsState.selectedTeamId && teamsState.teams[0]) {
+                    selectTeamsTeam(teamsState.teams[0].id);
+                } else {
+                    renderTeamsMessages();
+                }
+            } else if (teamsState.tab === 'chats' && teamsState.chats.length) {
+                if (!teamsState.selectedChatId) {
+                    selectTeamsChat(teamsState.chats[0].id);
+                } else {
+                    renderTeamsMessages();
+                }
+            }
+        }
+
+        async function loadTeamsData(options) {
+            if (!ensureTeamsAccess()) return;
+            var force = options && options.force;
+            if (!force && teamsState.loading) return;
+            teamsState.loading = true;
+            setTeamsStatus('Nacitam Teams data...', false);
+            try {
+                var results = await Promise.all([
+                    graphRequest('/me/chats?$top=40&$orderby=lastUpdatedDateTime desc'),
+                    graphRequest('/me/joinedTeams?$top=50')
+                ]);
+                teamsState.chats = results[0] && results[0].value ? results[0].value : [];
+                teamsState.teams = results[1] && results[1].value ? results[1].value : [];
+                teamsState.lastLoadedAt = Date.now();
+                renderTeamsLists();
+                if (teamsState.tab === 'chats' && teamsState.chats.length) {
+                    if (!teamsState.selectedChatId) {
+                        selectTeamsChat(teamsState.chats[0].id);
+                    }
+                }
+                if (teamsState.tab === 'channels' && teamsState.teams.length) {
+                    if (!teamsState.selectedTeamId) {
+                        selectTeamsTeam(teamsState.teams[0].id);
+                    }
+                }
+                setTeamsStatus('Teams data pripraveny.', false);
+            } catch (err) {
+                handleTeamsError(err);
+            } finally {
+                teamsState.loading = false;
+            }
+        }
+
+        function refreshTeamsData(force) {
+            return loadTeamsData({ force: !!force });
+        }
+
+        function ensureTeamsAccess() {
+            var hasUser = window.auth && auth.currentUser;
+            if (!hasUser) {
+                setTeamsStatus('Prihlaste se pro pristup k Teams.', true);
+                return false;
+            }
+            if (!getM365AccessToken()) {
+                setTeamsStatus('Chybi M365 pristupovy token. Prihlaste se pres Microsoft 365.', true);
+                return false;
+            }
+            return true;
+        }
+
+        function renderTeamsLists() {
+            renderTeamsChatList();
+            renderTeamsTeamList();
+            renderTeamsChannelList();
+        }
+
+        function renderTeamsChatList() {
+            var list = document.getElementById('teamsChatList');
+            if (!list) return;
+            list.innerHTML = '';
+            if (teamsState.tab !== 'chats') return;
+            if (!teamsState.chats.length) {
+                list.innerHTML = '<div class="teams-empty">Zadne chaty.</div>';
+                return;
+            }
+            teamsState.chats.forEach(function(chat, index) {
+                var item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'teams-item' + (chat.id === teamsState.selectedChatId ? ' active' : '');
+                var title = document.createElement('div');
+                var label = chat.topic || (chat.chatType === 'oneOnOne' ? '1:1 chat' : 'Group chat');
+                title.textContent = label || ('Chat ' + (index + 1));
+                var meta = document.createElement('small');
+                meta.textContent = chat.chatType || 'chat';
+                item.appendChild(title);
+                item.appendChild(meta);
+                item.addEventListener('click', function() {
+                    selectTeamsChat(chat.id);
+                });
+                list.appendChild(item);
+            });
+        }
+
+        function renderTeamsTeamList() {
+            var list = document.getElementById('teamsTeamList');
+            if (!list) return;
+            list.innerHTML = '';
+            if (teamsState.tab !== 'channels') return;
+            if (!teamsState.teams.length) {
+                list.innerHTML = '<div class="teams-empty">Zadne teamy.</div>';
+                return;
+            }
+            teamsState.teams.forEach(function(team) {
+                var item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'teams-item' + (team.id === teamsState.selectedTeamId ? ' active' : '');
+                var title = document.createElement('div');
+                title.textContent = team.displayName || 'Team';
+                var meta = document.createElement('small');
+                meta.textContent = team.description || 'Team';
+                item.appendChild(title);
+                item.appendChild(meta);
+                item.addEventListener('click', function() {
+                    selectTeamsTeam(team.id);
+                });
+                list.appendChild(item);
+            });
+        }
+
+        function renderTeamsChannelList() {
+            var list = document.getElementById('teamsChannelList');
+            if (!list) return;
+            list.innerHTML = '';
+            if (teamsState.tab !== 'channels') return;
+            var teamId = teamsState.selectedTeamId;
+            if (!teamId) {
+                list.innerHTML = '<div class="teams-empty">Vyber team.</div>';
+                return;
+            }
+            var channels = teamsState.channelsByTeam[teamId] || [];
+            if (!channels.length) {
+                list.innerHTML = '<div class="teams-empty">Zadne kanaly.</div>';
+                return;
+            }
+            channels.forEach(function(channel) {
+                var item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'teams-item' + (channel.id === teamsState.selectedChannelId ? ' active' : '');
+                var title = document.createElement('div');
+                title.textContent = channel.displayName || 'Channel';
+                var meta = document.createElement('small');
+                meta.textContent = channel.description || channel.membershipType || 'Channel';
+                item.appendChild(title);
+                item.appendChild(meta);
+                item.addEventListener('click', function() {
+                    selectTeamsChannel(channel.id);
+                });
+                list.appendChild(item);
+            });
+        }
+
+        function setTeamsThreadHeader(title, meta) {
+            var titleEl = document.getElementById('teamsThreadTitle');
+            var metaEl = document.getElementById('teamsThreadMeta');
+            if (titleEl) titleEl.textContent = title || 'Vyber chat nebo kanal';
+            if (metaEl) metaEl.textContent = meta || '-';
+        }
+
+        function selectTeamsChat(chatId) {
+            teamsState.selectedChatId = chatId;
+            clearTeamsPreview();
+            var chat = teamsState.chats.find(function(item) { return item.id === chatId; });
+            setTeamsThreadHeader(chat && chat.topic ? chat.topic : 'Chat', chat && chat.chatType ? chat.chatType : '');
+            renderTeamsChatList();
+            loadTeamsMessages();
+        }
+
+        async function selectTeamsTeam(teamId) {
+            teamsState.selectedTeamId = teamId;
+            teamsState.selectedChannelId = null;
+            clearTeamsPreview();
+            renderTeamsTeamList();
+            setTeamsThreadHeader('Vyber kanal', '');
+            await loadTeamsChannels(teamId);
+        }
+
+        function selectTeamsChannel(channelId) {
+            teamsState.selectedChannelId = channelId;
+            clearTeamsPreview();
+            var team = teamsState.teams.find(function(item) { return item.id === teamsState.selectedTeamId; });
+            var channels = teamsState.channelsByTeam[teamsState.selectedTeamId] || [];
+            var channel = channels.find(function(item) { return item.id === channelId; });
+            setTeamsThreadHeader(channel && channel.displayName ? channel.displayName : 'Channel', team && team.displayName ? team.displayName : '');
+            renderTeamsChannelList();
+            loadTeamsMessages();
+        }
+
+        async function loadTeamsChannels(teamId) {
+            if (!teamId) return;
+            if (teamsState.channelsByTeam[teamId]) {
+                renderTeamsChannelList();
+                if (!teamsState.selectedChannelId && teamsState.channelsByTeam[teamId][0]) {
+                    selectTeamsChannel(teamsState.channelsByTeam[teamId][0].id);
+                }
+                return;
+            }
+            setTeamsStatus('Nacitam kanaly...', false);
+            try {
+                var data = await graphRequest('/teams/' + teamId + '/channels?$top=50');
+                teamsState.channelsByTeam[teamId] = data.value || [];
+                renderTeamsChannelList();
+                if (!teamsState.selectedChannelId && teamsState.channelsByTeam[teamId][0]) {
+                    selectTeamsChannel(teamsState.channelsByTeam[teamId][0].id);
+                }
+                setTeamsStatus('Kanaly pripraveny.', false);
+            } catch (err) {
+                handleTeamsError(err);
+            }
+        }
+
+        function refreshTeamsMessages() {
+            return loadTeamsMessages();
+        }
+
+        async function loadTeamsMessages() {
+            if (!ensureTeamsAccess()) return;
+            var path = '';
+            if (teamsState.tab === 'chats') {
+                if (!teamsState.selectedChatId) {
+                    setTeamsThreadHeader('Vyber chat nebo kanal', '');
+                    return;
+                }
+                path = '/chats/' + teamsState.selectedChatId + '/messages?$top=50&$expand=attachments';
+            } else {
+                if (!teamsState.selectedTeamId || !teamsState.selectedChannelId) {
+                    setTeamsThreadHeader('Vyber kanal', '');
+                    return;
+                }
+                path = '/teams/' + teamsState.selectedTeamId + '/channels/' + teamsState.selectedChannelId + '/messages?$top=50&$expand=attachments';
+            }
+            setTeamsStatus('Nacitam zpravy...', false);
+            try {
+                var data = await graphRequest(path);
+                teamsState.messages = data.value || [];
+                teamsState.messages.sort(function(a, b) {
+                    return new Date(a.createdDateTime || 0) - new Date(b.createdDateTime || 0);
+                });
+                renderTeamsMessages();
+                setTeamsStatus('Zpravy pripraveny.', false);
+            } catch (err) {
+                handleTeamsError(err);
+            }
+        }
+
+        function renderTeamsMessages() {
+            var container = document.getElementById('teamsThreadMessages');
+            if (!container) return;
+            container.innerHTML = '';
+            if (!teamsState.messages.length) {
+                container.innerHTML = '<div class="teams-empty">Zadne zpravy.</div>';
+                return;
+            }
+            teamsState.messages.forEach(function(message) {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'teams-message';
+                var header = document.createElement('div');
+                header.className = 'teams-message-header';
+                var author = message.from && message.from.user ? message.from.user.displayName : 'Unknown';
+                var time = formatTeamsDate(message.createdDateTime);
+                header.textContent = author + ' · ' + time;
+                var body = document.createElement('div');
+                body.className = 'teams-message-body';
+                body.textContent = stripTeamsHtml(message.body && message.body.content ? message.body.content : '');
+                wrapper.appendChild(header);
+                wrapper.appendChild(body);
+                var attachments = message.attachments || [];
+                if (attachments.length) {
+                    var attWrap = document.createElement('div');
+                    attWrap.className = 'teams-attachments';
+                    attachments.forEach(function(att) {
+                        var btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'teams-attachment';
+                        btn.textContent = att.name || 'Attachment';
+                        btn.addEventListener('click', function() {
+                            openTeamsPreviewFromAttachment(att);
+                        });
+                        attWrap.appendChild(btn);
+                    });
+                    wrapper.appendChild(attWrap);
+                }
+                container.appendChild(wrapper);
+            });
+        }
+
+        function stripTeamsHtml(html) {
+            var temp = document.createElement('div');
+            temp.innerHTML = html || '';
+            return (temp.textContent || '').trim();
+        }
+
+        function formatTeamsDate(value) {
+            if (!value) return '';
+            var date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            return date.toLocaleString();
+        }
+
+        function getTeamsAttachmentUrl(att) {
+            if (!att) return '';
+            if (att.contentUrl) return att.contentUrl;
+            if (att.content) {
+                if (typeof att.content === 'string') {
+                    try {
+                        var parsed = JSON.parse(att.content);
+                        return parsed.webUrl || parsed.contentUrl || '';
+                    } catch (err) {
+                        return '';
+                    }
+                }
+                if (typeof att.content === 'object') {
+                    return att.content.webUrl || att.content.contentUrl || '';
+                }
+            }
+            return '';
+        }
+
+        function openTeamsPreviewFromAttachment(att) {
+            var url = getTeamsAttachmentUrl(att);
+            if (!url) {
+                setTeamsStatus('Soubor nema dostupny odkaz.', true);
+                return;
+            }
+            openTeamsPreview(url, att.name || 'Attachment');
+        }
+
+        function openTeamsPreview(url, name) {
+            teamsState.previewUrl = url || '';
+            teamsState.previewName = name || '';
+            renderTeamsPreview();
+        }
+
+        function clearTeamsPreview() {
+            teamsState.previewUrl = '';
+            teamsState.previewName = '';
+            renderTeamsPreview();
+        }
+
+        function renderTeamsPreview() {
+            var wrap = document.getElementById('teamsPreviewFrameWrap');
+            var frame = document.getElementById('teamsPreviewFrame');
+            var empty = document.getElementById('teamsPreviewEmpty');
+            var openBtn = document.getElementById('teamsPreviewOpenBtn');
+            if (!wrap || !frame || !empty || !openBtn) return;
+            if (!teamsState.previewUrl) {
+                frame.src = 'about:blank';
+                wrap.style.display = 'none';
+                empty.style.display = 'block';
+                openBtn.style.display = 'none';
+                return;
+            }
+            frame.src = teamsState.previewUrl;
+            wrap.style.display = 'block';
+            empty.style.display = 'none';
+            openBtn.style.display = 'inline-flex';
+        }
+
+        function openTeamsPreviewInNewTab() {
+            if (!teamsState.previewUrl) return;
+            window.open(teamsState.previewUrl, '_blank');
+        }
+
+        async function sendTeamsMessage() {
+            if (!ensureTeamsAccess()) return;
+            var input = document.getElementById('teamsMessageInput');
+            if (!input) return;
+            var message = input.value.trim();
+            if (!message) return;
+            var sendBtn = document.getElementById('teamsSendBtn');
+            if (sendBtn) sendBtn.disabled = true;
+            try {
+                var payload = {
+                    body: {
+                        contentType: 'text',
+                        content: message
+                    }
+                };
+                var path = '';
+                if (teamsState.tab === 'chats') {
+                    if (!teamsState.selectedChatId) {
+                        throw new Error('Vyber chat pro odeslani zpravy.');
+                    }
+                    path = '/chats/' + teamsState.selectedChatId + '/messages';
+                } else {
+                    if (!teamsState.selectedTeamId || !teamsState.selectedChannelId) {
+                        throw new Error('Vyber kanal pro odeslani zpravy.');
+                    }
+                    path = '/teams/' + teamsState.selectedTeamId + '/channels/' + teamsState.selectedChannelId + '/messages';
+                }
+                await graphRequest(path, { method: 'POST', body: JSON.stringify(payload) });
+                input.value = '';
+                await loadTeamsMessages();
+            } catch (err) {
+                handleTeamsError(err);
+            } finally {
+                if (sendBtn) sendBtn.disabled = false;
+            }
+        }
+
+        function openTeamsChatModal() {
+            if (!ensureTeamsAccess()) return;
+            var modal = document.getElementById('teamsChatModal');
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeTeamsChatModal() {
+            var modal = document.getElementById('teamsChatModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        async function createTeamsChat() {
+            if (!ensureTeamsAccess()) return;
+            var topicInput = document.getElementById('teamsChatTopic');
+            var membersInput = document.getElementById('teamsChatMembers');
+            var topic = topicInput ? topicInput.value.trim() : '';
+            var membersRaw = membersInput ? membersInput.value.trim() : '';
+            var members = membersRaw ? membersRaw.split(',').map(function(item) { return item.trim().toLowerCase(); }).filter(Boolean) : [];
+            var currentUser = auth && auth.currentUser ? (auth.currentUser.email || '').toLowerCase() : '';
+            if (currentUser && !members.includes(currentUser)) {
+                members.unshift(currentUser);
+            }
+            members = Array.from(new Set(members));
+            if (members.length < 2) {
+                alert('Pro novy chat zadejte alespon jednoho dalsiho uzivatele.');
+                return;
+            }
+            var payload = {
+                chatType: members.length > 2 ? 'group' : 'oneOnOne',
+                members: members.map(function(email) {
+                    return {
+                        '@odata.type': '#microsoft.graph.aadUserConversationMember',
+                        roles: ['owner'],
+                        'user@odata.bind': "https://graph.microsoft.com/v1.0/users('" + email + "')"
+                    };
+                })
+            };
+            if (topic) payload.topic = topic;
+            setTeamsStatus('Vytvarim chat...', false);
+            try {
+                var chat = await graphRequest('/chats', { method: 'POST', body: JSON.stringify(payload) });
+                closeTeamsChatModal();
+                if (topicInput) topicInput.value = '';
+                if (membersInput) membersInput.value = '';
+                await loadTeamsData({ force: true });
+                if (chat && chat.id) {
+                    teamsState.tab = 'chats';
+                    switchTeamsTab('chats');
+                    selectTeamsChat(chat.id);
+                }
+                setTeamsStatus('Chat vytvoren.', false);
+            } catch (err) {
+                handleTeamsError(err);
+            }
+        }
+
+        async function openTeamsChannelModal() {
+            if (!ensureTeamsAccess()) return;
+            if (!teamsState.teams.length) {
+                await loadTeamsData({ force: true });
+            }
+            var select = document.getElementById('teamsChannelTeamSelect');
+            if (select) {
+                select.innerHTML = '';
+                if (!teamsState.teams.length) {
+                    var option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Zadne teamy';
+                    select.appendChild(option);
+                } else {
+                    teamsState.teams.forEach(function(team) {
+                        var option = document.createElement('option');
+                        option.value = team.id;
+                        option.textContent = team.displayName || team.id;
+                        select.appendChild(option);
+                    });
+                }
+            }
+            var modal = document.getElementById('teamsChannelModal');
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeTeamsChannelModal() {
+            var modal = document.getElementById('teamsChannelModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        async function createTeamsChannel() {
+            if (!ensureTeamsAccess()) return;
+            var teamSelect = document.getElementById('teamsChannelTeamSelect');
+            var nameInput = document.getElementById('teamsChannelName');
+            var descInput = document.getElementById('teamsChannelDescription');
+            var membershipSelect = document.getElementById('teamsChannelMembership');
+            var teamId = teamSelect ? teamSelect.value : '';
+            var name = nameInput ? nameInput.value.trim() : '';
+            var description = descInput ? descInput.value.trim() : '';
+            var membershipType = membershipSelect ? membershipSelect.value : 'standard';
+            if (!teamId) {
+                alert('Vyberte team.');
+                return;
+            }
+            if (!name) {
+                alert('Zadejte nazev kanalu.');
+                return;
+            }
+            var payload = {
+                displayName: name,
+                description: description || null,
+                membershipType: membershipType
+            };
+            setTeamsStatus('Vytvarim kanal...', false);
+            try {
+                var channel = await graphRequest('/teams/' + teamId + '/channels', { method: 'POST', body: JSON.stringify(payload) });
+                closeTeamsChannelModal();
+                if (nameInput) nameInput.value = '';
+                if (descInput) descInput.value = '';
+                teamsState.channelsByTeam[teamId] = null;
+                await loadTeamsChannels(teamId);
+                if (channel && channel.id) {
+                    teamsState.tab = 'channels';
+                    switchTeamsTab('channels');
+                    teamsState.selectedTeamId = teamId;
+                    selectTeamsChannel(channel.id);
+                }
+                setTeamsStatus('Kanal vytvoren.', false);
+            } catch (err) {
+                handleTeamsError(err);
+            }
+        }
+
         // Network Visualization
         let networkCanvas, networkCtx;
         let networkNodes = [];
@@ -10641,7 +11699,12 @@
       }
 
       if (user) {
-        var providerId = user.providerData && user.providerData[0] ? user.providerData[0].providerId : '';
+        var providerData = user.providerData || [];
+        var providerId = providerData[0] ? providerData[0].providerId : '';
+        var hasMicrosoft = providerData.some(function(item) { return item.providerId === 'microsoft.com'; });
+        if (!hasMicrosoft) {
+          clearM365AccessToken();
+        }
         var providerName = providerId === 'google.com'
           ? 'Google'
           : providerId === 'microsoft.com'
@@ -10682,6 +11745,7 @@
           applyReportShareFromUrl();
         }
       } else {
+        clearM365AccessToken();
         statusEl.textContent = 'Neprihlasen';
         loginBtn.style.display = 'inline-block';
         if (loginMicrosoftBtn) loginMicrosoftBtn.style.display = allowM365 ? 'inline-block' : 'none';
@@ -10708,6 +11772,9 @@
       }
       if (window.applyRolePermissions) {
         window.applyRolePermissions();
+      }
+      if (window.renderTeamsView && typeof currentView !== 'undefined' && currentView === 'teams') {
+        renderTeamsView();
       }
     }
 
@@ -10759,6 +11826,11 @@
         ? result.additionalUserInfo.providerId
         : '';
       if (providerId !== 'microsoft.com') return;
+      var credential = firebase.auth.OAuthProvider.credentialFromResult(result);
+      var accessToken = credential && credential.accessToken ? credential.accessToken : '';
+      if (accessToken) {
+        setM365AccessToken(accessToken);
+      }
       console.log('[M365] Auth result', {
         providerId: providerId,
         tenantId: getM365TenantFromResult(result)
