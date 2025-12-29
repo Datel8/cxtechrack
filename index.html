@@ -11822,6 +11822,16 @@
             if (window.isDomainAllowed && !window.isDomainAllowed(email)) {
               domainInfo = ' Email je mimo povolene domeny.';
             }
+            if (pendingCred) {
+              return auth.signInWithCredential(pendingCred)
+                .then(function() {
+                  alert('Prihlaseni bylo obnoveno primo z Microsoft kredencialu.');
+                })
+                .catch(function(err) {
+                  console.error('Credential sign-in error:', err);
+                  alert('Nenasel jsem existujici metodu prihlaseni pro tento email (' + email + ').' + domainInfo + ' Pokud byl ucet smazan ve Firebase Auth, zkuste ho odstranit i z providers a prihlasit se znovu.');
+                });
+            }
             alert('Nenasel jsem existujici metodu prihlaseni pro tento email (' + email + ').' + domainInfo);
             return;
           }
