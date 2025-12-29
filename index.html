@@ -10700,7 +10700,10 @@
 
     function validateM365Tenant(result) {
       var config = window.getM365Config ? window.getM365Config() : null;
-      if (!config || !config.tenantId) return true;
+      if (!config || !config.tenantId) {
+        console.log('[M365] Tenant check skipped (no tenantId configured).');
+        return true;
+      }
       if (!window.isGuid || !window.isGuid(config.tenantId)) {
         console.warn('Tenant ID format invalid, skip validation.');
         return true;
@@ -10740,8 +10743,18 @@
         alert('M365 prihlaseni je vypnute v nastaveni.');
         return;
       }
+      var tenantToUse = config && config.tenantId ? config.tenantId : '';
+      var tenantSource = 'config';
+      if (!tenantToUse && window.getAllowedDomains) {
+        var domains = window.getAllowedDomains();
+        if (domains && domains.length === 1) {
+          tenantToUse = domains[0];
+          tenantSource = 'allowed-domain';
+        }
+      }
       console.log('[M365] Login start', {
-        tenantId: config ? config.tenantId : '',
+        tenantId: tenantToUse,
+        tenantSource: tenantToUse ? tenantSource : 'common',
         redirectUri: config ? config.redirectUri : '',
         scopes: config ? config.scopes : ''
       });
@@ -10756,8 +10769,8 @@
       scopes.forEach(function(scope) {
         provider.addScope(scope);
       });
-      if (config && config.tenantId) {
-        provider.setCustomParameters({ tenant: config.tenantId });
+      if (tenantToUse) {
+        provider.setCustomParameters({ tenant: tenantToUse });
       }
       auth.signInWithPopup(provider)
         .then(function(result) {
