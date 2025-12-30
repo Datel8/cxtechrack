@@ -7218,6 +7218,16 @@
             return query ? base + '?' + query : base;
         }
 
+        function stripGraphOrderBy(path) {
+            if (!path || path.indexOf('?') === -1) return path;
+            var parts = path.split('?');
+            var base = parts[0];
+            var params = new URLSearchParams(parts.slice(1).join('?'));
+            params.delete('$orderby');
+            var query = params.toString();
+            return query ? base + '?' + query : base;
+        }
+
         async function graphRequest(path, options) {
             var token = getM365AccessToken();
             if (!token) {
@@ -7250,6 +7260,9 @@
                 error.code = data && data.error && data.error.code ? data.error.code : response.status;
                 if (retryTop && path.indexOf('$top') !== -1 && message && message.indexOf('Query option') !== -1 && message.indexOf('Top') !== -1) {
                     return graphRequest(stripGraphTop(path), Object.assign({}, config, { retryTop: false }));
+                }
+                if (retryTop && path.indexOf('$orderby') !== -1 && message && message.indexOf('order by') !== -1) {
+                    return graphRequest(stripGraphOrderBy(path), Object.assign({}, config, { retryTop: false }));
                 }
                 throw error;
             }
