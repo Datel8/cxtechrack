@@ -7343,7 +7343,7 @@
             setTeamsStatus('Nacitam Teams data...', false);
             try {
                 var results = await Promise.all([
-                    graphRequest('/me/chats?$top=40&$orderby=lastUpdatedDateTime desc'),
+                    graphRequest('/me/chats?$top=40'),
                     graphRequest('/me/joinedTeams?$top=50')
                 ]);
                 teamsState.chats = results[0] && results[0].value ? results[0].value : [];
@@ -7551,13 +7551,13 @@
                     setTeamsThreadHeader('Vyber chat nebo kanal', '');
                     return;
                 }
-                path = '/chats/' + teamsState.selectedChatId + '/messages?$top=50&$expand=attachments';
+                path = '/chats/' + teamsState.selectedChatId + '/messages';
             } else {
                 if (!teamsState.selectedTeamId || !teamsState.selectedChannelId) {
                     setTeamsThreadHeader('Vyber kanal', '');
                     return;
                 }
-                path = '/teams/' + teamsState.selectedTeamId + '/channels/' + teamsState.selectedChannelId + '/messages?$top=50&$expand=attachments';
+                path = '/teams/' + teamsState.selectedTeamId + '/channels/' + teamsState.selectedChannelId + '/messages';
             }
             setTeamsStatus('Nacitam zpravy...', false);
             try {
@@ -7618,6 +7618,15 @@
             var temp = document.createElement('div');
             temp.innerHTML = html || '';
             return (temp.textContent || '').trim();
+        }
+
+        function escapeHtml(value) {
+            return (value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         function buildTeamsMessageText(message) {
@@ -7758,8 +7767,8 @@
             try {
                 var payload = {
                     body: {
-                        contentType: 'text',
-                        content: message
+                        contentType: 'html',
+                        content: escapeHtml(message).replace(/\n/g, '<br>')
                     }
                 };
                 var path = '';
