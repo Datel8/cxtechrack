@@ -7208,12 +7208,23 @@
             }
         }
 
+        function stripGraphTop(path) {
+            if (!path || path.indexOf('?') === -1) return path;
+            var parts = path.split('?');
+            var base = parts[0];
+            var params = new URLSearchParams(parts.slice(1).join('?'));
+            params.delete('$top');
+            var query = params.toString();
+            return query ? base + '?' + query : base;
+        }
+
         async function graphRequest(path, options) {
             var token = getM365AccessToken();
             if (!token) {
                 throw new Error('M365 token missing.');
             }
             var config = options || {};
+            var retryTop = config.retryTop !== false;
             var response = await fetch('https://graph.microsoft.com/v1.0' + path, {
                 method: config.method || 'GET',
                 headers: {
@@ -7237,6 +7248,9 @@
                 var error = new Error(message || 'Graph error');
                 error.status = response.status;
                 error.code = data && data.error && data.error.code ? data.error.code : response.status;
+                if (retryTop && path.indexOf('$top') !== -1 && message && message.indexOf('Query option') !== -1 && message.indexOf('Top') !== -1) {
+                    return graphRequest(stripGraphTop(path), Object.assign({}, config, { retryTop: false }));
+                }
                 throw error;
             }
             return data;
