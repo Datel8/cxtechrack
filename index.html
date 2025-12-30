@@ -2558,7 +2558,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 0.5rem;
-            margin: 0.85rem 0 0.4rem;
+            margin-bottom: 0.5rem;
             color: #6f6a63;
             font-size: 0.7rem;
             text-transform: uppercase;
@@ -2567,6 +2567,16 @@
 
         .teams-section-title {
             font-weight: 600;
+        }
+
+        .teams-section-count {
+            margin-left: 0.4rem;
+            background: #f0b58f;
+            color: #4a2a16;
+            border-radius: 999px;
+            padding: 0.05rem 0.45rem;
+            font-size: 0.6rem;
+            letter-spacing: 0.08em;
         }
 
         .teams-section-remove {
@@ -2597,6 +2607,74 @@
             margin-bottom: 0.4rem;
         }
 
+        .teams-chat-group {
+            border: 1px solid #eee5da;
+            border-radius: 14px;
+            padding: 0.65rem;
+            background: #ffffff;
+            margin-bottom: 0.75rem;
+        }
+
+        .teams-chat-group-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .teams-item {
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 0.6rem 0.75rem;
+            cursor: pointer;
+            background: #faf7f3;
+            color: #1c1c1c;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .teams-item:hover {
+            border-color: #f0b58f;
+            background: #fff2e8;
+        }
+
+        .teams-item.active {
+            border-color: #f0b58f;
+            background: #fff3e9;
+        }
+
+        .teams-item-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            align-items: center;
+        }
+
+        .teams-tag {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: #f1ece6;
+            color: #8b857d;
+            border-radius: 999px;
+            padding: 0.1rem 0.45rem;
+        }
+
+        .teams-tag-strong {
+            background: #ffe7d5;
+            color: #a2542d;
+        }
+
+        .teams-item .teams-section-select {
+            display: none;
+        }
+
+        .teams-item:hover .teams-section-select,
+        .teams-item:focus-within .teams-section-select,
+        .teams-item.active .teams-section-select {
+            display: block;
+        }
+
         .teams-list {
             display: flex;
             flex-direction: column;
@@ -2604,28 +2682,6 @@
             max-height: 420px;
             overflow: auto;
             padding-right: 0.3rem;
-        }
-
-        .teams-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-            border: 1px solid transparent;
-            border-radius: 12px;
-            padding: 0.6rem 0.75rem;
-            cursor: pointer;
-            background: #faf7f3;
-            color: #1c1c1c;
-        }
-
-        .teams-item small {
-            color: #8b857d;
-            font-size: 0.7rem;
-        }
-
-        .teams-item.active {
-            border-color: #f0b58f;
-            background: #fff3e9;
         }
 
         .teams-thread-panel {
@@ -7551,51 +7607,70 @@
                 }
             });
 
-            var groupChats = unassigned.filter(function(chat) { return chat.chatType !== 'oneOnOne'; });
-            var oneOnOneChats = unassigned.filter(function(chat) { return chat.chatType === 'oneOnOne'; });
-
-            renderTeamsChatSection(list, 'Hromadne chaty', false);
-            if (!groupChats.length) {
-                appendSectionEmpty(list, 'Zadne hromadne chaty.');
-            } else {
-                groupChats.forEach(function(chat) {
-                    list.appendChild(buildTeamsChatItem(chat));
-                });
-            }
-
-            renderTeamsChatSection(list, '1v1 chaty', false);
-            if (!oneOnOneChats.length) {
-                appendSectionEmpty(list, 'Zadne 1v1 chaty.');
-            } else {
-                oneOnOneChats.forEach(function(chat) {
-                    list.appendChild(buildTeamsChatItem(chat));
-                });
-            }
-
             if (customSections.length) {
-                renderTeamsChatSection(list, 'Vlastni sekce', true);
                 customSections.forEach(function(section) {
-                    renderTeamsChatSection(list, section, false, function() {
+                    var items = assignedSections[section] || [];
+                    var body = appendChatGroup(list, section, items.length, function() {
                         removeTeamsSection(section);
                     });
-                    var items = assignedSections[section] || [];
                     if (!items.length) {
-                        appendSectionEmpty(list, 'Zatim bez chatu.');
+                        appendSectionEmpty(body, 'Zatim bez chatu.');
                     } else {
                         items.forEach(function(chat) {
-                            list.appendChild(buildTeamsChatItem(chat));
+                            body.appendChild(buildTeamsChatItem(chat));
                         });
                     }
                 });
             }
+
+            var groupChats = unassigned.filter(function(chat) { return chat.chatType !== 'oneOnOne'; });
+            var oneOnOneChats = unassigned.filter(function(chat) { return chat.chatType === 'oneOnOne'; });
+
+            var groupBody = appendChatGroup(list, 'Hromadne chaty', groupChats.length);
+            if (!groupChats.length) {
+                appendSectionEmpty(groupBody, 'Zadne hromadne chaty.');
+            } else {
+                groupChats.forEach(function(chat) {
+                    groupBody.appendChild(buildTeamsChatItem(chat));
+                });
+            }
+
+            var oneBody = appendChatGroup(list, '1v1 chaty', oneOnOneChats.length);
+            if (!oneOnOneChats.length) {
+                appendSectionEmpty(oneBody, 'Zadne 1v1 chaty.');
+            } else {
+                oneOnOneChats.forEach(function(chat) {
+                    oneBody.appendChild(buildTeamsChatItem(chat));
+                });
+            }
         }
 
-        function renderTeamsChatSection(container, title, isMain, onRemove) {
+        function appendChatGroup(container, title, count, onRemove) {
+            var group = document.createElement('div');
+            group.className = 'teams-chat-group';
+            var head = buildTeamsChatSection(title, count, onRemove);
+            group.appendChild(head);
+            var body = document.createElement('div');
+            body.className = 'teams-chat-group-body';
+            group.appendChild(body);
+            container.appendChild(group);
+            return body;
+        }
+
+        function buildTeamsChatSection(title, count, onRemove) {
             var head = document.createElement('div');
             head.className = 'teams-section-head';
             var label = document.createElement('div');
             label.className = 'teams-section-title';
-            label.textContent = title;
+            var titleSpan = document.createElement('span');
+            titleSpan.textContent = title;
+            label.appendChild(titleSpan);
+            if (typeof count === 'number') {
+                var countEl = document.createElement('span');
+                countEl.className = 'teams-section-count';
+                countEl.textContent = String(count);
+                label.appendChild(countEl);
+            }
             head.appendChild(label);
             if (onRemove) {
                 var removeBtn = document.createElement('button');
@@ -7607,12 +7682,8 @@
                     onRemove();
                 });
                 head.appendChild(removeBtn);
-            } else if (isMain) {
-                var note = document.createElement('div');
-                note.textContent = '';
-                head.appendChild(note);
             }
-            container.appendChild(head);
+            return head;
         }
 
         function appendSectionEmpty(container, text) {
@@ -7629,8 +7700,19 @@
             var title = document.createElement('div');
             var label = getChatDisplayName(chat) || (chat.chatType === 'oneOnOne' ? '1:1 chat' : 'Group chat');
             title.textContent = label;
-            var meta = document.createElement('small');
-            meta.textContent = chat.chatType || 'chat';
+            var meta = document.createElement('div');
+            meta.className = 'teams-item-meta';
+            var typeTag = document.createElement('span');
+            typeTag.className = 'teams-tag' + (chat.chatType === 'oneOnOne' ? ' teams-tag-strong' : '');
+            typeTag.textContent = chat.chatType === 'oneOnOne' ? '1v1' : 'Skupina';
+            meta.appendChild(typeTag);
+            var dateTag = formatTeamsDateShort(chat.lastUpdatedDateTime);
+            if (dateTag) {
+                var timeTag = document.createElement('span');
+                timeTag.className = 'teams-tag';
+                timeTag.textContent = dateTag;
+                meta.appendChild(timeTag);
+            }
             item.appendChild(title);
             item.appendChild(meta);
 
@@ -7668,6 +7750,13 @@
                 }
             });
             return item;
+        }
+
+        function formatTeamsDateShort(value) {
+            if (!value) return '';
+            var date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            return date.toLocaleDateString();
         }
 
         function renderTeamsTeamList() {
