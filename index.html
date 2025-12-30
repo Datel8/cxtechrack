@@ -2533,6 +2533,70 @@
             margin: 0.75rem 0 0.5rem;
         }
 
+        .teams-section-manager {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+            margin-bottom: 0.6rem;
+        }
+
+        .teams-section-input {
+            flex: 1 1 auto;
+            border: 1px solid #e7dfd4;
+            border-radius: 10px;
+            padding: 0.35rem 0.6rem;
+            font-size: 0.8rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .teams-section-add {
+            white-space: nowrap;
+        }
+
+        .teams-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin: 0.85rem 0 0.4rem;
+            color: #6f6a63;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+        }
+
+        .teams-section-title {
+            font-weight: 600;
+        }
+
+        .teams-section-remove {
+            background: transparent;
+            border: 1px solid #e7dfd4;
+            color: #8b857d;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            padding: 0.1rem 0.45rem;
+            cursor: pointer;
+        }
+
+        .teams-section-select {
+            margin-top: 0.4rem;
+            width: 100%;
+            border: 1px solid #e7dfd4;
+            border-radius: 8px;
+            padding: 0.25rem 0.4rem;
+            font-size: 0.7rem;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #6f6a63;
+            background: #fffaf5;
+        }
+
+        .teams-section-empty {
+            font-size: 0.75rem;
+            color: #9b948c;
+            margin-bottom: 0.4rem;
+        }
+
         .teams-list {
             display: flex;
             flex-direction: column;
@@ -4919,7 +4983,7 @@
                         <div class="teams-subtitle">Channely a chaty z Microsoft 365, vcetne posilani zprav a nahledu souboru.</div>
                     </div>
                     <div class="teams-actions">
-                        <button class="btn-small btn-secondary" onclick="loginWithMicrosoft({ forceConsent: true })">Obnovit souhlas</button>
+                        <button class="btn-small btn-secondary" onclick="loginWithMicrosoft({ forceConsent: true, includeTeams: true })">Obnovit souhlas</button>
                         <button class="btn-small btn-secondary" onclick="openTeamsChatModal()">Novy chat</button>
                         <button class="btn-small btn-secondary" onclick="openTeamsChannelModal()">Novy kanal</button>
                         <button class="btn-small" onclick="refreshTeamsData(true)">Obnovit</button>
@@ -4938,6 +5002,10 @@
                         </div>
                         <div id="teamsChatsWrap">
                             <div class="teams-list-title">Chaty</div>
+                            <div class="teams-section-manager">
+                                <input type="text" id="teamsSectionInput" class="teams-section-input" placeholder="Nova sekce...">
+                                <button class="btn-small teams-section-add" onclick="addTeamsSection()">Pridat</button>
+                            </div>
                             <div id="teamsChatList" class="teams-list"></div>
                         </div>
                         <div id="teamsChannelsWrap" style="display: none;">
@@ -5424,6 +5492,9 @@
             teams: [],
             channelsByTeam: {},
             chatMembersById: {},
+            customSections: [],
+            chatSectionMap: {},
+            sectionsLoaded: false,
             selectedChatId: null,
             selectedTeamId: null,
             selectedChannelId: null,
@@ -7203,10 +7274,73 @@
             if (accessNote) accessNote.style.display = 'none';
             if (layout) layout.style.display = 'grid';
             setTeamsStatus('');
+            if (!teamsState.sectionsLoaded) {
+                loadTeamsSectionState();
+            }
             switchTeamsTab(teamsState.tab);
             if (!teamsState.lastLoadedAt || Date.now() - teamsState.lastLoadedAt > 60000) {
                 loadTeamsData({ force: true });
             }
+        }
+
+        function loadTeamsSectionState() {
+            try {
+                teamsState.customSections = JSON.parse(localStorage.getItem('rackManagerTeamsSections') || '[]') || [];
+            } catch (err) {
+                teamsState.customSections = [];
+            }
+            try {
+                teamsState.chatSectionMap = JSON.parse(localStorage.getItem('rackManagerTeamsChatSections') || '{}') || {};
+            } catch (err) {
+                teamsState.chatSectionMap = {};
+            }
+            teamsState.sectionsLoaded = true;
+        }
+
+        function saveTeamsSectionState() {
+            localStorage.setItem('rackManagerTeamsSections', JSON.stringify(teamsState.customSections || []));
+            localStorage.setItem('rackManagerTeamsChatSections', JSON.stringify(teamsState.chatSectionMap || {}));
+        }
+
+        function addTeamsSection() {
+            var input = document.getElementById('teamsSectionInput');
+            if (!input) return;
+            var name = (input.value || '').trim();
+            if (!name) return;
+            if (!teamsState.customSections.includes(name)) {
+                teamsState.customSections.push(name);
+                saveTeamsSectionState();
+                renderTeamsChatList();
+            }
+            input.value = '';
+        }
+
+        function removeTeamsSection(name) {
+            teamsState.customSections = teamsState.customSections.filter(function(item) { return item !== name; });
+            Object.keys(teamsState.chatSectionMap || {}).forEach(function(chatId) {
+                if (teamsState.chatSectionMap[chatId] === name) {
+                    delete teamsState.chatSectionMap[chatId];
+                }
+            });
+            saveTeamsSectionState();
+            renderTeamsChatList();
+        }
+
+        function setChatSection(chatId, sectionName) {
+            if (!chatId) return;
+            if (!sectionName) {
+                delete teamsState.chatSectionMap[chatId];
+            } else {
+                teamsState.chatSectionMap[chatId] = sectionName;
+            }
+            saveTeamsSectionState();
+            renderTeamsChatList();
+        }
+
+        function getChatSection(chatId) {
+            return teamsState.chatSectionMap && teamsState.chatSectionMap[chatId]
+                ? teamsState.chatSectionMap[chatId]
+                : '';
         }
 
         function stripGraphTop(path) {
@@ -7257,7 +7391,7 @@
                 throw new Error('M365 token missing.');
             }
             var config = options || {};
-            var retryTop = config.retryTop !== false;
+            var retry = config.retry || { top: true, orderby: true, expandAttachments: true };
             var response = await fetch('https://graph.microsoft.com/v1.0' + path, {
                 method: config.method || 'GET',
                 headers: {
@@ -7281,14 +7415,14 @@
                 var error = new Error(message || 'Graph error');
                 error.status = response.status;
                 error.code = data && data.error && data.error.code ? data.error.code : response.status;
-                if (retryTop && path.indexOf('$top') !== -1 && message && message.indexOf('Query option') !== -1 && message.indexOf('Top') !== -1) {
-                    return graphRequest(stripGraphTop(path), Object.assign({}, config, { retryTop: false }));
+                if (retry.top && path.indexOf('$top') !== -1 && message && message.indexOf('Query option') !== -1 && message.indexOf('Top') !== -1) {
+                    return graphRequest(stripGraphTop(path), Object.assign({}, config, { retry: Object.assign({}, retry, { top: false }) }));
                 }
-                if (retryTop && path.indexOf('$orderby') !== -1 && message && message.indexOf('order by') !== -1) {
-                    return graphRequest(stripGraphOrderBy(path), Object.assign({}, config, { retryTop: false }));
+                if (retry.orderby && path.indexOf('$orderby') !== -1 && message && message.indexOf('order by') !== -1) {
+                    return graphRequest(stripGraphOrderBy(path), Object.assign({}, config, { retry: Object.assign({}, retry, { orderby: false }) }));
                 }
-                if (retryTop && path.indexOf('$expand') !== -1 && message && message.indexOf('expand') !== -1 && message.indexOf('attachments') !== -1) {
-                    return graphRequest(stripGraphExpandAttachments(path), Object.assign({}, config, { retryTop: false }));
+                if (retry.expandAttachments && path.indexOf('$expand') !== -1 && message && message.indexOf('expand') !== -1 && message.indexOf('attachments') !== -1) {
+                    return graphRequest(stripGraphExpandAttachments(path), Object.assign({}, config, { retry: Object.assign({}, retry, { expandAttachments: false }) }));
                 }
                 throw error;
             }
@@ -7400,22 +7534,140 @@
                 list.innerHTML = '<div class="teams-empty">Zadne chaty.</div>';
                 return;
             }
-            teamsState.chats.forEach(function(chat, index) {
-                var item = document.createElement('button');
-                item.type = 'button';
-                item.className = 'teams-item' + (chat.id === teamsState.selectedChatId ? ' active' : '');
-                var title = document.createElement('div');
-                var label = getChatDisplayName(chat) || (chat.chatType === 'oneOnOne' ? '1:1 chat' : 'Group chat');
-                title.textContent = label || ('Chat ' + (index + 1));
-                var meta = document.createElement('small');
-                meta.textContent = chat.chatType || 'chat';
-                item.appendChild(title);
-                item.appendChild(meta);
-                item.addEventListener('click', function() {
-                    selectTeamsChat(chat.id);
-                });
-                list.appendChild(item);
+            var assignedMap = teamsState.chatSectionMap || {};
+            var customSections = teamsState.customSections || [];
+            var assignedSections = {};
+            customSections.forEach(function(section) {
+                assignedSections[section] = [];
             });
+
+            var unassigned = [];
+            teamsState.chats.forEach(function(chat) {
+                var section = assignedMap[chat.id];
+                if (section && assignedSections[section]) {
+                    assignedSections[section].push(chat);
+                } else {
+                    unassigned.push(chat);
+                }
+            });
+
+            var groupChats = unassigned.filter(function(chat) { return chat.chatType !== 'oneOnOne'; });
+            var oneOnOneChats = unassigned.filter(function(chat) { return chat.chatType === 'oneOnOne'; });
+
+            renderTeamsChatSection(list, 'Hromadne chaty', false);
+            if (!groupChats.length) {
+                appendSectionEmpty(list, 'Zadne hromadne chaty.');
+            } else {
+                groupChats.forEach(function(chat) {
+                    list.appendChild(buildTeamsChatItem(chat));
+                });
+            }
+
+            renderTeamsChatSection(list, '1v1 chaty', false);
+            if (!oneOnOneChats.length) {
+                appendSectionEmpty(list, 'Zadne 1v1 chaty.');
+            } else {
+                oneOnOneChats.forEach(function(chat) {
+                    list.appendChild(buildTeamsChatItem(chat));
+                });
+            }
+
+            if (customSections.length) {
+                renderTeamsChatSection(list, 'Vlastni sekce', true);
+                customSections.forEach(function(section) {
+                    renderTeamsChatSection(list, section, false, function() {
+                        removeTeamsSection(section);
+                    });
+                    var items = assignedSections[section] || [];
+                    if (!items.length) {
+                        appendSectionEmpty(list, 'Zatim bez chatu.');
+                    } else {
+                        items.forEach(function(chat) {
+                            list.appendChild(buildTeamsChatItem(chat));
+                        });
+                    }
+                });
+            }
+        }
+
+        function renderTeamsChatSection(container, title, isMain, onRemove) {
+            var head = document.createElement('div');
+            head.className = 'teams-section-head';
+            var label = document.createElement('div');
+            label.className = 'teams-section-title';
+            label.textContent = title;
+            head.appendChild(label);
+            if (onRemove) {
+                var removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'teams-section-remove';
+                removeBtn.textContent = 'Smazat';
+                removeBtn.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    onRemove();
+                });
+                head.appendChild(removeBtn);
+            } else if (isMain) {
+                var note = document.createElement('div');
+                note.textContent = '';
+                head.appendChild(note);
+            }
+            container.appendChild(head);
+        }
+
+        function appendSectionEmpty(container, text) {
+            var empty = document.createElement('div');
+            empty.className = 'teams-section-empty';
+            empty.textContent = text;
+            container.appendChild(empty);
+        }
+
+        function buildTeamsChatItem(chat) {
+            var item = document.createElement('div');
+            item.className = 'teams-item' + (chat.id === teamsState.selectedChatId ? ' active' : '');
+            item.tabIndex = 0;
+            var title = document.createElement('div');
+            var label = getChatDisplayName(chat) || (chat.chatType === 'oneOnOne' ? '1:1 chat' : 'Group chat');
+            title.textContent = label;
+            var meta = document.createElement('small');
+            meta.textContent = chat.chatType || 'chat';
+            item.appendChild(title);
+            item.appendChild(meta);
+
+            if (teamsState.customSections && teamsState.customSections.length) {
+                var select = document.createElement('select');
+                select.className = 'teams-section-select';
+                var optNone = document.createElement('option');
+                optNone.value = '';
+                optNone.textContent = 'Bez sekce';
+                select.appendChild(optNone);
+                teamsState.customSections.forEach(function(section) {
+                    var opt = document.createElement('option');
+                    opt.value = section;
+                    opt.textContent = section;
+                    select.appendChild(opt);
+                });
+                select.value = getChatSection(chat.id);
+                select.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
+                select.addEventListener('change', function(event) {
+                    event.stopPropagation();
+                    setChatSection(chat.id, select.value);
+                });
+                item.appendChild(select);
+            }
+
+            item.addEventListener('click', function() {
+                selectTeamsChat(chat.id);
+            });
+            item.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    selectTeamsChat(chat.id);
+                }
+            });
+            return item;
         }
 
         function renderTeamsTeamList() {
@@ -7681,7 +7933,10 @@
                     setTeamsThreadHeader(displayName, 'oneOnOne');
                 }
             } catch (err) {
-                teamsState.chatMembersById[chatId] = { displayName: 'Chat' };
+                if (err && err.status === 403) {
+                    setTeamsStatus('Chybi scope ChatMember.Read.All pro nazvy 1:1 chatu.', true);
+                }
+                teamsState.chatMembersById[chatId] = { displayName: '1:1 chat' };
             }
         }
 
@@ -12095,6 +12350,33 @@
       }
     }
 
+    function getTeamsRequiredScopes() {
+      return [
+        'Chat.ReadWrite',
+        'Chat.Create',
+        'ChatMember.Read.All',
+        'ChannelMessage.Read.All',
+        'ChannelMessage.Send',
+        'Team.ReadBasic.All',
+        'Channel.ReadBasic.All',
+        'Channel.Create',
+        'User.Read.All',
+        'Files.Read.All',
+        'Sites.Read.All'
+      ];
+    }
+
+    function mergeScopes(baseScopes, extraScopes) {
+      var combined = (baseScopes || []).concat(extraScopes || []);
+      var seen = {};
+      return combined.filter(function(scope) {
+        if (!scope) return false;
+        if (seen[scope]) return false;
+        seen[scope] = true;
+        return true;
+      });
+    }
+
     function loginWithMicrosoft(options) {
       var opts = options || {};
       var config = window.getM365Config ? window.getM365Config() : null;
@@ -12124,6 +12406,9 @@
       }
       if (scopes.length === 0) {
         scopes = ['openid', 'profile', 'email', 'offline_access', 'User.Read'];
+      }
+      if (opts.includeTeams) {
+        scopes = mergeScopes(scopes, getTeamsRequiredScopes());
       }
       scopes.forEach(function(scope) {
         provider.addScope(scope);
