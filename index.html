@@ -2467,6 +2467,14 @@
             color: #6f6a63;
         }
 
+        .teams-header {
+            background: #ffffff;
+            border: 1px solid #eadfd2;
+            border-radius: 18px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
         .teams-actions {
             display: flex;
             flex-wrap: wrap;
@@ -2733,6 +2741,7 @@
             display: flex;
             gap: 0.6rem;
             align-items: flex-start;
+            position: relative;
         }
 
         .teams-message-row.me {
@@ -2814,15 +2823,149 @@
             gap: 0.75rem;
         }
 
-        .teams-composer textarea {
+        .teams-composer input {
             flex: 1 1 auto;
-            min-height: 80px;
             border: none;
             border-radius: 14px;
-            padding: 0.75rem 0.9rem;
+            padding: 0.9rem 1rem;
             font-family: 'Space Grotesk', sans-serif;
             font-size: 0.9rem;
             background: #efe9e3;
+        }
+
+        .teams-message-actions {
+            position: absolute;
+            top: -10px;
+            right: -60px;
+            display: flex;
+            gap: 0.35rem;
+            padding: 0.25rem 0.35rem;
+            background: #ffffff;
+            border: 1px solid #eadfd2;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(22, 18, 14, 0.1);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .teams-message-row:hover .teams-message-actions {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .teams-message-bubble.me .teams-message-actions {
+            right: auto;
+            left: -60px;
+        }
+
+        .teams-action-btn {
+            border: none;
+            background: transparent;
+            padding: 0.2rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .teams-emoji-picker {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.4rem;
+            background: #ffffff;
+            border: 1px solid #eadfd2;
+            border-radius: 12px;
+            box-shadow: 0 14px 30px rgba(22, 18, 14, 0.12);
+            z-index: 10;
+        }
+
+        .teams-message-bubble.me .teams-emoji-picker {
+            right: auto;
+            left: 0;
+        }
+
+        .teams-emoji-picker button {
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .teams-reactions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.4rem;
+        }
+
+        .teams-reaction {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            border-radius: 999px;
+            border: 1px solid #eadfd2;
+            background: #f3ece6;
+            padding: 0.15rem 0.45rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .teams-reaction.active {
+            border-color: #f0b58f;
+            background: #ffe7d5;
+        }
+
+        .teams-reply-preview {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-top: 1px solid #eee5da;
+            border-bottom: 1px solid #eee5da;
+            background: #f8f4f0;
+        }
+
+        .teams-reply-text {
+            flex: 1 1 auto;
+        }
+
+        .teams-reply-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #9b948c;
+        }
+
+        .teams-reply-author {
+            font-weight: 600;
+            color: #a2542d;
+            font-size: 0.85rem;
+        }
+
+        .teams-reply-snippet {
+            font-size: 0.8rem;
+            color: #6f6a63;
+            margin-top: 0.15rem;
+        }
+
+        .teams-message-reply {
+            font-size: 0.75rem;
+            color: #a2542d;
+            background: #fff1e4;
+            border-radius: 10px;
+            padding: 0.35rem 0.5rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .teams-reply-close {
+            border: none;
+            background: transparent;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #9b948c;
         }
 
         .teams-preview-panel {
@@ -2839,6 +2982,23 @@
         .teams-preview-empty {
             font-size: 0.8rem;
             color: #8b857d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        .teams-preview-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            background: #efe9e3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
         }
 
         .teams-preview-frame {
@@ -5015,7 +5175,7 @@
             </div>
 
             <div id="reportsView" class="time-tracking" style="display: none;">
-                <div class="rack-header">
+                <div class="rack-header teams-header">
                     <h2>Live reporty</h2>
                 </div>
                 <div id="reportsAccessNote" class="empty-state" style="display: none;">
@@ -5135,14 +5295,26 @@
                             </div>
                         </div>
                         <div class="teams-thread" id="teamsThreadMessages"></div>
+                        <div class="teams-reply-preview" id="teamsReplyPreview" style="display: none;">
+                            <div class="teams-reply-text">
+                                <div class="teams-reply-label">Odpovidate na</div>
+                                <div class="teams-reply-author" id="teamsReplyAuthor">-</div>
+                                <div class="teams-reply-snippet" id="teamsReplySnippet">-</div>
+                            </div>
+                            <button class="teams-reply-close" type="button" onclick="clearTeamsReply()">✕</button>
+                        </div>
                         <div class="teams-composer">
-                            <textarea id="teamsMessageInput" placeholder="Napis zpravu..."></textarea>
+                            <input type="text" id="teamsMessageInput" placeholder="Napis zpravu..." onkeydown="if(event.key==='Enter'){sendTeamsMessage();}">
                             <button class="btn" id="teamsSendBtn" onclick="sendTeamsMessage()">Odeslat</button>
                         </div>
                     </section>
                     <aside class="teams-panel teams-preview-panel">
                         <div class="teams-preview-title">Nahled souboru</div>
-                        <div id="teamsPreviewEmpty" class="teams-preview-empty">Vyber soubor z konverzace.</div>
+                        <div id="teamsPreviewEmpty" class="teams-preview-empty">
+                            <div class="teams-preview-icon">📄</div>
+                            <div>Vyber soubor z konverzace.</div>
+                            <button class="btn-small btn-secondary" type="button" disabled>Nahrat soubor</button>
+                        </div>
                         <div id="teamsPreviewFrameWrap" class="teams-preview-frame" style="display: none;">
                             <iframe id="teamsPreviewFrame" title="Teams file preview"></iframe>
                         </div>
@@ -5607,6 +5779,11 @@
             graphUser: null,
             senderColors: {},
             searchQuery: '',
+            messageReactions: {},
+            activeEmojiPicker: null,
+            replyToMessage: null,
+            localMessages: [],
+            messageReplies: {},
             selectedChatId: null,
             selectedTeamId: null,
             selectedChannelId: null,
@@ -7390,6 +7567,7 @@
                 loadTeamsSectionState();
             }
             switchTeamsTab(teamsState.tab);
+            renderTeamsReplyPreview();
             if (!teamsState.lastLoadedAt || Date.now() - teamsState.lastLoadedAt > 60000) {
                 loadTeamsData({ force: true });
             }
@@ -7954,6 +8132,8 @@
         function selectTeamsChat(chatId) {
             teamsState.selectedChatId = chatId;
             clearTeamsPreview();
+            teamsState.activeEmojiPicker = null;
+            clearTeamsReply();
             var chat = teamsState.chats.find(function(item) { return item.id === chatId; });
             var label = chat ? getChatDisplayName(chat) : '';
             setTeamsThreadHeader(label || 'Chat', chat && chat.chatType ? chat.chatType : '');
@@ -7976,6 +8156,8 @@
         function selectTeamsChannel(channelId) {
             teamsState.selectedChannelId = channelId;
             clearTeamsPreview();
+            teamsState.activeEmojiPicker = null;
+            clearTeamsReply();
             var team = teamsState.teams.find(function(item) { return item.id === teamsState.selectedTeamId; });
             var channels = teamsState.channelsByTeam[teamsState.selectedTeamId] || [];
             var channel = channels.find(function(item) { return item.id === channelId; });
@@ -8030,13 +8212,14 @@
             setTeamsStatus('Nacitam zpravy...', false);
             try {
                 var data = await graphRequest(path);
-                teamsState.messages = (data.value || []).map(function(item) {
-                    item._attachmentsLoaded = false;
-                    return item;
-                });
-                teamsState.messages.sort(function(a, b) {
-                    return new Date(a.createdDateTime || 0) - new Date(b.createdDateTime || 0);
-                });
+            teamsState.messages = (data.value || []).map(function(item) {
+                item._attachmentsLoaded = false;
+                return item;
+            });
+            teamsState.localMessages = [];
+            teamsState.messages.sort(function(a, b) {
+                return new Date(a.createdDateTime || 0) - new Date(b.createdDateTime || 0);
+            });
                 renderTeamsMessages();
                 setTeamsStatus('Zpravy pripraveny.', false);
             } catch (err) {
@@ -8048,16 +8231,19 @@
             var container = document.getElementById('teamsThreadMessages');
             if (!container) return;
             container.innerHTML = '';
-            if (!teamsState.messages.length) {
+            var allMessages = mergeTeamsMessages();
+            if (!allMessages.length) {
                 container.innerHTML = '<div class="teams-empty">Zadne zpravy.</div>';
                 return;
             }
-            teamsState.messages.forEach(function(message) {
+            allMessages.forEach(function(message) {
                 var isMine = isTeamsMessageFromCurrentUser(message);
                 var row = document.createElement('div');
                 row.className = 'teams-message-row' + (isMine ? ' me' : '');
                 var bubble = document.createElement('div');
                 bubble.className = 'teams-message-bubble' + (isMine ? ' me' : '');
+                bubble.style.borderLeft = '4px solid ' + getTeamsSenderColor(message);
+                bubble.style.position = 'relative';
 
                 var header = document.createElement('div');
                 header.className = 'teams-message-header';
@@ -8072,12 +8258,60 @@
                 header.appendChild(authorEl);
                 header.appendChild(timeEl);
 
+                var replyData = getTeamsMessageReply(message.id);
+                if (replyData) {
+                    var replyWrap = document.createElement('div');
+                    replyWrap.className = 'teams-message-reply';
+                    replyWrap.textContent = replyData.author + ': ' + (replyData.content || 'Prazdna zprava');
+                    bubble.appendChild(replyWrap);
+                }
+
                 var body = document.createElement('div');
                 body.className = 'teams-message-body';
                 body.textContent = buildTeamsMessageText(message);
 
                 bubble.appendChild(header);
                 bubble.appendChild(body);
+
+                var actions = document.createElement('div');
+                actions.className = 'teams-message-actions';
+                var reactBtn = document.createElement('button');
+                reactBtn.type = 'button';
+                reactBtn.className = 'teams-action-btn';
+                reactBtn.textContent = '🙂';
+                reactBtn.title = 'Reagovat';
+                reactBtn.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    toggleTeamsEmojiPicker(message.id);
+                });
+                var replyBtn = document.createElement('button');
+                replyBtn.type = 'button';
+                replyBtn.className = 'teams-action-btn';
+                replyBtn.textContent = '↩';
+                replyBtn.title = 'Odpovedet';
+                replyBtn.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    setTeamsReply(message);
+                });
+                actions.appendChild(reactBtn);
+                actions.appendChild(replyBtn);
+                bubble.appendChild(actions);
+
+                if (teamsState.activeEmojiPicker === message.id) {
+                    var picker = document.createElement('div');
+                    picker.className = 'teams-emoji-picker';
+                    getTeamsQuickEmojis().forEach(function(emoji) {
+                        var emojiBtn = document.createElement('button');
+                        emojiBtn.type = 'button';
+                        emojiBtn.textContent = emoji;
+                        emojiBtn.addEventListener('click', function(event) {
+                            event.stopPropagation();
+                            handleTeamsReaction(message.id, emoji);
+                        });
+                        picker.appendChild(emojiBtn);
+                    });
+                    bubble.appendChild(picker);
+                }
 
                 var attachments = message.attachments || [];
                 if (attachments.length) {
@@ -8116,6 +8350,24 @@
                     bubble.appendChild(loadWrap);
                 }
 
+                var reactions = getTeamsMessageReactions(message.id);
+                if (reactions.length) {
+                    var reactionsWrap = document.createElement('div');
+                    reactionsWrap.className = 'teams-reactions';
+                    reactions.forEach(function(reaction) {
+                        var reactionBtn = document.createElement('button');
+                        reactionBtn.type = 'button';
+                        reactionBtn.className = 'teams-reaction' + (reaction.reacted ? ' active' : '');
+                        reactionBtn.textContent = reaction.emoji + ' ' + reaction.count;
+                        reactionBtn.addEventListener('click', function(event) {
+                            event.stopPropagation();
+                            handleTeamsReaction(message.id, reaction.emoji);
+                        });
+                        reactionsWrap.appendChild(reactionBtn);
+                    });
+                    bubble.appendChild(reactionsWrap);
+                }
+
                 var avatar = document.createElement('div');
                 avatar.className = 'teams-avatar';
                 avatar.style.background = getTeamsSenderColor(message);
@@ -8130,6 +8382,90 @@
                 }
                 container.appendChild(row);
             });
+        }
+
+        function mergeTeamsMessages() {
+            var base = teamsState.messages || [];
+            var locals = teamsState.localMessages || [];
+            if (!locals.length) return base;
+            var merged = base.slice();
+            locals.forEach(function(local) {
+                var exists = base.some(function(msg) {
+                    var author = msg.from && msg.from.user ? msg.from.user.displayName : '';
+                    var content = buildTeamsMessageText(msg);
+                    if (!author || !content) return false;
+                    return author === local.author && content === local.content;
+                });
+                if (!exists) merged.push(local);
+            });
+            return merged;
+        }
+
+        function getTeamsQuickEmojis() {
+            return ['👍', '❤️', '😂', '😮', '😢', '🙏', '✅', '🔥'];
+        }
+
+        function getTeamsMessageReactions(messageId) {
+            return teamsState.messageReactions && teamsState.messageReactions[messageId]
+                ? teamsState.messageReactions[messageId]
+                : [];
+        }
+
+        function handleTeamsReaction(messageId, emoji) {
+            var reactions = getTeamsMessageReactions(messageId);
+            var existing = reactions.find(function(r) { return r.emoji === emoji; });
+            var updated = reactions.slice();
+            if (existing) {
+                updated = updated.map(function(r) {
+                    if (r.emoji !== emoji) return r;
+                    var nextCount = r.reacted ? r.count - 1 : r.count + 1;
+                    return { emoji: r.emoji, count: Math.max(nextCount, 0), reacted: !r.reacted };
+                }).filter(function(r) { return r.count > 0; });
+            } else {
+                updated.push({ emoji: emoji, count: 1, reacted: true });
+            }
+            teamsState.messageReactions = teamsState.messageReactions || {};
+            teamsState.messageReactions[messageId] = updated;
+            teamsState.activeEmojiPicker = null;
+            renderTeamsMessages();
+        }
+
+        function toggleTeamsEmojiPicker(messageId) {
+            teamsState.activeEmojiPicker = teamsState.activeEmojiPicker === messageId ? null : messageId;
+            renderTeamsMessages();
+        }
+
+        function setTeamsReply(message) {
+            if (!message) return;
+            var author = message.from && message.from.user ? message.from.user.displayName : 'Unknown';
+            var content = buildTeamsMessageText(message);
+            teamsState.replyToMessage = { id: message.id, author: author, content: content };
+            renderTeamsReplyPreview();
+        }
+
+        function clearTeamsReply() {
+            teamsState.replyToMessage = null;
+            renderTeamsReplyPreview();
+        }
+
+        function renderTeamsReplyPreview() {
+            var preview = document.getElementById('teamsReplyPreview');
+            var authorEl = document.getElementById('teamsReplyAuthor');
+            var snippetEl = document.getElementById('teamsReplySnippet');
+            if (!preview || !authorEl || !snippetEl) return;
+            if (!teamsState.replyToMessage) {
+                preview.style.display = 'none';
+                return;
+            }
+            preview.style.display = 'flex';
+            authorEl.textContent = teamsState.replyToMessage.author;
+            snippetEl.textContent = teamsState.replyToMessage.content || 'Prazdna zprava';
+        }
+
+        function getTeamsMessageReply(messageId) {
+            return teamsState.messageReplies && teamsState.messageReplies[messageId]
+                ? teamsState.messageReplies[messageId]
+                : null;
         }
 
         function stripTeamsHtml(html) {
@@ -8152,6 +8488,9 @@
             var raw = '';
             if (message.body && message.body.content) {
                 raw = stripTeamsHtml(message.body.content);
+            }
+            if (!raw && message.content) {
+                raw = message.content;
             }
             if (!raw && message.summary) {
                 raw = message.summary;
@@ -8337,8 +8676,33 @@
                     path = '/teams/' + teamsState.selectedTeamId + '/channels/' + teamsState.selectedChannelId + '/messages';
                 }
                 await graphRequest(path, { method: 'POST', body: JSON.stringify(payload) });
+                var localMessage = {
+                    id: 'local-' + Date.now(),
+                    author: 'Vy',
+                    content: message,
+                    createdDateTime: new Date().toISOString(),
+                    from: {
+                        user: {
+                            displayName: getTeamsCurrentUserName()
+                        }
+                    },
+                    isLocal: true
+                };
+                teamsState.localMessages = teamsState.localMessages || [];
+                teamsState.localMessages.push(localMessage);
+                if (teamsState.replyToMessage) {
+                    teamsState.messageReplies = teamsState.messageReplies || {};
+                    teamsState.messageReplies[localMessage.id] = {
+                        author: teamsState.replyToMessage.author,
+                        content: teamsState.replyToMessage.content
+                    };
+                }
                 input.value = '';
-                await loadTeamsMessages();
+                clearTeamsReply();
+                renderTeamsMessages();
+                setTimeout(function() {
+                    loadTeamsMessages();
+                }, 1500);
             } catch (err) {
                 handleTeamsError(err);
             } finally {
