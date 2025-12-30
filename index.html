@@ -5423,6 +5423,7 @@
             chats: [],
             teams: [],
             channelsByTeam: {},
+            chatMembersById: {},
             selectedChatId: null,
             selectedTeamId: null,
             selectedChannelId: null,
@@ -7228,6 +7229,28 @@
             return query ? base + '?' + query : base;
         }
 
+        function stripGraphExpandAttachments(path) {
+            if (!path || path.indexOf('?') === -1) return path;
+            var parts = path.split('?');
+            var base = parts[0];
+            var params = new URLSearchParams(parts.slice(1).join('?'));
+            var expand = params.get('$expand');
+            if (!expand) return path;
+            if (expand.indexOf('attachments') === -1) return path;
+            var cleaned = expand
+                .split(',')
+                .map(function(item) { return item.trim(); })
+                .filter(function(item) { return item && item !== 'attachments'; })
+                .join(',');
+            if (cleaned) {
+                params.set('$expand', cleaned);
+            } else {
+                params.delete('$expand');
+            }
+            var query = params.toString();
+            return query ? base + '?' + query : base;
+        }
+
         async function graphRequest(path, options) {
             var token = getM365AccessToken();
             if (!token) {
@@ -7263,6 +7286,9 @@
                 }
                 if (retryTop && path.indexOf('$orderby') !== -1 && message && message.indexOf('order by') !== -1) {
                     return graphRequest(stripGraphOrderBy(path), Object.assign({}, config, { retryTop: false }));
+                }
+                if (retryTop && path.indexOf('$expand') !== -1 && message && message.indexOf('expand') !== -1 && message.indexOf('attachments') !== -1) {
+                    return graphRequest(stripGraphExpandAttachments(path), Object.assign({}, config, { retryTop: false }));
                 }
                 throw error;
             }
@@ -7379,7 +7405,7 @@
                 item.type = 'button';
                 item.className = 'teams-item' + (chat.id === teamsState.selectedChatId ? ' active' : '');
                 var title = document.createElement('div');
-                var label = chat.topic || (chat.chatType === 'oneOnOne' ? '1:1 chat' : 'Group chat');
+                var label = getChatDisplayName(chat) || (chat.chatType === 'oneOnOne' ? '1:1 chat' : 'Group chat');
                 title.textContent = label || ('Chat ' + (index + 1));
                 var meta = document.createElement('small');
                 meta.textContent = chat.chatType || 'chat';
@@ -7461,9 +7487,13 @@
             teamsState.selectedChatId = chatId;
             clearTeamsPreview();
             var chat = teamsState.chats.find(function(item) { return item.id === chatId; });
-            setTeamsThreadHeader(chat && chat.topic ? chat.topic : 'Chat', chat && chat.chatType ? chat.chatType : '');
+            var label = chat ? getChatDisplayName(chat) : '';
+            setTeamsThreadHeader(label || 'Chat', chat && chat.chatType ? chat.chatType : '');
             renderTeamsChatList();
             loadTeamsMessages();
+            if (chat) {
+                loadChatMembers(chat.id);
+            }
         }
 
         async function selectTeamsTeam(teamId) {
@@ -7561,7 +7591,7 @@
                 header.textContent = author + ' · ' + time;
                 var body = document.createElement('div');
                 body.className = 'teams-message-body';
-                body.textContent = stripTeamsHtml(message.body && message.body.content ? message.body.content : '');
+                body.textContent = buildTeamsMessageText(message);
                 wrapper.appendChild(header);
                 wrapper.appendChild(body);
                 var attachments = message.attachments || [];
@@ -7588,6 +7618,62 @@
             var temp = document.createElement('div');
             temp.innerHTML = html || '';
             return (temp.textContent || '').trim();
+        }
+
+        function buildTeamsMessageText(message) {
+            if (!message) return '';
+            var raw = '';
+            if (message.body && message.body.content) {
+                raw = stripTeamsHtml(message.body.content);
+            }
+            if (!raw && message.summary) {
+                raw = message.summary;
+            }
+            if (!raw && message.bodyPreview) {
+                raw = message.bodyPreview;
+            }
+            if (!raw && message.subject) {
+                raw = message.subject;
+            }
+            return raw || '';
+        }
+
+        function getChatDisplayName(chat) {
+            if (!chat) return '';
+            if (chat.topic) return chat.topic;
+            var cached = teamsState.chatMembersById[chat.id];
+            if (cached && cached.displayName) return cached.displayName;
+            if (!cached && chat.chatType === 'oneOnOne') {
+                loadChatMembers(chat.id);
+            }
+            return chat.chatType === 'oneOnOne' ? '1:1 chat' : 'Group chat';
+        }
+
+        async function loadChatMembers(chatId) {
+            if (!chatId) return;
+            var cached = teamsState.chatMembersById[chatId];
+            if (cached && cached.loading) return;
+            if (cached && cached.displayName) return;
+            teamsState.chatMembersById[chatId] = { loading: true };
+            try {
+                var data = await graphRequest('/chats/' + chatId + '/members');
+                var members = data && data.value ? data.value : [];
+                var names = members.map(function(member) {
+                    if (member.displayName) return member.displayName;
+                    if (member.user && member.user.displayName) return member.user.displayName;
+                    return '';
+                }).filter(Boolean);
+                var current = auth && auth.currentUser ? (auth.currentUser.displayName || auth.currentUser.email || '') : '';
+                var filtered = names.filter(function(name) { return name && name !== current; });
+                var displayName = filtered.join(', ') || names.join(', ') || 'Chat';
+                teamsState.chatMembersById[chatId] = { displayName: displayName, members: members };
+                renderTeamsChatList();
+                if (teamsState.selectedChatId === chatId) {
+                    setTeamsThreadHeader(displayName, 'oneOnOne');
+                }
+            } catch (err) {
+                teamsState.chatMembersById[chatId] = { displayName: 'Chat' };
+            }
         }
 
         function formatTeamsDate(value) {
