@@ -4919,6 +4919,7 @@
                         <div class="teams-subtitle">Channely a chaty z Microsoft 365, vcetne posilani zprav a nahledu souboru.</div>
                     </div>
                     <div class="teams-actions">
+                        <button class="btn-small btn-secondary" onclick="loginWithMicrosoft({ forceConsent: true })">Obnovit souhlas</button>
                         <button class="btn-small btn-secondary" onclick="openTeamsChatModal()">Novy chat</button>
                         <button class="btn-small btn-secondary" onclick="openTeamsChannelModal()">Novy kanal</button>
                         <button class="btn-small" onclick="refreshTeamsData(true)">Obnovit</button>
@@ -11972,7 +11973,8 @@
       }
     }
 
-    function loginWithMicrosoft() {
+    function loginWithMicrosoft(options) {
+      var opts = options || {};
       var config = window.getM365Config ? window.getM365Config() : null;
       if (config && config.enabled === false) {
         alert('M365 prihlaseni je vypnute v nastaveni.');
@@ -12004,9 +12006,12 @@
       scopes.forEach(function(scope) {
         provider.addScope(scope);
       });
-      var customParams = { prompt: 'select_account' };
+      var customParams = { prompt: opts.forceConsent ? 'consent' : 'select_account' };
       if (tenantToUse) {
         customParams.tenant = tenantToUse;
+      }
+      if (opts.loginHint) {
+        customParams.login_hint = opts.loginHint;
       }
       provider.setCustomParameters(customParams);
       auth.signInWithPopup(provider)
