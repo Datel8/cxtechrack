@@ -2450,7 +2450,7 @@
         }
 
         #teamsView {
-            background: #f4f2ee;
+            background: #f6f2ee;
             border: none;
             padding: 1.5rem;
             border-radius: 18px;
@@ -2486,15 +2486,16 @@
 
         .teams-layout {
             display: grid;
-            grid-template-columns: minmax(220px, 1fr) minmax(0, 2.2fr) minmax(220px, 1fr);
-            gap: 1.25rem;
+            grid-template-columns: minmax(280px, 1.1fr) minmax(0, 3.8fr) minmax(320px, 1.2fr);
+            gap: 1.5rem;
             align-items: start;
+            width: 100%;
         }
 
         .teams-panel {
-            background: #ffffff;
-            border: 1px solid #eee5da;
-            border-radius: 16px;
+            background: #f9f6f2;
+            border: 1px solid #eadfd2;
+            border-radius: 18px;
             padding: 1rem;
             min-height: 200px;
         }
@@ -2503,26 +2504,29 @@
             display: flex;
             gap: 0.5rem;
             margin-bottom: 0.75rem;
+            background: #efe9e3;
+            padding: 0.3rem;
+            border-radius: 14px;
         }
 
         .teams-tab {
             flex: 1 1 0;
-            border: 1px solid #e7dfd4;
-            background: #fdfbf9;
+            border: none;
+            background: transparent;
             color: #7a756e;
-            border-radius: 999px;
-            padding: 0.45rem 0.8rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
+            border-radius: 12px;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.78rem;
+            text-transform: none;
+            letter-spacing: 0.02em;
             font-weight: 600;
             cursor: pointer;
         }
 
         .teams-tab.active {
-            background: #1f1d1b;
-            color: #ffffff;
-            border-color: #1f1d1b;
+            background: #ffffff;
+            color: #1f1d1b;
+            box-shadow: 0 10px 20px rgba(22, 18, 14, 0.08);
         }
 
         .teams-list-title {
@@ -2538,6 +2542,9 @@
             gap: 0.4rem;
             align-items: center;
             margin-bottom: 0.6rem;
+            background: #efe9e3;
+            border-radius: 12px;
+            padding: 0.4rem;
         }
 
         .teams-section-input {
@@ -2547,6 +2554,7 @@
             padding: 0.35rem 0.6rem;
             font-size: 0.8rem;
             font-family: 'Space Grotesk', sans-serif;
+            background: #ffffff;
         }
 
         .teams-section-add {
@@ -2571,7 +2579,7 @@
 
         .teams-section-count {
             margin-left: 0.4rem;
-            background: #f0b58f;
+            background: #f7c7a5;
             color: #4a2a16;
             border-radius: 999px;
             padding: 0.05rem 0.45rem;
@@ -2608,7 +2616,7 @@
         }
 
         .teams-chat-group {
-            border: 1px solid #eee5da;
+            border: 1px solid #e8dbcd;
             border-radius: 14px;
             padding: 0.65rem;
             background: #ffffff;
@@ -2626,21 +2634,21 @@
             border-radius: 12px;
             padding: 0.6rem 0.75rem;
             cursor: pointer;
-            background: #faf7f3;
+            background: #fffaf6;
             color: #1c1c1c;
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 0.35rem;
         }
 
         .teams-item:hover {
             border-color: #f0b58f;
-            background: #fff2e8;
+            background: #fff0e4;
         }
 
         .teams-item.active {
             border-color: #f0b58f;
-            background: #fff3e9;
+            background: #ffe9da;
         }
 
         .teams-item-meta {
@@ -2679,7 +2687,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.45rem;
-            max-height: 420px;
+            max-height: 620px;
             overflow: auto;
             padding-right: 0.3rem;
         }
@@ -2688,7 +2696,8 @@
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
-            min-height: 600px;
+            min-height: 760px;
+            background: #ffffff;
         }
 
         .teams-thread-header {
@@ -2716,23 +2725,63 @@
             overflow: auto;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.9rem;
             padding-right: 0.4rem;
         }
 
-        .teams-message {
-            background: #ffffff;
+        .teams-message-row {
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-start;
+        }
+
+        .teams-message-row.me {
+            justify-content: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .teams-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .teams-message-bubble {
+            background: #f9f5f1;
             border: 1px solid #eee5da;
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 0.75rem 0.85rem;
+            max-width: 78%;
+        }
+
+        .teams-message-bubble.me {
+            background: #ffe7d5;
+            border-color: #f0b58f;
         }
 
         .teams-message-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 0.75rem;
             color: #8b857d;
             margin-bottom: 0.35rem;
+            gap: 0.5rem;
+        }
+
+        .teams-message-author {
+            font-weight: 600;
+        }
+
+        .teams-message-time {
+            font-size: 0.7rem;
+            color: #9b948c;
         }
 
         .teams-message-body {
@@ -2768,11 +2817,12 @@
         .teams-composer textarea {
             flex: 1 1 auto;
             min-height: 80px;
-            border: 1px solid #e7dfd4;
-            border-radius: 12px;
-            padding: 0.6rem 0.7rem;
+            border: none;
+            border-radius: 14px;
+            padding: 0.75rem 0.9rem;
             font-family: 'Space Grotesk', sans-serif;
             font-size: 0.9rem;
+            background: #efe9e3;
         }
 
         .teams-preview-panel {
@@ -2799,7 +2849,7 @@
 
         .teams-preview-frame iframe {
             width: 100%;
-            height: 360px;
+            height: 520px;
             border: 0;
             background: #ffffff;
         }
@@ -5056,6 +5106,9 @@
                             <button class="teams-tab active" data-tab="chats" onclick="switchTeamsTab('chats')">Chaty</button>
                             <button class="teams-tab" data-tab="channels" onclick="switchTeamsTab('channels')">Kanaly</button>
                         </div>
+                        <div class="teams-search">
+                            <input type="text" id="teamsChatSearch" placeholder="Hledat v chatech..." oninput="setTeamsSearchQuery(this.value)">
+                        </div>
                         <div id="teamsChatsWrap">
                             <div class="teams-list-title">Chaty</div>
                             <div class="teams-section-manager">
@@ -5551,6 +5604,9 @@
             customSections: [],
             chatSectionMap: {},
             sectionsLoaded: false,
+            graphUser: null,
+            senderColors: {},
+            searchQuery: '',
             selectedChatId: null,
             selectedTeamId: null,
             selectedChannelId: null,
@@ -7534,10 +7590,12 @@
             try {
                 var results = await Promise.all([
                     graphRequest('/me/chats?$top=40'),
-                    graphRequest('/me/joinedTeams?$top=50')
+                    graphRequest('/me/joinedTeams?$top=50'),
+                    graphRequest('/me').catch(function() { return null; })
                 ]);
                 teamsState.chats = results[0] && results[0].value ? results[0].value : [];
                 teamsState.teams = results[1] && results[1].value ? results[1].value : [];
+                teamsState.graphUser = results[2] || teamsState.graphUser;
                 teamsState.lastLoadedAt = Date.now();
                 renderTeamsLists();
                 if (teamsState.tab === 'chats' && teamsState.chats.length) {
@@ -7598,7 +7656,8 @@
             });
 
             var unassigned = [];
-            teamsState.chats.forEach(function(chat) {
+            var filteredChats = filterTeamsChats(teamsState.chats);
+            filteredChats.forEach(function(chat) {
                 var section = assignedMap[chat.id];
                 if (section && assignedSections[section]) {
                     assignedSections[section].push(chat);
@@ -7643,6 +7702,15 @@
                     oneBody.appendChild(buildTeamsChatItem(chat));
                 });
             }
+        }
+
+        function filterTeamsChats(chats) {
+            var query = (teamsState.searchQuery || '').trim().toLowerCase();
+            if (!query) return chats;
+            return chats.filter(function(chat) {
+                var label = getChatDisplayName(chat).toLowerCase();
+                return label.indexOf(query) !== -1;
+            });
         }
 
         function appendChatGroup(container, title, count, onRemove) {
@@ -7752,11 +7820,70 @@
             return item;
         }
 
+        function setTeamsSearchQuery(value) {
+            teamsState.searchQuery = value || '';
+            renderTeamsChatList();
+        }
+
         function formatTeamsDateShort(value) {
             if (!value) return '';
             var date = new Date(value);
             if (Number.isNaN(date.getTime())) return '';
             return date.toLocaleDateString();
+        }
+
+        function getTeamsCurrentUserId() {
+            return teamsState.graphUser && teamsState.graphUser.id ? teamsState.graphUser.id : '';
+        }
+
+        function getTeamsCurrentUserName() {
+            if (teamsState.graphUser) {
+                return teamsState.graphUser.displayName || teamsState.graphUser.userPrincipalName || '';
+            }
+            return auth && auth.currentUser ? (auth.currentUser.displayName || auth.currentUser.email || '') : '';
+        }
+
+        function isTeamsMessageFromCurrentUser(message) {
+            if (!message) return false;
+            var senderId = message.from && message.from.user ? message.from.user.id : '';
+            var currentId = getTeamsCurrentUserId();
+            if (senderId && currentId && senderId === currentId) {
+                return true;
+            }
+            var senderName = message.from && message.from.user ? message.from.user.displayName : '';
+            var currentName = getTeamsCurrentUserName();
+            if (senderName && currentName && senderName === currentName) {
+                return true;
+            }
+            return false;
+        }
+
+        function getTeamsSenderColor(message) {
+            var id = '';
+            if (message && message.from && message.from.user) {
+                id = message.from.user.id || message.from.user.displayName || '';
+            }
+            if (!id) return '#c9bfb4';
+            if (teamsState.senderColors && teamsState.senderColors[id]) {
+                return teamsState.senderColors[id];
+            }
+            var palette = ['#f0b58f', '#94c5f8', '#f3d17a', '#9fd6b5', '#c7a7f5', '#f5a9b8'];
+            var hash = 0;
+            for (var i = 0; i < id.length; i += 1) {
+                hash = (hash << 5) - hash + id.charCodeAt(i);
+                hash |= 0;
+            }
+            var color = palette[Math.abs(hash) % palette.length];
+            teamsState.senderColors = teamsState.senderColors || {};
+            teamsState.senderColors[id] = color;
+            return color;
+        }
+
+        function getTeamsInitials(name) {
+            if (!name) return '?';
+            var parts = name.trim().split(/\s+/).filter(Boolean);
+            var initials = parts.slice(0, 2).map(function(part) { return part[0]; }).join('');
+            return initials.toUpperCase() || '?';
         }
 
         function renderTeamsTeamList() {
@@ -7903,7 +8030,10 @@
             setTeamsStatus('Nacitam zpravy...', false);
             try {
                 var data = await graphRequest(path);
-                teamsState.messages = data.value || [];
+                teamsState.messages = (data.value || []).map(function(item) {
+                    item._attachmentsLoaded = false;
+                    return item;
+                });
                 teamsState.messages.sort(function(a, b) {
                     return new Date(a.createdDateTime || 0) - new Date(b.createdDateTime || 0);
                 });
@@ -7923,18 +8053,32 @@
                 return;
             }
             teamsState.messages.forEach(function(message) {
-                var wrapper = document.createElement('div');
-                wrapper.className = 'teams-message';
+                var isMine = isTeamsMessageFromCurrentUser(message);
+                var row = document.createElement('div');
+                row.className = 'teams-message-row' + (isMine ? ' me' : '');
+                var bubble = document.createElement('div');
+                bubble.className = 'teams-message-bubble' + (isMine ? ' me' : '');
+
                 var header = document.createElement('div');
                 header.className = 'teams-message-header';
                 var author = message.from && message.from.user ? message.from.user.displayName : 'Unknown';
                 var time = formatTeamsDate(message.createdDateTime);
-                header.textContent = author + ' · ' + time;
+                var authorEl = document.createElement('div');
+                authorEl.className = 'teams-message-author';
+                authorEl.textContent = author;
+                var timeEl = document.createElement('div');
+                timeEl.className = 'teams-message-time';
+                timeEl.textContent = time;
+                header.appendChild(authorEl);
+                header.appendChild(timeEl);
+
                 var body = document.createElement('div');
                 body.className = 'teams-message-body';
                 body.textContent = buildTeamsMessageText(message);
-                wrapper.appendChild(header);
-                wrapper.appendChild(body);
+
+                bubble.appendChild(header);
+                bubble.appendChild(body);
+
                 var attachments = message.attachments || [];
                 if (attachments.length) {
                     var attWrap = document.createElement('div');
@@ -7949,9 +8093,42 @@
                         });
                         attWrap.appendChild(btn);
                     });
-                    wrapper.appendChild(attWrap);
+                    bubble.appendChild(attWrap);
+                } else if (messageHasAttachmentHint(message)) {
+                    var loadWrap = document.createElement('div');
+                    loadWrap.className = 'teams-attachments';
+                    if (message._attachmentsLoaded) {
+                        var empty = document.createElement('div');
+                        empty.className = 'teams-section-empty';
+                        empty.textContent = 'Zadne soubory.';
+                        loadWrap.appendChild(empty);
+                    } else {
+                        var loadBtn = document.createElement('button');
+                        loadBtn.type = 'button';
+                        loadBtn.className = 'teams-attachment';
+                        loadBtn.textContent = 'Nacist soubory';
+                        loadBtn.addEventListener('click', function(event) {
+                            event.stopPropagation();
+                            loadTeamsAttachmentsForMessage(message);
+                        });
+                        loadWrap.appendChild(loadBtn);
+                    }
+                    bubble.appendChild(loadWrap);
                 }
-                container.appendChild(wrapper);
+
+                var avatar = document.createElement('div');
+                avatar.className = 'teams-avatar';
+                avatar.style.background = getTeamsSenderColor(message);
+                avatar.textContent = getTeamsInitials(author);
+
+                if (isMine) {
+                    row.appendChild(bubble);
+                    row.appendChild(avatar);
+                } else {
+                    row.appendChild(avatar);
+                    row.appendChild(bubble);
+                }
+                container.appendChild(row);
             });
         }
 
@@ -7986,6 +8163,38 @@
                 raw = message.subject;
             }
             return raw || '';
+        }
+
+        function messageHasAttachmentHint(message) {
+            if (!message) return false;
+            if (Array.isArray(message.attachments) && message.attachments.length) return true;
+            if (message.hasAttachments) return true;
+            var body = message.body && message.body.content ? message.body.content : '';
+            if (body.indexOf('<attachment') !== -1) return true;
+            return false;
+        }
+
+        async function loadTeamsAttachmentsForMessage(message) {
+            if (!message || !message.id) return;
+            if (message._attachmentsLoaded) return;
+            message._attachmentsLoaded = true;
+            try {
+                var path = '';
+                if (teamsState.tab === 'chats') {
+                    if (!teamsState.selectedChatId) return;
+                    path = '/chats/' + teamsState.selectedChatId + '/messages/' + message.id + '/attachments';
+                } else {
+                    if (!teamsState.selectedTeamId || !teamsState.selectedChannelId) return;
+                    path = '/teams/' + teamsState.selectedTeamId + '/channels/' + teamsState.selectedChannelId + '/messages/' + message.id + '/attachments';
+                }
+                var data = await graphRequest(path);
+                message.attachments = data && data.value ? data.value : [];
+                renderTeamsMessages();
+            } catch (err) {
+                message._attachmentsLoaded = true;
+                handleTeamsError(err);
+                renderTeamsMessages();
+            }
         }
 
         function getChatDisplayName(chat) {
@@ -12758,3 +12967,16 @@
 </script>
 </body>
 </html>
+        .teams-search {
+            margin-bottom: 0.75rem;
+        }
+
+        .teams-search input {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #e7dfd4;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            background: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+        }
