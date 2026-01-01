@@ -2502,7 +2502,7 @@
 
         .teams-layout {
             display: grid;
-            grid-template-columns: 280px minmax(0, 1fr) 320px;
+            grid-template-columns: 280px minmax(0, 1fr);
             gap: 0.9rem;
             align-items: stretch;
             width: 100%;
@@ -2521,17 +2521,16 @@
             background: #f3f4f6;
         }
 
-        .teams-thread-panel,
-        .teams-preview-panel {
+        .teams-thread-panel {
             background: #ffffff;
         }
 
         .teams-tabs {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             margin-bottom: 0.75rem;
             background: #eef0f3;
-            padding: 0.3rem;
+            padding: 0.25rem;
             border-radius: 14px;
             border: 1px solid #e6e7eb;
         }
@@ -2542,8 +2541,8 @@
             background: transparent;
             color: #6b7280;
             border-radius: 12px;
-            padding: 0.5rem 0.8rem;
-            font-size: 0.78rem;
+            padding: 0.45rem 0.8rem;
+            font-size: 0.75rem;
             text-transform: none;
             letter-spacing: 0.02em;
             font-weight: 600;
@@ -2658,24 +2657,23 @@
         }
 
         .teams-chat-group {
-            border: 1px solid #e6e7eb;
-            border-radius: 14px;
-            padding: 0.65rem;
-            background: #ffffff;
-            margin-bottom: 0.75rem;
-            box-shadow: none;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            background: transparent;
+            margin-bottom: 0.9rem;
         }
 
         .teams-chat-group-body {
             display: flex;
             flex-direction: column;
-            gap: 0.45rem;
+            gap: 0.5rem;
         }
 
         .teams-item {
             border: 1px solid #e6e7eb;
-            border-radius: 12px;
-            padding: 0.6rem 0.7rem;
+            border-radius: 14px;
+            padding: 0.6rem 0.65rem;
             cursor: pointer;
             background: #ffffff;
             color: #1c1c1c;
@@ -2702,8 +2700,8 @@
         }
 
         .teams-item-avatar {
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -2727,7 +2725,7 @@
         }
 
         .teams-item-title {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 600;
             color: #1f1d1b;
             white-space: nowrap;
@@ -2743,7 +2741,7 @@
 
         .teams-item-subtitle {
             margin-top: 0.2rem;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: #6b7280;
             white-space: nowrap;
             overflow: hidden;
@@ -2769,7 +2767,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            max-height: 60vh;
+            max-height: 64vh;
             overflow: auto;
             padding-right: 0.3rem;
         }
@@ -2820,6 +2818,11 @@
             padding: 1.25rem 1.5rem;
             background: #f9fafb;
             border-bottom: 1px solid #e6e7eb;
+        }
+
+        .teams-inline-preview {
+            border-bottom: 1px solid #e6e7eb;
+            background: #ffffff;
         }
 
         .teams-message-row {
@@ -3047,19 +3050,12 @@
             color: #9aa0a6;
         }
 
-        .teams-preview-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
         .teams-preview-title {
             font-weight: 600;
-            font-size: 0.9rem;
-            padding: 1rem 1.25rem;
+            font-size: 0.85rem;
+            padding: 0.9rem 1.5rem;
             border-bottom: 1px solid #e6e7eb;
+            color: #6b7280;
         }
 
         .teams-preview-empty {
@@ -3069,15 +3065,14 @@
             flex-direction: column;
             align-items: center;
             gap: 0.8rem;
-            padding: 2.4rem 1.4rem;
+            padding: 1.6rem 1.4rem;
             text-align: center;
-            min-height: 300px;
         }
 
         .teams-preview-icon {
-            width: 68px;
-            height: 68px;
-            border-radius: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
             background: #eef0f3;
             display: flex;
             align-items: center;
@@ -3085,27 +3080,26 @@
         }
 
         .teams-preview-icon svg {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
         }
 
         .teams-preview-frame {
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid #e6e7eb;
+            margin: 1rem 1.5rem;
         }
 
         .teams-preview-frame iframe {
             width: 100%;
-            height: 520px;
+            height: 360px;
             border: 0;
             background: #ffffff;
         }
 
         .teams-preview-actions {
-            margin-top: auto;
-            padding: 1rem 1.25rem;
-            border-top: 1px solid #e6e7eb;
+            padding: 0 1.5rem 1rem;
         }
 
         .teams-empty {
@@ -5385,6 +5379,27 @@
                             </div>
                         </div>
                         <div class="teams-thread" id="teamsThreadMessages"></div>
+                        <div class="teams-inline-preview">
+                            <div class="teams-preview-title">Nahled souboru</div>
+                            <div id="teamsPreviewEmpty" class="teams-preview-empty">
+                                <div class="teams-preview-icon">
+                                    <svg class="teams-preview-svg" viewBox="0 0 24 24" fill="none" stroke="#8b857d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M6 3h7l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path>
+                                        <path d="M13 3v6h6"></path>
+                                        <path d="M8 13h8"></path>
+                                        <path d="M8 17h8"></path>
+                                    </svg>
+                                </div>
+                                <div>Vyber soubor z konverzace.</div>
+                                <button class="btn-small btn-secondary" type="button" disabled>Nahrat soubor</button>
+                            </div>
+                            <div id="teamsPreviewFrameWrap" class="teams-preview-frame" style="display: none;">
+                                <iframe id="teamsPreviewFrame" title="Teams file preview"></iframe>
+                            </div>
+                            <div class="teams-preview-actions">
+                                <button class="btn-small btn-secondary" id="teamsPreviewOpenBtn" onclick="openTeamsPreviewInNewTab()" style="display: none;">Otevrit v novem okne</button>
+                            </div>
+                        </div>
                         <div class="teams-reply-preview" id="teamsReplyPreview" style="display: none;">
                             <div class="teams-reply-text">
                                 <div class="teams-reply-label">Odpovidate na</div>
@@ -5398,27 +5413,6 @@
                             <button class="btn" id="teamsSendBtn" onclick="sendTeamsMessage()">Odeslat</button>
                         </div>
                     </section>
-                    <aside class="teams-panel teams-preview-panel">
-                        <div class="teams-preview-title">Nahled souboru</div>
-                        <div id="teamsPreviewEmpty" class="teams-preview-empty">
-                            <div class="teams-preview-icon">
-                                <svg class="teams-preview-svg" viewBox="0 0 24 24" fill="none" stroke="#8b857d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M6 3h7l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path>
-                                    <path d="M13 3v6h6"></path>
-                                    <path d="M8 13h8"></path>
-                                    <path d="M8 17h8"></path>
-                                </svg>
-                            </div>
-                            <div>Vyber soubor z konverzace.</div>
-                            <button class="btn-small btn-secondary" type="button" disabled>Nahrat soubor</button>
-                        </div>
-                        <div id="teamsPreviewFrameWrap" class="teams-preview-frame" style="display: none;">
-                            <iframe id="teamsPreviewFrame" title="Teams file preview"></iframe>
-                        </div>
-                        <div class="teams-preview-actions">
-                            <button class="btn-small btn-secondary" id="teamsPreviewOpenBtn" onclick="openTeamsPreviewInNewTab()" style="display: none;">Otevrit v novem okne</button>
-                        </div>
-                    </aside>
                 </div>
             </div>
             
