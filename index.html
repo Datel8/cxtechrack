@@ -2450,7 +2450,7 @@
         }
 
         #teamsView {
-            background: #f5f1ec;
+            background: #f7f7f9;
             border: none;
             padding: 1.25rem;
             border-radius: 20px;
@@ -2460,24 +2460,24 @@
         #teamsView .rack-header {
             margin-bottom: 1rem;
             background: #ffffff;
-            border: 1px solid #e7e0d8;
+            border: 1px solid #e6e7eb;
             border-radius: 16px;
             padding: 1rem 1.4rem;
             gap: 1rem;
             flex-wrap: wrap;
-            box-shadow: 0 10px 22px rgba(32, 22, 12, 0.08);
+            box-shadow: 0 8px 18px rgba(17, 24, 39, 0.05);
         }
 
         .teams-subtitle {
             margin-top: 0.25rem;
             font-size: 0.9rem;
-            color: #6f6a63;
+            color: #6b7280;
             max-width: 560px;
         }
 
         .teams-header {
             background: #ffffff;
-            border: 1px solid #eadfd2;
+            border: 1px solid #e6e7eb;
             border-radius: 18px;
             padding: 1.25rem 1.5rem;
             margin-bottom: 1rem;
@@ -2493,7 +2493,7 @@
         .teams-status {
             margin-top: 0.75rem;
             font-size: 0.85rem;
-            color: #6f6a63;
+            color: #6b7280;
         }
 
         .teams-status.error {
@@ -2502,36 +2502,45 @@
 
         .teams-layout {
             display: grid;
-            grid-template-columns: 300px minmax(0, 1fr) 320px;
-            gap: 1rem;
-            align-items: start;
+            grid-template-columns: 280px minmax(0, 1fr) 320px;
+            gap: 0.9rem;
+            align-items: stretch;
             width: 100%;
         }
 
         .teams-panel {
             background: #ffffff;
-            border: 1px solid #e8e0d6;
-            border-radius: 16px;
+            border: 1px solid #e6e7eb;
+            border-radius: 14px;
             padding: 1rem;
             min-height: 200px;
-            box-shadow: 0 10px 24px rgba(32, 22, 12, 0.06);
+            box-shadow: none;
+        }
+
+        .teams-sidebar {
+            background: #f3f4f6;
+        }
+
+        .teams-thread-panel,
+        .teams-preview-panel {
+            background: #ffffff;
         }
 
         .teams-tabs {
             display: flex;
             gap: 0.5rem;
             margin-bottom: 0.75rem;
-            background: #f1ebe4;
+            background: #eef0f3;
             padding: 0.3rem;
             border-radius: 14px;
-            border: 1px solid #efe4d9;
+            border: 1px solid #e6e7eb;
         }
 
         .teams-tab {
             flex: 1 1 0;
             border: none;
             background: transparent;
-            color: #7a756e;
+            color: #6b7280;
             border-radius: 12px;
             padding: 0.5rem 0.8rem;
             font-size: 0.78rem;
@@ -2544,7 +2553,7 @@
         .teams-tab.active {
             background: #ffffff;
             color: #1f1d1b;
-            box-shadow: 0 10px 20px rgba(22, 18, 14, 0.08);
+            box-shadow: 0 8px 18px rgba(17, 24, 39, 0.06);
         }
 
         .teams-search {
@@ -2554,10 +2563,10 @@
         .teams-search input {
             width: 100%;
             border-radius: 12px;
-            border: 1px solid #e6ded5;
+            border: 1px solid #e6e7eb;
             padding: 0.55rem 0.75rem;
             font-size: 0.85rem;
-            background: #f6efe7;
+            background: #ffffff;
             font-family: 'Space Grotesk', sans-serif;
         }
 
@@ -2565,7 +2574,7 @@
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.16em;
-            color: #8b857d;
+            color: #9aa0a6;
             margin: 0.75rem 0 0.5rem;
         }
 
@@ -2574,15 +2583,15 @@
             gap: 0.4rem;
             align-items: center;
             margin-bottom: 0.6rem;
-            background: #f6efe7;
+            background: #eef0f3;
             border-radius: 12px;
             padding: 0.45rem;
-            border: 1px solid #efe4d9;
+            border: 1px solid #e6e7eb;
         }
 
         .teams-section-input {
             flex: 1 1 auto;
-            border: 1px solid #e0d6cb;
+            border: 1px solid #e1e4ea;
             border-radius: 10px;
             padding: 0.35rem 0.6rem;
             font-size: 0.8rem;
@@ -2600,7 +2609,7 @@
             justify-content: space-between;
             gap: 0.5rem;
             margin-bottom: 0.5rem;
-            color: #6f6a63;
+            color: #6b7280;
             font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.14em;
@@ -2612,8 +2621,8 @@
 
         .teams-section-count {
             margin-left: 0.4rem;
-            background: #f7c7a5;
-            color: #4a2a16;
+            background: #fde7d6;
+            color: #8b4b2b;
             border-radius: 999px;
             padding: 0.05rem 0.45rem;
             font-size: 0.6rem;
@@ -2622,8 +2631,8 @@
 
         .teams-section-remove {
             background: transparent;
-            border: 1px solid #e7dfd4;
-            color: #8b857d;
+            border: 1px solid #e6e7eb;
+            color: #9aa0a6;
             border-radius: 999px;
             font-size: 0.65rem;
             padding: 0.1rem 0.45rem;
@@ -2633,28 +2642,28 @@
         .teams-section-select {
             margin-top: 0.4rem;
             width: 100%;
-            border: 1px solid #e7dfd4;
+            border: 1px solid #e6e7eb;
             border-radius: 8px;
             padding: 0.25rem 0.4rem;
             font-size: 0.7rem;
             font-family: 'Space Grotesk', sans-serif;
-            color: #6f6a63;
-            background: #fffaf5;
+            color: #6b7280;
+            background: #ffffff;
         }
 
         .teams-section-empty {
             font-size: 0.75rem;
-            color: #9b948c;
+            color: #9aa0a6;
             margin-bottom: 0.4rem;
         }
 
         .teams-chat-group {
-            border: 1px solid #e8dbcd;
+            border: 1px solid #e6e7eb;
             border-radius: 14px;
             padding: 0.65rem;
             background: #ffffff;
             margin-bottom: 0.75rem;
-            box-shadow: 0 6px 14px rgba(20, 12, 6, 0.05);
+            box-shadow: none;
         }
 
         .teams-chat-group-body {
@@ -2664,47 +2673,86 @@
         }
 
         .teams-item {
-            border: 1px solid #f0e7de;
+            border: 1px solid #e6e7eb;
             border-radius: 12px;
-            padding: 0.6rem 0.75rem;
+            padding: 0.6rem 0.7rem;
             cursor: pointer;
             background: #ffffff;
             color: #1c1c1c;
             display: flex;
             flex-direction: column;
             gap: 0.35rem;
+            transition: background 0.15s ease, border-color 0.15s ease;
         }
 
         .teams-item:hover {
-            border-color: #f0b58f;
-            background: #fff1e5;
+            border-color: #f3c4a4;
+            background: #fff7f1;
         }
 
         .teams-item.active {
-            border-color: #f0b58f;
-            background: #ffe8d6;
+            border-color: #f3c4a4;
+            background: #fff1e6;
         }
 
-        .teams-item-meta {
+        .teams-item-row {
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
+            gap: 0.65rem;
+            align-items: flex-start;
+        }
+
+        .teams-item-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
             align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #ffffff;
+            flex-shrink: 0;
         }
 
-        .teams-tag {
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            background: #f1ece6;
+        .teams-item-content {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .teams-item-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .teams-item-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1f1d1b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .teams-item-time {
+            font-size: 0.7rem;
+            color: #9aa0a6;
+            flex-shrink: 0;
+        }
+
+        .teams-item-subtitle {
+            margin-top: 0.2rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .teams-item small {
+            font-size: 0.72rem;
             color: #8b857d;
-            border-radius: 999px;
-            padding: 0.1rem 0.45rem;
-        }
-
-        .teams-tag-strong {
-            background: #ffe7d5;
-            color: #a2542d;
         }
 
         .teams-item .teams-section-select {
@@ -2720,7 +2768,7 @@
         .teams-list {
             display: flex;
             flex-direction: column;
-            gap: 0.45rem;
+            gap: 0.5rem;
             max-height: 60vh;
             overflow: auto;
             padding-right: 0.3rem;
@@ -2741,7 +2789,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            border-bottom: 1px solid #eee5da;
+            border-bottom: 1px solid #e6e7eb;
             padding: 1rem 1.5rem;
             background: #ffffff;
         }
@@ -2759,7 +2807,7 @@
 
         .teams-thread-meta {
             font-size: 0.8rem;
-            color: #8b857d;
+            color: #9aa0a6;
             margin-top: 0.15rem;
         }
 
@@ -2770,8 +2818,8 @@
             flex-direction: column;
             gap: 0.9rem;
             padding: 1.25rem 1.5rem;
-            background: #fbf7f2;
-            border-bottom: 1px solid #eee5da;
+            background: #f9fafb;
+            border-bottom: 1px solid #e6e7eb;
         }
 
         .teams-message-row {
@@ -2800,17 +2848,17 @@
 
         .teams-message-bubble {
             background: #ffffff;
-            border: 1px solid #efe5dc;
+            border: 1px solid #e6e7eb;
             border-radius: 16px;
             padding: 0.8rem 1rem;
             max-width: 75%;
             position: relative;
-            box-shadow: 0 8px 16px rgba(24, 16, 8, 0.06);
+            box-shadow: 0 6px 12px rgba(15, 23, 42, 0.04);
         }
 
         .teams-message-bubble.me {
-            background: #ffe8d6;
-            border-color: #f2c2a0;
+            background: #fff1e6;
+            border-color: #f3c4a4;
         }
 
         .teams-message-header {
@@ -2818,7 +2866,7 @@
             justify-content: space-between;
             align-items: center;
             font-size: 0.75rem;
-            color: #8b857d;
+            color: #9aa0a6;
             margin-bottom: 0.35rem;
             gap: 0.5rem;
         }
@@ -2829,7 +2877,7 @@
 
         .teams-message-time {
             font-size: 0.7rem;
-            color: #9b948c;
+            color: #9aa0a6;
         }
 
         .teams-message-body {
@@ -2857,16 +2905,16 @@
         }
 
         .teams-composer {
-            border-top: 1px solid #eee5da;
+            border-top: 1px solid #e6e7eb;
             padding: 1rem 1.5rem;
             display: flex;
             gap: 0.75rem;
-            background: #f2ece6;
+            background: #f1f3f6;
         }
 
         .teams-composer input {
             flex: 1 1 auto;
-            border: 1px solid #e2d7cd;
+            border: 1px solid #e6e7eb;
             border-radius: 16px;
             padding: 0.85rem 1rem;
             font-family: 'Space Grotesk', sans-serif;
@@ -2891,7 +2939,7 @@
 
         .teams-action-btn {
             border: none;
-            background: #f2ebe4;
+            background: #eef0f3;
             padding: 0.25rem 0.4rem;
             cursor: pointer;
             font-size: 0.9rem;
@@ -2907,9 +2955,9 @@
             gap: 0.3rem;
             padding: 0.4rem;
             background: #ffffff;
-            border: 1px solid #eadfd2;
+            border: 1px solid #e6e7eb;
             border-radius: 12px;
-            box-shadow: 0 14px 30px rgba(22, 18, 14, 0.12);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
             z-index: 10;
         }
 
@@ -2937,16 +2985,16 @@
             align-items: center;
             gap: 0.3rem;
             border-radius: 999px;
-            border: 1px solid #eadfd2;
-            background: #f3ece6;
+            border: 1px solid #e6e7eb;
+            background: #f1f3f6;
             padding: 0.15rem 0.5rem;
             font-size: 0.75rem;
             cursor: pointer;
         }
 
         .teams-reaction.active {
-            border-color: #f0b58f;
-            background: #ffe7d5;
+            border-color: #f3c4a4;
+            background: #fff1e6;
         }
 
         .teams-reply-preview {
@@ -2954,9 +3002,9 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.75rem 1.5rem;
-            border-top: 1px solid #eee5da;
-            border-bottom: 1px solid #eee5da;
-            background: #f3ede7;
+            border-top: 1px solid #e6e7eb;
+            border-bottom: 1px solid #e6e7eb;
+            background: #f1f3f6;
         }
 
         .teams-reply-text {
@@ -2967,25 +3015,25 @@
             font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.12em;
-            color: #9b948c;
+            color: #9aa0a6;
         }
 
         .teams-reply-author {
             font-weight: 600;
-            color: #a2542d;
+            color: #b45309;
             font-size: 0.85rem;
         }
 
         .teams-reply-snippet {
             font-size: 0.8rem;
-            color: #6f6a63;
+            color: #6b7280;
             margin-top: 0.15rem;
         }
 
         .teams-message-reply {
             font-size: 0.75rem;
-            color: #a2542d;
-            background: #fff1e4;
+            color: #b45309;
+            background: #fff4e6;
             border-radius: 10px;
             padding: 0.35rem 0.5rem;
             margin-bottom: 0.5rem;
@@ -2996,7 +3044,7 @@
             background: transparent;
             font-size: 0.9rem;
             cursor: pointer;
-            color: #9b948c;
+            color: #9aa0a6;
         }
 
         .teams-preview-panel {
@@ -3011,12 +3059,12 @@
             font-weight: 600;
             font-size: 0.9rem;
             padding: 1rem 1.25rem;
-            border-bottom: 1px solid #eee5da;
+            border-bottom: 1px solid #e6e7eb;
         }
 
         .teams-preview-empty {
             font-size: 0.8rem;
-            color: #8b857d;
+            color: #6b7280;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -3030,7 +3078,7 @@
             width: 68px;
             height: 68px;
             border-radius: 20px;
-            background: #f1ebe4;
+            background: #eef0f3;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -3044,7 +3092,7 @@
         .teams-preview-frame {
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid #eee5da;
+            border: 1px solid #e6e7eb;
         }
 
         .teams-preview-frame iframe {
@@ -3057,12 +3105,12 @@
         .teams-preview-actions {
             margin-top: auto;
             padding: 1rem 1.25rem;
-            border-top: 1px solid #eee5da;
+            border-top: 1px solid #e6e7eb;
         }
 
         .teams-empty {
             font-size: 0.85rem;
-            color: #8b857d;
+            color: #6b7280;
             text-align: center;
             padding: 1rem;
         }
@@ -7992,24 +8040,44 @@
             var item = document.createElement('div');
             item.className = 'teams-item' + (chat.id === teamsState.selectedChatId ? ' active' : '');
             item.tabIndex = 0;
-            var title = document.createElement('div');
             var label = getChatDisplayName(chat) || (chat.chatType === 'oneOnOne' ? '1:1 chat' : 'Group chat');
+            var row = document.createElement('div');
+            row.className = 'teams-item-row';
+            var avatar = document.createElement('div');
+            avatar.className = 'teams-item-avatar';
+            avatar.textContent = getTeamsInitials(label);
+            avatar.style.background = getTeamsAvatarColor(label);
+            row.appendChild(avatar);
+            var content = document.createElement('div');
+            content.className = 'teams-item-content';
+            var titleRow = document.createElement('div');
+            titleRow.className = 'teams-item-title-row';
+            var title = document.createElement('div');
+            title.className = 'teams-item-title';
             title.textContent = label;
-            var meta = document.createElement('div');
-            meta.className = 'teams-item-meta';
-            var typeTag = document.createElement('span');
-            typeTag.className = 'teams-tag' + (chat.chatType === 'oneOnOne' ? ' teams-tag-strong' : '');
-            typeTag.textContent = chat.chatType === 'oneOnOne' ? '1v1' : 'Skupina';
-            meta.appendChild(typeTag);
+            titleRow.appendChild(title);
             var dateTag = formatTeamsDateShort(chat.lastUpdatedDateTime);
             if (dateTag) {
-                var timeTag = document.createElement('span');
-                timeTag.className = 'teams-tag';
+                var timeTag = document.createElement('div');
+                timeTag.className = 'teams-item-time';
                 timeTag.textContent = dateTag;
-                meta.appendChild(timeTag);
+                titleRow.appendChild(timeTag);
             }
-            item.appendChild(title);
-            item.appendChild(meta);
+            content.appendChild(titleRow);
+            var subtitle = document.createElement('div');
+            subtitle.className = 'teams-item-subtitle';
+            var preview = '';
+            if (chat.lastMessagePreview && chat.lastMessagePreview.body && chat.lastMessagePreview.body.content) {
+                preview = stripTeamsHtml(chat.lastMessagePreview.body.content || '').trim();
+            }
+            if (preview.length > 90) {
+                preview = preview.slice(0, 90) + '...';
+            }
+            var typeLabel = chat.chatType === 'oneOnOne' ? '1v1' : 'Skupina';
+            subtitle.textContent = preview ? (typeLabel + ' • ' + preview) : typeLabel;
+            content.appendChild(subtitle);
+            row.appendChild(content);
+            item.appendChild(row);
 
             if (teamsState.customSections && teamsState.customSections.length) {
                 var select = document.createElement('select');
@@ -8111,6 +8179,15 @@
             var parts = name.trim().split(/\s+/).filter(Boolean);
             var initials = parts.slice(0, 2).map(function(part) { return part[0]; }).join('');
             return initials.toUpperCase() || '?';
+        }
+
+        function getTeamsAvatarColor(name) {
+            var colors = ['#f2994a', '#f6b26b', '#6fcf97', '#56ccf2', '#bb6bd9', '#eb5757'];
+            var sum = 0;
+            for (var i = 0; i < name.length; i += 1) {
+                sum += name.charCodeAt(i);
+            }
+            return colors[sum % colors.length];
         }
 
         function renderTeamsTeamList() {
