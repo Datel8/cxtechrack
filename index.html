@@ -2671,11 +2671,11 @@
         }
 
         .teams-item {
-            border: 1px solid #e6e7eb;
-            border-radius: 14px;
-            padding: 0.6rem 0.65rem;
+            border: none;
+            border-radius: 12px;
+            padding: 0.55rem 0.55rem;
             cursor: pointer;
-            background: #ffffff;
+            background: transparent;
             color: #1c1c1c;
             display: flex;
             flex-direction: column;
@@ -2684,13 +2684,11 @@
         }
 
         .teams-item:hover {
-            border-color: #f3c4a4;
-            background: #fff7f1;
+            background: #f0f4fb;
         }
 
         .teams-item.active {
-            border-color: #f3c4a4;
-            background: #fff1e6;
+            background: #eaf1ff;
         }
 
         .teams-item-row {
@@ -2753,6 +2751,94 @@
             color: #8b857d;
         }
 
+        .teams-team-tree {
+            gap: 0.4rem;
+        }
+
+        .teams-team-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .teams-team-row {
+            border: none;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-align: left;
+            padding: 0.45rem 0.45rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #1f2937;
+        }
+
+        .teams-team-row:hover {
+            background: #f0f4fb;
+        }
+
+        .teams-team-row.active {
+            background: #eaf1ff;
+        }
+
+        .teams-team-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #e7eef7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #3b82f6;
+            flex-shrink: 0;
+        }
+
+        .teams-team-name {
+            font-weight: 600;
+        }
+
+        .teams-channel-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-left: 2.2rem;
+            padding-left: 0.3rem;
+            border-left: 1px solid #e6e7eb;
+        }
+
+        .teams-channel-item {
+            border: none;
+            background: transparent;
+            text-align: left;
+            font-size: 0.78rem;
+            color: #4b5563;
+            padding: 0.35rem 0.45rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .teams-channel-item:hover {
+            background: #f0f4fb;
+        }
+
+        .teams-channel-item.active {
+            background: #eaf1ff;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .teams-channel-hash {
+            color: #9aa0a6;
+            font-weight: 700;
+        }
+
         .teams-item .teams-section-select {
             display: none;
         }
@@ -2766,10 +2852,17 @@
         .teams-list {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.3rem;
             max-height: 64vh;
             overflow: auto;
-            padding-right: 0.3rem;
+            padding-right: 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .teams-list::-webkit-scrollbar {
+            width: 0;
+            height: 0;
         }
 
         .teams-thread-panel {
@@ -2807,6 +2900,29 @@
             font-size: 0.8rem;
             color: #9aa0a6;
             margin-top: 0.15rem;
+        }
+
+        .teams-thread-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.6rem;
+            align-items: center;
+        }
+
+        .teams-thread-tab {
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0 0 0.35rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .teams-thread-tab.active {
+            color: #1f2937;
+            border-bottom-color: #3b82f6;
         }
 
         .teams-thread {
@@ -5362,10 +5478,8 @@
                             <div id="teamsChatList" class="teams-list"></div>
                         </div>
                         <div id="teamsChannelsWrap" style="display: none;">
-                            <div class="teams-list-title">Tymy</div>
-                            <div id="teamsTeamList" class="teams-list"></div>
-                            <div class="teams-list-title">Kanaly</div>
-                            <div id="teamsChannelList" class="teams-list"></div>
+                            <div class="teams-list-title">Tymy a kanaly</div>
+                            <div id="teamsTeamList" class="teams-list teams-team-tree"></div>
                         </div>
                     </aside>
                     <section class="teams-panel teams-thread-panel">
@@ -5373,6 +5487,10 @@
                             <div>
                                 <div class="teams-thread-title" id="teamsThreadTitle">Vyber chat nebo kanal</div>
                                 <div class="teams-thread-meta" id="teamsThreadMeta">-</div>
+                                <div class="teams-thread-tabs" id="teamsThreadTabs" style="display: none;">
+                                    <button class="teams-thread-tab active" data-tab="posts" onclick="setTeamsThreadTab('posts')">Prispevky</button>
+                                    <button class="teams-thread-tab" data-tab="files" onclick="setTeamsThreadTab('files')">Soubory</button>
+                                </div>
                             </div>
                             <div class="teams-thread-actions">
                                 <button class="btn-small" onclick="refreshTeamsMessages()">Obnovit</button>
@@ -5860,6 +5978,7 @@
         let timeTechnicianFilter = 'all';
         let teamsState = {
             tab: 'chats',
+            threadTab: 'posts',
             chats: [],
             teams: [],
             channelsByTeam: {},
@@ -7905,7 +8024,6 @@
         function renderTeamsLists() {
             renderTeamsChatList();
             renderTeamsTeamList();
-            renderTeamsChannelList();
         }
 
         function renderTeamsChatList() {
@@ -8194,52 +8312,61 @@
                 return;
             }
             teamsState.teams.forEach(function(team) {
-                var item = document.createElement('button');
-                item.type = 'button';
-                item.className = 'teams-item' + (team.id === teamsState.selectedTeamId ? ' active' : '');
-                var title = document.createElement('div');
-                title.textContent = team.displayName || 'Team';
-                var meta = document.createElement('small');
-                meta.textContent = team.description || 'Team';
-                item.appendChild(title);
-                item.appendChild(meta);
-                item.addEventListener('click', function() {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'teams-team-item';
+                var row = document.createElement('button');
+                row.type = 'button';
+                row.className = 'teams-team-row' + (team.id === teamsState.selectedTeamId ? ' active' : '');
+                var icon = document.createElement('span');
+                icon.className = 'teams-team-icon';
+                icon.textContent = getTeamsInitials(team.displayName || 'T');
+                var name = document.createElement('span');
+                name.className = 'teams-team-name';
+                name.textContent = team.displayName || 'Team';
+                row.appendChild(icon);
+                row.appendChild(name);
+                row.addEventListener('click', function() {
                     selectTeamsTeam(team.id);
                 });
-                list.appendChild(item);
+                wrapper.appendChild(row);
+
+                if (team.id === teamsState.selectedTeamId) {
+                    var channelsWrap = document.createElement('div');
+                    channelsWrap.className = 'teams-channel-list';
+                    var channels = teamsState.channelsByTeam && teamsState.channelsByTeam[team.id] ? teamsState.channelsByTeam[team.id] : [];
+                    if (!channels.length) {
+                        var empty = document.createElement('div');
+                        empty.className = 'teams-section-empty';
+                        empty.textContent = 'Nacitam kanaly...';
+                        channelsWrap.appendChild(empty);
+                    } else {
+                        channels.forEach(function(channel) {
+                            var channelBtn = document.createElement('button');
+                            channelBtn.type = 'button';
+                            channelBtn.className = 'teams-channel-item' + (channel.id === teamsState.selectedChannelId ? ' active' : '');
+                            var hash = document.createElement('span');
+                            hash.className = 'teams-channel-hash';
+                            hash.textContent = '#';
+                            var label = document.createElement('span');
+                            label.textContent = channel.displayName || 'Kanal';
+                            channelBtn.appendChild(hash);
+                            channelBtn.appendChild(label);
+                            channelBtn.addEventListener('click', function(event) {
+                                event.stopPropagation();
+                                selectTeamsChannel(channel.id);
+                            });
+                            channelsWrap.appendChild(channelBtn);
+                        });
+                    }
+                    wrapper.appendChild(channelsWrap);
+                }
+
+                list.appendChild(wrapper);
             });
         }
 
         function renderTeamsChannelList() {
-            var list = document.getElementById('teamsChannelList');
-            if (!list) return;
-            list.innerHTML = '';
-            if (teamsState.tab !== 'channels') return;
-            var teamId = teamsState.selectedTeamId;
-            if (!teamId) {
-                list.innerHTML = '<div class="teams-empty">Vyber team.</div>';
-                return;
-            }
-            var channels = teamsState.channelsByTeam[teamId] || [];
-            if (!channels.length) {
-                list.innerHTML = '<div class="teams-empty">Zadne kanaly.</div>';
-                return;
-            }
-            channels.forEach(function(channel) {
-                var item = document.createElement('button');
-                item.type = 'button';
-                item.className = 'teams-item' + (channel.id === teamsState.selectedChannelId ? ' active' : '');
-                var title = document.createElement('div');
-                title.textContent = channel.displayName || 'Channel';
-                var meta = document.createElement('small');
-                meta.textContent = channel.description || channel.membershipType || 'Channel';
-                item.appendChild(title);
-                item.appendChild(meta);
-                item.addEventListener('click', function() {
-                    selectTeamsChannel(channel.id);
-                });
-                list.appendChild(item);
-            });
+            renderTeamsTeamList();
         }
 
         function setTeamsThreadHeader(title, meta) {
@@ -8247,6 +8374,24 @@
             var metaEl = document.getElementById('teamsThreadMeta');
             if (titleEl) titleEl.textContent = title || 'Vyber chat nebo kanal';
             if (metaEl) metaEl.textContent = meta || '-';
+            updateTeamsThreadTabs();
+        }
+
+        function setTeamsThreadTab(tab) {
+            teamsState.threadTab = tab || 'posts';
+            updateTeamsThreadTabs();
+        }
+
+        function updateTeamsThreadTabs() {
+            var tabs = document.getElementById('teamsThreadTabs');
+            if (!tabs) return;
+            var show = teamsState.tab === 'channels' && !!teamsState.selectedChannelId;
+            tabs.style.display = show ? 'flex' : 'none';
+            var active = teamsState.threadTab || 'posts';
+            var buttons = tabs.querySelectorAll('.teams-thread-tab');
+            buttons.forEach(function(btn) {
+                btn.classList.toggle('active', btn.dataset.tab === active);
+            });
         }
 
         function selectTeamsChat(chatId) {
@@ -8282,14 +8427,14 @@
             var channels = teamsState.channelsByTeam[teamsState.selectedTeamId] || [];
             var channel = channels.find(function(item) { return item.id === channelId; });
             setTeamsThreadHeader(channel && channel.displayName ? channel.displayName : 'Channel', team && team.displayName ? team.displayName : '');
-            renderTeamsChannelList();
+            renderTeamsTeamList();
             loadTeamsMessages();
         }
 
         async function loadTeamsChannels(teamId) {
             if (!teamId) return;
             if (teamsState.channelsByTeam[teamId]) {
-                renderTeamsChannelList();
+                renderTeamsTeamList();
                 if (!teamsState.selectedChannelId && teamsState.channelsByTeam[teamId][0]) {
                     selectTeamsChannel(teamsState.channelsByTeam[teamId][0].id);
                 }
@@ -8299,7 +8444,7 @@
             try {
                 var data = await graphRequest('/teams/' + teamId + '/channels?$top=50');
                 teamsState.channelsByTeam[teamId] = data.value || [];
-                renderTeamsChannelList();
+                renderTeamsTeamList();
                 if (!teamsState.selectedChannelId && teamsState.channelsByTeam[teamId][0]) {
                     selectTeamsChannel(teamsState.channelsByTeam[teamId][0].id);
                 }
