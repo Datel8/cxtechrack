@@ -4636,6 +4636,399 @@
             letter-spacing: 0.1em;
             margin-top: 0.25rem;
         }
+
+        /* Helpdesk view */
+        #helpdeskView {
+            background: #f8f7f4;
+            border: none;
+            padding: 1.25rem;
+            border-radius: 20px;
+            color: #1c1c1c;
+        }
+
+        #helpdeskView .rack-header {
+            margin-bottom: 1rem;
+            background: #ffffff;
+            border: 1px solid #e6e7eb;
+            border-radius: 16px;
+            padding: 1rem 1.4rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 8px 18px rgba(17, 24, 39, 0.05);
+        }
+
+        .helpdesk-subtitle {
+            margin-top: 0.25rem;
+            font-size: 0.9rem;
+            color: #6b7280;
+            max-width: 560px;
+        }
+
+        .helpdesk-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .helpdesk-layout {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr) 360px;
+            gap: 0.9rem;
+            align-items: start;
+            width: 100%;
+        }
+
+        .helpdesk-panel {
+            background: #ffffff;
+            border: 1px solid #e6e7eb;
+            border-radius: 14px;
+            padding: 1rem;
+            min-height: 200px;
+        }
+
+        .helpdesk-panel-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #6b7280;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+        }
+
+        .helpdesk-panel-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 0.85rem 0;
+        }
+
+        .helpdesk-queue-list {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .helpdesk-queue-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.55rem 0.75rem;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background: #f3f4f6;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #1f2937;
+        }
+
+        .helpdesk-queue-item:hover {
+            border-color: rgba(248, 154, 85, 0.5);
+        }
+
+        .helpdesk-queue-item.active {
+            border-color: rgba(248, 154, 85, 0.9);
+            background: #fff7ed;
+            color: #b45309;
+        }
+
+        .helpdesk-queue-count {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            color: inherit;
+        }
+
+        .helpdesk-filter-group {
+            display: grid;
+            gap: 0.35rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .helpdesk-filter-group label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6b7280;
+        }
+
+        .helpdesk-filter-group select,
+        .helpdesk-filter-group input,
+        .helpdesk-filter-group textarea {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            color: #1f2937;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            padding: 0.55rem 0.65rem;
+        }
+
+        .helpdesk-integration-list {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .helpdesk-integration-card {
+            border: 1px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6b7280;
+            background: #f8fafc;
+        }
+
+        .helpdesk-panel-note {
+            margin-top: 0.65rem;
+            font-size: 0.78rem;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .helpdesk-list-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .helpdesk-list-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .helpdesk-list-actions select {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .helpdesk-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.6rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .helpdesk-metric {
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 0.65rem 0.75rem;
+            background: #f8fafc;
+        }
+
+        .helpdesk-metric-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .helpdesk-metric-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .helpdesk-ticket-list {
+            display: grid;
+            gap: 0.65rem;
+        }
+
+        .helpdesk-ticket-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 0.75rem 0.85rem;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .helpdesk-ticket-card:hover {
+            border-color: rgba(248, 154, 85, 0.5);
+        }
+
+        .helpdesk-ticket-card.active {
+            border-color: rgba(248, 154, 85, 0.9);
+            box-shadow: 0 12px 18px rgba(248, 154, 85, 0.15);
+        }
+
+        .helpdesk-ticket-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+            color: #111827;
+        }
+
+        .helpdesk-ticket-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .helpdesk-ticket-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.45rem;
+        }
+
+        .helpdesk-tag {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 999px;
+            background: #f3f4f6;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .helpdesk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        .helpdesk-badge.status-open {
+            background: rgba(59, 130, 246, 0.15);
+            color: #1d4ed8;
+        }
+
+        .helpdesk-badge.status-progress {
+            background: rgba(14, 165, 233, 0.15);
+            color: #0369a1;
+        }
+
+        .helpdesk-badge.status-waiting {
+            background: rgba(249, 115, 22, 0.15);
+            color: #c2410c;
+        }
+
+        .helpdesk-badge.status-resolved {
+            background: rgba(34, 197, 94, 0.15);
+            color: #15803d;
+        }
+
+        .helpdesk-badge.status-closed {
+            background: rgba(100, 116, 139, 0.2);
+            color: #475569;
+        }
+
+        .helpdesk-badge.priority-low {
+            background: rgba(16, 185, 129, 0.15);
+            color: #047857;
+        }
+
+        .helpdesk-badge.priority-medium {
+            background: rgba(59, 130, 246, 0.15);
+            color: #1d4ed8;
+        }
+
+        .helpdesk-badge.priority-high {
+            background: rgba(249, 115, 22, 0.15);
+            color: #c2410c;
+        }
+
+        .helpdesk-badge.priority-urgent {
+            background: rgba(239, 68, 68, 0.15);
+            color: #b91c1c;
+        }
+
+        .helpdesk-detail-body {
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .helpdesk-detail-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .helpdesk-detail-subtitle {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6b7280;
+        }
+
+        .helpdesk-detail-meta {
+            display: grid;
+            gap: 0.35rem;
+            font-size: 0.85rem;
+            color: #4b5563;
+        }
+
+        .helpdesk-detail-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .helpdesk-detail-section {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 0.75rem;
+        }
+
+        .helpdesk-detail-section p {
+            font-size: 0.85rem;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .helpdesk-external-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+
+        .helpdesk-external-row span {
+            font-weight: 600;
+        }
+
+        .helpdesk-empty {
+            border: 1px dashed #e5e7eb;
+            border-radius: 14px;
+            padding: 1.5rem;
+            text-align: center;
+            color: #6b7280;
+            background: #f9fafb;
+        }
+
+        @media (max-width: 1200px) {
+            .helpdesk-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        @media (max-width: 720px) {
+            #helpdeskView {
+                padding: 1rem;
+            }
+
+            #helpdeskView .rack-header {
+                padding: 0.85rem 1rem;
+            }
+        }
     </style>
 </head>
 
@@ -4765,6 +5158,24 @@
                 <div class="sidebar-section-body">
                     <div class="sidebar-nav">
                         <button class="view-toggle-btn nav-btn" data-view="reports" onclick="switchView('reports', this)">Reporty</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section collapsed" data-section="helpdesk">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    <span class="sidebar-section-label">
+                        <svg class="sidebar-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 13V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7"></path>
+                            <path d="M3 13h5l2 3h4l2-3h5"></path>
+                        </svg>
+                        <span>Helpdesk</span>
+                    </span>
+                    <span class="sidebar-section-toggle" aria-hidden="true"></span>
+                </button>
+                <div class="sidebar-section-body">
+                    <div class="sidebar-nav">
+                        <button class="view-toggle-btn nav-btn" data-view="helpdesk" onclick="switchView('helpdesk', this)">Helpdesk</button>
                     </div>
                 </div>
             </div>
@@ -5442,6 +5853,72 @@
                 </div>
             </div>
 
+            <div id="helpdeskView" class="helpdesk-view" style="display: none;">
+                <div class="rack-header">
+                    <div>
+                        <h2>Helpdesk</h2>
+                        <div class="helpdesk-subtitle">Centralni fronta pozadavku, stavy SLA a priprava na budouci integrace.</div>
+                    </div>
+                    <div class="helpdesk-actions">
+                        <button class="btn-small" id="helpdeskNewTicketBtn" onclick="openHelpdeskTicketModal()">+ Novy tiket</button>
+                        <button class="btn-small btn-secondary" onclick="renderHelpdeskView()">Obnovit</button>
+                    </div>
+                </div>
+                <div class="helpdesk-layout">
+                    <aside class="helpdesk-panel helpdesk-filters">
+                        <div class="helpdesk-panel-title">Fronty</div>
+                        <div id="helpdeskQueueList" class="helpdesk-queue-list"></div>
+                        <div class="helpdesk-panel-divider"></div>
+                        <div class="helpdesk-panel-title">Filtry</div>
+                        <div class="helpdesk-filter-group">
+                            <label for="helpdeskClientFilter">Klient</label>
+                            <select id="helpdeskClientFilter" onchange="updateHelpdeskFilters()"></select>
+                        </div>
+                        <div class="helpdesk-filter-group">
+                            <label for="helpdeskStatusFilter">Status</label>
+                            <select id="helpdeskStatusFilter" onchange="updateHelpdeskFilters()"></select>
+                        </div>
+                        <div class="helpdesk-filter-group">
+                            <label for="helpdeskPriorityFilter">Priorita</label>
+                            <select id="helpdeskPriorityFilter" onchange="updateHelpdeskFilters()"></select>
+                        </div>
+                        <div class="helpdesk-filter-group">
+                            <label for="helpdeskAssigneeFilter">Prirazeni</label>
+                            <select id="helpdeskAssigneeFilter" onchange="updateHelpdeskFilters()"></select>
+                        </div>
+                        <div class="helpdesk-filter-group">
+                            <label for="helpdeskSearch">Hledat</label>
+                            <input type="text" id="helpdeskSearch" placeholder="ID, titulek, popis" oninput="updateHelpdeskFilters()">
+                        </div>
+                        <div class="helpdesk-panel-divider"></div>
+                        <div class="helpdesk-panel-title">Integrace (priprava)</div>
+                        <div class="helpdesk-integration-list">
+                            <div class="helpdesk-integration-card">Teams</div>
+                            <div class="helpdesk-integration-card">ClickUp</div>
+                            <div class="helpdesk-integration-card">Jine kanaly</div>
+                        </div>
+                        <div class="helpdesk-panel-note">
+                            Pripraveno pro obousmerny sync pres API a webhooky. Tiket ma pole External ID a Provider pro budouci napojeni.
+                        </div>
+                    </aside>
+
+                    <section class="helpdesk-panel helpdesk-list">
+                        <div class="helpdesk-list-head">
+                            <div class="helpdesk-list-title">Tikety</div>
+                            <div class="helpdesk-list-actions">
+                                <select id="helpdeskSort" onchange="updateHelpdeskFilters()"></select>
+                            </div>
+                        </div>
+                        <div class="helpdesk-metrics" id="helpdeskMetrics"></div>
+                        <div id="helpdeskList" class="helpdesk-ticket-list"></div>
+                    </section>
+
+                    <section class="helpdesk-panel helpdesk-detail">
+                        <div id="helpdeskDetail" class="helpdesk-detail-body"></div>
+                    </section>
+                </div>
+            </div>
+
             <div id="teamsView" class="teams-view" style="display: none;">
                 <div class="rack-header">
                     <div>
@@ -5575,6 +6052,59 @@
             </div>
             <div id="portDetailsContent">
                 <!-- Port details will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Helpdesk Ticket Modal -->
+    <div id="helpdeskTicketModal" class="modal">
+        <div class="modal-content" style="max-width: 640px;">
+            <div class="modal-header">
+                <h2 id="helpdeskModalTitle">Novy tiket</h2>
+                <button class="modal-close" onclick="closeHelpdeskTicketModal()">x</button>
+            </div>
+            <div class="time-form">
+                <input type="hidden" id="helpdeskTicketId">
+                <div class="form-group">
+                    <label>Titulek</label>
+                    <input type="text" id="helpdeskTicketTitle" placeholder="Napriklad: VPN nefunguje">
+                </div>
+                <div class="form-group">
+                    <label>Klient</label>
+                    <select id="helpdeskTicketClient"></select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="helpdeskTicketStatus"></select>
+                </div>
+                <div class="form-group">
+                    <label>Priorita</label>
+                    <select id="helpdeskTicketPriority"></select>
+                </div>
+                <div class="form-group">
+                    <label>Prirazeno</label>
+                    <input type="text" id="helpdeskTicketAssignee" placeholder="Napriklad: JB">
+                </div>
+                <div class="form-group">
+                    <label>Termin</label>
+                    <input type="date" id="helpdeskTicketDue">
+                </div>
+                <div class="form-group">
+                    <label>Zdroj</label>
+                    <select id="helpdeskTicketSource"></select>
+                </div>
+                <div class="form-group">
+                    <label>Tagy</label>
+                    <input type="text" id="helpdeskTicketTags" placeholder="monitoring, sla, urgent">
+                </div>
+                <div class="form-group">
+                    <label>Popis</label>
+                    <textarea id="helpdeskTicketDesc" rows="4" placeholder="Shrnuti pozadavku"></textarea>
+                </div>
+                <div class="client-form-actions">
+                    <button class="btn" onclick="saveHelpdeskTicket()">Ulozit tiket</button>
+                    <button class="btn btn-secondary" type="button" onclick="closeHelpdeskTicketModal()">Zahodit</button>
+                </div>
             </div>
         </div>
     </div>
@@ -6003,6 +6533,44 @@
             lastLoadedAt: 0,
             loading: false
         };
+        let helpdeskTickets = [];
+        let helpdeskSelectedId = null;
+        let helpdeskFilters = {
+            queue: 'open',
+            status: 'all',
+            priority: 'all',
+            clientId: 'all',
+            assignee: 'all',
+            search: '',
+            sort: 'updated-desc'
+        };
+        const HELP_DESK_STATUSES = [
+            { id: 'open', label: 'Otevreno', tone: 'open' },
+            { id: 'in-progress', label: 'V reseni', tone: 'progress' },
+            { id: 'waiting', label: 'Ceka na klienta', tone: 'waiting' },
+            { id: 'resolved', label: 'Vyreseno', tone: 'resolved' },
+            { id: 'closed', label: 'Uzavreno', tone: 'closed' }
+        ];
+        const HELP_DESK_PRIORITIES = [
+            { id: 'low', label: 'Nizka', tone: 'low' },
+            { id: 'medium', label: 'Stredni', tone: 'medium' },
+            { id: 'high', label: 'Vysoka', tone: 'high' },
+            { id: 'urgent', label: 'Kriticka', tone: 'urgent' }
+        ];
+        const HELP_DESK_SOURCES = [
+            { id: 'manual', label: 'Manual' },
+            { id: 'email', label: 'Email' },
+            { id: 'phone', label: 'Telefon' },
+            { id: 'teams', label: 'Teams' },
+            { id: 'clickup', label: 'ClickUp' }
+        ];
+        const HELP_DESK_QUEUES = [
+            { id: 'open', label: 'Otevrene', match: ticket => !['resolved', 'closed'].includes(ticket.status) },
+            { id: 'waiting', label: 'Ceka na klienta', match: ticket => ticket.status === 'waiting' },
+            { id: 'due-soon', label: 'Blizi se termin', match: ticket => isHelpdeskDueSoon(ticket) },
+            { id: 'overdue', label: 'Po terminu', match: ticket => isHelpdeskOverdue(ticket) },
+            { id: 'all', label: 'Vse', match: () => true }
+        ];
         let cloudSaveTimer = null;
         try {
             pendingReportShareId = new URLSearchParams(window.location.search).get('reportShare');
@@ -6032,6 +6600,7 @@
                 manageDevices: true,
                 manageCategories: true,
                 manageRoles: true,
+                manageHelpdesk: true,
                 manageTime: true,
                 viewTimeAll: true
             },
@@ -6043,6 +6612,7 @@
                 manageDevices: true,
                 manageCategories: false,
                 manageRoles: false,
+                manageHelpdesk: true,
                 manageTime: true,
                 viewTimeAll: false
             },
@@ -6054,6 +6624,7 @@
                 manageDevices: false,
                 manageCategories: false,
                 manageRoles: false,
+                manageHelpdesk: false,
                 manageTime: false,
                 viewTimeAll: false
             },
@@ -6065,6 +6636,7 @@
                 manageDevices: false,
                 manageCategories: false,
                 manageRoles: false,
+                manageHelpdesk: false,
                 manageTime: false,
                 viewTimeAll: true
             }
@@ -6197,6 +6769,10 @@
             return getRolePermissions(currentUserRole).manageTime;
         }
 
+        function canManageHelpdesk() {
+            return getRolePermissions(currentUserRole).manageHelpdesk;
+        }
+
         function canViewAllTimeEntries() {
             return getRolePermissions(currentUserRole).viewTimeAll;
         }
@@ -6234,6 +6810,7 @@
             const userManagerBtn = document.getElementById('userManagerBtn');
             const m365ManagerBtn = document.getElementById('m365ManagerBtn');
             const addTimeEntryBtn = document.getElementById('addTimeEntryBtn');
+            const helpdeskNewTicketBtn = document.getElementById('helpdeskNewTicketBtn');
             const reportsNavBtn = document.querySelector('.view-toggle-btn[data-view="reports"]');
             const dashboardReportsBtn = document.getElementById('dashboardReportsBtn');
             const timeAllToggle = document.getElementById('timeAllClientsToggle');
@@ -6268,6 +6845,10 @@
                     timeAllToggle.checked = false;
                     localStorage.setItem('rackManagerTimeAllClients', '0');
                 }
+            }
+
+            if (helpdeskNewTicketBtn) {
+                helpdeskNewTicketBtn.disabled = !canManageHelpdesk();
             }
 
             if (!currentClientId) {
@@ -7508,6 +8089,8 @@
             if (savedClientData) {
                 clientData = JSON.parse(savedClientData);
             }
+
+            loadHelpdeskTickets();
             
             // Check if there was a previously selected client
             const lastClientId = localStorage.getItem('rackManagerLastClient');
@@ -7671,6 +8254,7 @@
             document.getElementById('reportsView').style.display = 'none';
             document.getElementById('dashboardView').style.display = 'none';
             document.getElementById('clientsView').style.display = 'none';
+            document.getElementById('helpdeskView').style.display = 'none';
             document.getElementById('teamsView').style.display = 'none';
             
             // Show selected view
@@ -7712,11 +8296,604 @@
                     reportFiltersVisible = false;
                     renderReportsView();
                     break;
+                case 'helpdesk':
+                    document.getElementById('helpdeskView').style.display = 'block';
+                    renderHelpdeskView();
+                    break;
                 case 'teams':
                     document.getElementById('teamsView').style.display = 'block';
                     renderTeamsView();
                     break;
             }
+        }
+
+        // Helpdesk
+        function loadHelpdeskTickets() {
+            try {
+                const stored = JSON.parse(localStorage.getItem('rackManagerHelpdeskTickets') || '[]');
+                helpdeskTickets = Array.isArray(stored) ? stored : [];
+            } catch (err) {
+                helpdeskTickets = [];
+            }
+        }
+
+        function saveHelpdeskTickets() {
+            localStorage.setItem('rackManagerHelpdeskTickets', JSON.stringify(helpdeskTickets));
+            scheduleCloudSave();
+        }
+
+        function createHelpdeskTicketId() {
+            const stamp = Date.now().toString(36).toUpperCase();
+            const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+            return `HD-${stamp}-${rand}`;
+        }
+
+        function getHelpdeskStatus(status) {
+            return HELP_DESK_STATUSES.find(item => item.id === status) || { id: status || 'open', label: status || 'Otevreno', tone: 'open' };
+        }
+
+        function getHelpdeskPriority(priority) {
+            return HELP_DESK_PRIORITIES.find(item => item.id === priority) || { id: priority || 'medium', label: priority || 'Stredni', tone: 'medium' };
+        }
+
+        function getHelpdeskSource(source) {
+            return HELP_DESK_SOURCES.find(item => item.id === source) || { id: source || 'manual', label: source || 'Manual' };
+        }
+
+        function formatHelpdeskDate(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '-';
+            return date.toISOString().slice(0, 10);
+        }
+
+        function getHelpdeskClientName(clientId, fallbackName) {
+            if (!clientId) return fallbackName || '-';
+            const client = clients.find(item => item.id === clientId);
+            return (client && client.name) ? client.name : (fallbackName || '-');
+        }
+
+        function isHelpdeskDueSoon(ticket) {
+            if (!ticket || !ticket.dueAt || ['resolved', 'closed'].includes(ticket.status)) return false;
+            const due = new Date(ticket.dueAt);
+            if (Number.isNaN(due.getTime())) return false;
+            const now = new Date();
+            const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+            const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const diffDays = Math.round((dueDay - nowDay) / 86400000);
+            return diffDays >= 0 && diffDays <= 2;
+        }
+
+        function isHelpdeskOverdue(ticket) {
+            if (!ticket || !ticket.dueAt || ['resolved', 'closed'].includes(ticket.status)) return false;
+            const due = new Date(ticket.dueAt);
+            if (Number.isNaN(due.getTime())) return false;
+            const now = new Date();
+            const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+            const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            return dueDay < nowDay;
+        }
+
+        function setHelpdeskQueue(queueId) {
+            helpdeskFilters.queue = queueId;
+            renderHelpdeskView();
+        }
+
+        function updateHelpdeskFilters() {
+            const clientSelect = document.getElementById('helpdeskClientFilter');
+            const statusSelect = document.getElementById('helpdeskStatusFilter');
+            const prioritySelect = document.getElementById('helpdeskPriorityFilter');
+            const assigneeSelect = document.getElementById('helpdeskAssigneeFilter');
+            const searchInput = document.getElementById('helpdeskSearch');
+            const sortSelect = document.getElementById('helpdeskSort');
+
+            helpdeskFilters.clientId = clientSelect ? clientSelect.value : 'all';
+            helpdeskFilters.status = statusSelect ? statusSelect.value : 'all';
+            helpdeskFilters.priority = prioritySelect ? prioritySelect.value : 'all';
+            helpdeskFilters.assignee = assigneeSelect ? assigneeSelect.value : 'all';
+            helpdeskFilters.search = searchInput ? (searchInput.value || '').trim() : '';
+            helpdeskFilters.sort = sortSelect ? sortSelect.value : helpdeskFilters.sort;
+
+            renderHelpdeskView();
+        }
+
+        function renderHelpdeskFiltersUI() {
+            const clientSelect = document.getElementById('helpdeskClientFilter');
+            if (clientSelect) {
+                const clientOptions = clients.map(client => ({
+                    value: client.id,
+                    label: client.name
+                }));
+                const options = [
+                    { value: 'all', label: 'Vsechny' },
+                    ...clientOptions
+                ];
+                clientSelect.innerHTML = options.map(option =>
+                    `<option value="${option.value}">${escapeHtml(option.label)}</option>`
+                ).join('');
+                clientSelect.value = options.some(option => option.value === helpdeskFilters.clientId)
+                    ? helpdeskFilters.clientId
+                    : 'all';
+            }
+
+            const statusSelect = document.getElementById('helpdeskStatusFilter');
+            if (statusSelect) {
+                const options = [{ id: 'all', label: 'Vse' }, ...HELP_DESK_STATUSES];
+                statusSelect.innerHTML = options.map(option =>
+                    `<option value="${option.id}">${escapeHtml(option.label)}</option>`
+                ).join('');
+                statusSelect.value = options.some(option => option.id === helpdeskFilters.status)
+                    ? helpdeskFilters.status
+                    : 'all';
+            }
+
+            const prioritySelect = document.getElementById('helpdeskPriorityFilter');
+            if (prioritySelect) {
+                const options = [{ id: 'all', label: 'Vse' }, ...HELP_DESK_PRIORITIES];
+                prioritySelect.innerHTML = options.map(option =>
+                    `<option value="${option.id}">${escapeHtml(option.label)}</option>`
+                ).join('');
+                prioritySelect.value = options.some(option => option.id === helpdeskFilters.priority)
+                    ? helpdeskFilters.priority
+                    : 'all';
+            }
+
+            const assigneeSelect = document.getElementById('helpdeskAssigneeFilter');
+            if (assigneeSelect) {
+                const assignees = Array.from(new Set(helpdeskTickets
+                    .map(ticket => (ticket.assignee || '').trim())
+                    .filter(Boolean)
+                )).sort();
+                const options = [
+                    { value: 'all', label: 'Vse' },
+                    { value: 'unassigned', label: 'Neprirazeno' },
+                    ...assignees.map(name => ({ value: name, label: name }))
+                ];
+                assigneeSelect.innerHTML = options.map(option =>
+                    `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`
+                ).join('');
+                assigneeSelect.value = options.some(option => option.value === helpdeskFilters.assignee)
+                    ? helpdeskFilters.assignee
+                    : 'all';
+            }
+
+            const searchInput = document.getElementById('helpdeskSearch');
+            if (searchInput) {
+                searchInput.value = helpdeskFilters.search || '';
+            }
+
+            const sortSelect = document.getElementById('helpdeskSort');
+            if (sortSelect) {
+                const options = [
+                    { value: 'updated-desc', label: 'Posledni zmena' },
+                    { value: 'created-desc', label: 'Nejnovejsi' },
+                    { value: 'due-asc', label: 'Nejblizsi termin' },
+                    { value: 'priority-desc', label: 'Priorita' }
+                ];
+                sortSelect.innerHTML = options.map(option =>
+                    `<option value="${option.value}">${escapeHtml(option.label)}</option>`
+                ).join('');
+                sortSelect.value = options.some(option => option.value === helpdeskFilters.sort)
+                    ? helpdeskFilters.sort
+                    : 'updated-desc';
+            }
+        }
+
+        function renderHelpdeskQueues() {
+            const queueList = document.getElementById('helpdeskQueueList');
+            if (!queueList) return;
+            const active = HELP_DESK_QUEUES.some(queue => queue.id === helpdeskFilters.queue)
+                ? helpdeskFilters.queue
+                : 'open';
+            helpdeskFilters.queue = active;
+            queueList.innerHTML = HELP_DESK_QUEUES.map(queue => {
+                const count = helpdeskTickets.filter(ticket => queue.match(ticket)).length;
+                const isActive = queue.id === active ? 'active' : '';
+                return `
+                    <button class="helpdesk-queue-item ${isActive}" type="button" onclick="setHelpdeskQueue('${queue.id}')">
+                        <span>${escapeHtml(queue.label)}</span>
+                        <span class="helpdesk-queue-count">${count}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderHelpdeskMetrics() {
+            const metricsEl = document.getElementById('helpdeskMetrics');
+            if (!metricsEl) return;
+            const openCount = helpdeskTickets.filter(ticket => !['resolved', 'closed'].includes(ticket.status)).length;
+            const waitingCount = helpdeskTickets.filter(ticket => ticket.status === 'waiting').length;
+            const dueSoonCount = helpdeskTickets.filter(ticket => isHelpdeskDueSoon(ticket)).length;
+            const overdueCount = helpdeskTickets.filter(ticket => isHelpdeskOverdue(ticket)).length;
+            metricsEl.innerHTML = `
+                <div class="helpdesk-metric">
+                    <div class="helpdesk-metric-value">${openCount}</div>
+                    <div class="helpdesk-metric-label">Otevrene</div>
+                </div>
+                <div class="helpdesk-metric">
+                    <div class="helpdesk-metric-value">${waitingCount}</div>
+                    <div class="helpdesk-metric-label">Ceka na klienta</div>
+                </div>
+                <div class="helpdesk-metric">
+                    <div class="helpdesk-metric-value">${dueSoonCount}</div>
+                    <div class="helpdesk-metric-label">Blizi se</div>
+                </div>
+                <div class="helpdesk-metric">
+                    <div class="helpdesk-metric-value">${overdueCount}</div>
+                    <div class="helpdesk-metric-label">Po terminu</div>
+                </div>
+            `;
+        }
+
+        function getHelpdeskFilteredTickets() {
+            let list = [...helpdeskTickets];
+            const queue = HELP_DESK_QUEUES.find(item => item.id === helpdeskFilters.queue);
+            if (queue) {
+                list = list.filter(ticket => queue.match(ticket));
+            }
+            if (helpdeskFilters.status !== 'all') {
+                list = list.filter(ticket => ticket.status === helpdeskFilters.status);
+            }
+            if (helpdeskFilters.priority !== 'all') {
+                list = list.filter(ticket => ticket.priority === helpdeskFilters.priority);
+            }
+            if (helpdeskFilters.clientId !== 'all') {
+                list = list.filter(ticket => ticket.clientId === helpdeskFilters.clientId);
+            }
+            if (helpdeskFilters.assignee === 'unassigned') {
+                list = list.filter(ticket => !ticket.assignee);
+            } else if (helpdeskFilters.assignee !== 'all') {
+                list = list.filter(ticket => ticket.assignee === helpdeskFilters.assignee);
+            }
+            if (helpdeskFilters.search) {
+                const term = helpdeskFilters.search.toLowerCase();
+                list = list.filter(ticket => {
+                    const tags = Array.isArray(ticket.tags) ? ticket.tags.join(' ') : '';
+                    return [
+                        ticket.id,
+                        ticket.title,
+                        ticket.description,
+                        ticket.clientName,
+                        ticket.assignee,
+                        tags
+                    ].some(value => (value || '').toLowerCase().includes(term));
+                });
+            }
+
+            switch (helpdeskFilters.sort) {
+                case 'created-desc':
+                    list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    break;
+                case 'due-asc':
+                    list.sort((a, b) => {
+                        const aDue = a.dueAt ? new Date(a.dueAt).getTime() : Number.MAX_SAFE_INTEGER;
+                        const bDue = b.dueAt ? new Date(b.dueAt).getTime() : Number.MAX_SAFE_INTEGER;
+                        return aDue - bDue;
+                    });
+                    break;
+                case 'priority-desc':
+                    const rank = { urgent: 0, high: 1, medium: 2, low: 3 };
+                    list.sort((a, b) => (rank[a.priority] ?? 9) - (rank[b.priority] ?? 9));
+                    break;
+                default:
+                    list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+                    break;
+            }
+
+            return list;
+        }
+
+        function renderHelpdeskList(list) {
+            const listEl = document.getElementById('helpdeskList');
+            if (!listEl) return;
+            if (!list.length) {
+                listEl.innerHTML = '<div class="helpdesk-empty">Zatim nejsou zadne tikety.</div>';
+                return;
+            }
+
+            listEl.innerHTML = list.map(ticket => {
+                const status = getHelpdeskStatus(ticket.status);
+                const priority = getHelpdeskPriority(ticket.priority);
+                const source = getHelpdeskSource(ticket.source);
+                const clientName = getHelpdeskClientName(ticket.clientId, ticket.clientName);
+                const dueLabel = ticket.dueAt ? `Termin: ${formatHelpdeskDate(ticket.dueAt)}` : 'Termin: -';
+                const assignee = ticket.assignee ? ticket.assignee : 'Neprirazeno';
+                const isActive = ticket.id === helpdeskSelectedId ? 'active' : '';
+                const tags = Array.isArray(ticket.tags) && ticket.tags.length
+                    ? ticket.tags.map(tag => `<span class="helpdesk-tag">${escapeHtml(tag)}</span>`).join('')
+                    : '';
+                return `
+                    <div class="helpdesk-ticket-card ${isActive}" onclick="selectHelpdeskTicket('${ticket.id}')">
+                        <div class="helpdesk-ticket-title">${escapeHtml(ticket.title || 'Bez nazvu')}</div>
+                        <div class="helpdesk-ticket-meta">
+                            <span>${escapeHtml(ticket.id || '-')}</span>
+                            <span>${escapeHtml(clientName)}</span>
+                            <span>${escapeHtml(assignee)}</span>
+                            <span>${escapeHtml(dueLabel)}</span>
+                        </div>
+                        <div class="helpdesk-ticket-meta">
+                            <span class="helpdesk-badge status-${status.tone}">${escapeHtml(status.label)}</span>
+                            <span class="helpdesk-badge priority-${priority.tone}">${escapeHtml(priority.label)}</span>
+                            <span>${escapeHtml(source.label)}</span>
+                        </div>
+                        ${tags ? `<div class="helpdesk-ticket-tags">${tags}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderHelpdeskDetail(ticketId) {
+            const detailEl = document.getElementById('helpdeskDetail');
+            if (!detailEl) return;
+            if (!ticketId) {
+                detailEl.innerHTML = '<div class="helpdesk-empty">Vyber tiket ze seznamu.</div>';
+                return;
+            }
+
+            const ticket = helpdeskTickets.find(item => item.id === ticketId);
+            if (!ticket) {
+                detailEl.innerHTML = '<div class="helpdesk-empty">Tiket nebyl nalezen.</div>';
+                return;
+            }
+
+            const status = getHelpdeskStatus(ticket.status);
+            const priority = getHelpdeskPriority(ticket.priority);
+            const source = getHelpdeskSource(ticket.source);
+            const clientName = getHelpdeskClientName(ticket.clientId, ticket.clientName);
+            const description = ticket.description ? escapeHtml(ticket.description).replace(/\n/g, '<br>') : 'Bez popisu.';
+            const tags = Array.isArray(ticket.tags) && ticket.tags.length
+                ? ticket.tags.map(tag => `<span class="helpdesk-tag">${escapeHtml(tag)}</span>`).join('')
+                : '<span class="helpdesk-tag">bez tagu</span>';
+            const external = ticket.external || {};
+            const provider = external.provider || '-';
+            const externalId = external.externalId || '-';
+            const lastSync = external.lastSyncAt ? formatHelpdeskDate(external.lastSyncAt) : '-';
+            const canEdit = canManageHelpdesk();
+            const actionButtons = [];
+
+            if (canEdit) {
+                actionButtons.push(`<button class="btn-small btn-secondary" onclick="openHelpdeskTicketModal('${ticket.id}')">Upravit</button>`);
+                if (['resolved', 'closed'].includes(ticket.status)) {
+                    actionButtons.push(`<button class="btn-small" onclick="updateHelpdeskTicketStatus('${ticket.id}', 'open')">Znovu otevrit</button>`);
+                } else {
+                    actionButtons.push(`<button class="btn-small" onclick="updateHelpdeskTicketStatus('${ticket.id}', 'in-progress')">V reseni</button>`);
+                    actionButtons.push(`<button class="btn-small" onclick="updateHelpdeskTicketStatus('${ticket.id}', 'waiting')">Ceka na klienta</button>`);
+                    actionButtons.push(`<button class="btn-small" onclick="updateHelpdeskTicketStatus('${ticket.id}', 'resolved')">Vyresit</button>`);
+                    actionButtons.push(`<button class="btn-small btn-secondary" onclick="updateHelpdeskTicketStatus('${ticket.id}', 'closed')">Uzavrit</button>`);
+                }
+            }
+
+            detailEl.innerHTML = `
+                <div>
+                    <div class="helpdesk-detail-subtitle">${escapeHtml(ticket.id || '-')}</div>
+                    <div class="helpdesk-detail-title">${escapeHtml(ticket.title || 'Bez nazvu')}</div>
+                    <div class="helpdesk-ticket-meta">
+                        <span class="helpdesk-badge status-${status.tone}">${escapeHtml(status.label)}</span>
+                        <span class="helpdesk-badge priority-${priority.tone}">${escapeHtml(priority.label)}</span>
+                    </div>
+                </div>
+                ${actionButtons.length ? `<div class="helpdesk-detail-actions">${actionButtons.join('')}</div>` : ''}
+                <div class="helpdesk-detail-meta">
+                    <div><strong>Klient:</strong> ${escapeHtml(clientName)}</div>
+                    <div><strong>Prirazeno:</strong> ${escapeHtml(ticket.assignee || 'Neprirazeno')}</div>
+                    <div><strong>Termin:</strong> ${escapeHtml(ticket.dueAt ? formatHelpdeskDate(ticket.dueAt) : '-')}</div>
+                    <div><strong>Zdroj:</strong> ${escapeHtml(source.label)}</div>
+                    <div><strong>Vytvoreno:</strong> ${escapeHtml(ticket.createdAt ? formatHelpdeskDate(ticket.createdAt) : '-')}</div>
+                    <div><strong>Aktualizace:</strong> ${escapeHtml(ticket.updatedAt ? formatHelpdeskDate(ticket.updatedAt) : '-')}</div>
+                </div>
+                <div class="helpdesk-detail-section">
+                    <div class="helpdesk-detail-subtitle">Popis</div>
+                    <p>${description}</p>
+                </div>
+                <div class="helpdesk-detail-section">
+                    <div class="helpdesk-detail-subtitle">Tagy</div>
+                    <div class="helpdesk-ticket-tags">${tags}</div>
+                </div>
+                <div class="helpdesk-detail-section">
+                    <div class="helpdesk-detail-subtitle">Integrace</div>
+                    <div class="helpdesk-external-row"><span>Provider:</span> ${escapeHtml(provider)}</div>
+                    <div class="helpdesk-external-row"><span>External ID:</span> ${escapeHtml(externalId)}</div>
+                    <div class="helpdesk-external-row"><span>Posledni sync:</span> ${escapeHtml(lastSync)}</div>
+                    <div class="helpdesk-panel-note">Pripraveno pro Teams/ClickUp sync pres webhooky a API.</div>
+                </div>
+            `;
+        }
+
+        function selectHelpdeskTicket(ticketId) {
+            helpdeskSelectedId = ticketId;
+            renderHelpdeskView();
+        }
+
+        function renderHelpdeskView() {
+            const view = document.getElementById('helpdeskView');
+            if (!view) return;
+            renderHelpdeskQueues();
+            renderHelpdeskFiltersUI();
+            renderHelpdeskMetrics();
+            const filtered = getHelpdeskFilteredTickets();
+            if (!helpdeskSelectedId && filtered.length) {
+                helpdeskSelectedId = filtered[0].id;
+            }
+            if (helpdeskSelectedId && !filtered.find(ticket => ticket.id === helpdeskSelectedId)) {
+                helpdeskSelectedId = filtered.length ? filtered[0].id : null;
+            }
+            renderHelpdeskList(filtered);
+            renderHelpdeskDetail(helpdeskSelectedId);
+        }
+
+        function renderHelpdeskTicketFormOptions() {
+            const clientSelect = document.getElementById('helpdeskTicketClient');
+            if (clientSelect) {
+                const options = [
+                    { value: '', label: 'Neprirazeno' },
+                    ...clients.map(client => ({ value: client.id, label: client.name }))
+                ];
+                clientSelect.innerHTML = options.map(option =>
+                    `<option value="${option.value}">${escapeHtml(option.label)}</option>`
+                ).join('');
+            }
+
+            const statusSelect = document.getElementById('helpdeskTicketStatus');
+            if (statusSelect) {
+                statusSelect.innerHTML = HELP_DESK_STATUSES.map(option =>
+                    `<option value="${option.id}">${escapeHtml(option.label)}</option>`
+                ).join('');
+            }
+
+            const prioritySelect = document.getElementById('helpdeskTicketPriority');
+            if (prioritySelect) {
+                prioritySelect.innerHTML = HELP_DESK_PRIORITIES.map(option =>
+                    `<option value="${option.id}">${escapeHtml(option.label)}</option>`
+                ).join('');
+            }
+
+            const sourceSelect = document.getElementById('helpdeskTicketSource');
+            if (sourceSelect) {
+                sourceSelect.innerHTML = HELP_DESK_SOURCES.map(option =>
+                    `<option value="${option.id}">${escapeHtml(option.label)}</option>`
+                ).join('');
+            }
+        }
+
+        function openHelpdeskTicketModal(ticketId) {
+            if (!canManageHelpdesk()) {
+                alert('Nemate opravneni spravovat helpdesk');
+                return;
+            }
+            const modal = document.getElementById('helpdeskTicketModal');
+            const modalTitle = document.getElementById('helpdeskModalTitle');
+            const idInput = document.getElementById('helpdeskTicketId');
+            const titleInput = document.getElementById('helpdeskTicketTitle');
+            const descInput = document.getElementById('helpdeskTicketDesc');
+            const clientSelect = document.getElementById('helpdeskTicketClient');
+            const statusSelect = document.getElementById('helpdeskTicketStatus');
+            const prioritySelect = document.getElementById('helpdeskTicketPriority');
+            const assigneeInput = document.getElementById('helpdeskTicketAssignee');
+            const dueInput = document.getElementById('helpdeskTicketDue');
+            const sourceSelect = document.getElementById('helpdeskTicketSource');
+            const tagsInput = document.getElementById('helpdeskTicketTags');
+
+            renderHelpdeskTicketFormOptions();
+
+            const ticket = ticketId ? helpdeskTickets.find(item => item.id === ticketId) : null;
+            if (ticket) {
+                if (modalTitle) modalTitle.textContent = 'Upravit tiket';
+                if (idInput) idInput.value = ticket.id;
+                if (titleInput) titleInput.value = ticket.title || '';
+                if (descInput) descInput.value = ticket.description || '';
+                if (clientSelect) clientSelect.value = ticket.clientId || '';
+                if (statusSelect) statusSelect.value = ticket.status || 'open';
+                if (prioritySelect) prioritySelect.value = ticket.priority || 'medium';
+                if (assigneeInput) assigneeInput.value = ticket.assignee || '';
+                if (dueInput) dueInput.value = ticket.dueAt ? formatHelpdeskDate(ticket.dueAt) : '';
+                if (sourceSelect) sourceSelect.value = ticket.source || 'manual';
+                if (tagsInput) tagsInput.value = Array.isArray(ticket.tags) ? ticket.tags.join(', ') : '';
+            } else {
+                if (modalTitle) modalTitle.textContent = 'Novy tiket';
+                if (idInput) idInput.value = '';
+                if (titleInput) titleInput.value = '';
+                if (descInput) descInput.value = '';
+                if (clientSelect) clientSelect.value = currentClientId || '';
+                if (statusSelect) statusSelect.value = 'open';
+                if (prioritySelect) prioritySelect.value = 'medium';
+                if (assigneeInput) assigneeInput.value = '';
+                if (dueInput) dueInput.value = '';
+                if (sourceSelect) sourceSelect.value = 'manual';
+                if (tagsInput) tagsInput.value = '';
+            }
+
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeHelpdeskTicketModal() {
+            const modal = document.getElementById('helpdeskTicketModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function saveHelpdeskTicket() {
+            if (!canManageHelpdesk()) {
+                alert('Nemate opravneni spravovat helpdesk');
+                return;
+            }
+            const idInput = document.getElementById('helpdeskTicketId');
+            const titleInput = document.getElementById('helpdeskTicketTitle');
+            const descInput = document.getElementById('helpdeskTicketDesc');
+            const clientSelect = document.getElementById('helpdeskTicketClient');
+            const statusSelect = document.getElementById('helpdeskTicketStatus');
+            const prioritySelect = document.getElementById('helpdeskTicketPriority');
+            const assigneeInput = document.getElementById('helpdeskTicketAssignee');
+            const dueInput = document.getElementById('helpdeskTicketDue');
+            const sourceSelect = document.getElementById('helpdeskTicketSource');
+            const tagsInput = document.getElementById('helpdeskTicketTags');
+
+            const title = titleInput ? titleInput.value.trim() : '';
+            if (!title) {
+                alert('Titulek tiketu je povinny');
+                return;
+            }
+
+            const now = Date.now();
+            const ticketId = idInput && idInput.value ? idInput.value : createHelpdeskTicketId();
+            const clientId = clientSelect ? clientSelect.value : '';
+            const clientName = getHelpdeskClientName(clientId);
+            const tags = tagsInput
+                ? tagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean)
+                : [];
+
+            const existingIndex = helpdeskTickets.findIndex(ticket => ticket.id === ticketId);
+            const baseTicket = existingIndex >= 0 ? helpdeskTickets[existingIndex] : null;
+            const ticketData = {
+                id: ticketId,
+                title,
+                description: descInput ? descInput.value.trim() : '',
+                clientId: clientId || '',
+                clientName: clientName,
+                status: statusSelect ? statusSelect.value : 'open',
+                priority: prioritySelect ? prioritySelect.value : 'medium',
+                assignee: assigneeInput ? assigneeInput.value.trim() : '',
+                dueAt: dueInput && dueInput.value ? dueInput.value : '',
+                source: sourceSelect ? sourceSelect.value : 'manual',
+                tags,
+                createdAt: baseTicket ? baseTicket.createdAt : now,
+                updatedAt: now,
+                resolvedAt: baseTicket ? baseTicket.resolvedAt : null,
+                external: baseTicket ? baseTicket.external : {
+                    provider: '',
+                    externalId: '',
+                    externalUrl: '',
+                    lastSyncAt: null,
+                    status: 'unlinked'
+                }
+            };
+
+            if (existingIndex >= 0) {
+                helpdeskTickets[existingIndex] = ticketData;
+            } else {
+                helpdeskTickets.push(ticketData);
+            }
+
+            saveHelpdeskTickets();
+            helpdeskSelectedId = ticketId;
+            closeHelpdeskTicketModal();
+            renderHelpdeskView();
+        }
+
+        function updateHelpdeskTicketStatus(ticketId, status) {
+            if (!canManageHelpdesk()) {
+                alert('Nemate opravneni spravovat helpdesk');
+                return;
+            }
+            const ticket = helpdeskTickets.find(item => item.id === ticketId);
+            if (!ticket) return;
+            ticket.status = status;
+            ticket.updatedAt = Date.now();
+            if (['resolved', 'closed'].includes(status)) {
+                ticket.resolvedAt = ticket.resolvedAt || ticket.updatedAt;
+            } else {
+                ticket.resolvedAt = null;
+            }
+            saveHelpdeskTickets();
+            renderHelpdeskView();
         }
 
         // Teams integration
@@ -12848,7 +14025,8 @@
         function hasLocalData() {
             try {
                 const list = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
-                return Array.isArray(list) && list.length > 0;
+                const tickets = JSON.parse(localStorage.getItem('rackManagerHelpdeskTickets') || '[]');
+                return (Array.isArray(list) && list.length > 0) || (Array.isArray(tickets) && tickets.length > 0);
             } catch (err) {
                 return false;
             }
@@ -12860,9 +14038,14 @@
             const cloudClientData = payload.clientData || {};
             const cloudLastClientId = payload.lastClientId || null;
             const cloudM365Config = payload.m365Config || null;
+            const hasHelpdeskTickets = Object.prototype.hasOwnProperty.call(payload, 'helpdeskTickets');
+            const cloudHelpdeskTickets = payload.helpdeskTickets || [];
 
             localStorage.setItem('rackManagerClients', JSON.stringify(cloudClients));
             localStorage.setItem('rackManagerClientData', JSON.stringify(cloudClientData));
+            if (hasHelpdeskTickets) {
+                localStorage.setItem('rackManagerHelpdeskTickets', JSON.stringify(cloudHelpdeskTickets));
+            }
             if (cloudLastClientId) {
                 localStorage.setItem('rackManagerLastClient', cloudLastClientId);
             } else {
@@ -13516,12 +14699,14 @@
       var clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
       var lastClientId = localStorage.getItem('rackManagerLastClient') || null;
       var m365Config = JSON.parse(localStorage.getItem('rackManagerM365Config') || '{}');
+      var helpdeskTickets = JSON.parse(localStorage.getItem('rackManagerHelpdeskTickets') || '[]');
 
       var payload = {
         clients: clients,
         clientData: clientData,
         lastClientId: lastClientId,
         m365Config: m365Config,
+        helpdeskTickets: helpdeskTickets,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         updatedAtMs: Date.now(),
         updatedBy: user.email || user.uid
