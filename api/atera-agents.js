@@ -13,17 +13,22 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.ATERA_API_KEY || process.env.ATERA_API_TOKEN;
+  const stripQuotes = (value) => {
+    if (!value) return value;
+    return value.toString().replace(/^["']|["']$/g, '');
+  };
+
+  const apiKey = stripQuotes(process.env.ATERA_API_KEY || process.env.ATERA_API_TOKEN);
   if (!apiKey) {
     return res.status(500).json({ error: 'Missing ATERA_API_KEY' });
   }
 
-  const baseUrl = process.env.ATERA_AGENTS_URL || 'https://app.atera.com/api/v3/agents';
-  const pageParam = process.env.ATERA_PAGE_PARAM || 'page';
-  const pageSizeParam = process.env.ATERA_PAGE_SIZE_PARAM || 'pageSize';
+  const baseUrl = stripQuotes(process.env.ATERA_AGENTS_URL || 'https://app.atera.com/api/v3/agents');
+  const pageParam = stripQuotes(process.env.ATERA_PAGE_PARAM || 'page');
+  const pageSizeParam = stripQuotes(process.env.ATERA_PAGE_SIZE_PARAM || 'pageSize');
   const pageSize = parseInt(process.env.ATERA_PAGE_SIZE || '100', 10);
-  const apiKeyHeader = process.env.ATERA_API_KEY_HEADER || 'X-API-KEY';
-  const authScheme = process.env.ATERA_API_AUTH_SCHEME || 'Bearer';
+  const apiKeyHeader = stripQuotes(process.env.ATERA_API_KEY_HEADER || 'X-API-KEY');
+  const authScheme = stripQuotes(process.env.ATERA_API_AUTH_SCHEME || 'Bearer');
 
   const headers = { 'Content-Type': 'application/json' };
   if (apiKeyHeader.toLowerCase() === 'authorization') {
@@ -75,7 +80,12 @@ module.exports = async function handler(req, res) {
     while (keepFetching) {
       const response = await fetch(buildUrl(page), { method: 'GET', headers });
       if (!response.ok) {
-        return res.status(502).json({ error: 'Atera API request failed', status: response.status });
+        const body = await response.text();
+        return res.status(502).json({
+          error: 'Atera API request failed',
+          status: response.status,
+          body: body ? body.slice(0, 500) : ''
+        });
       }
 
       const data = await response.json();
