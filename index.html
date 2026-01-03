@@ -7765,14 +7765,22 @@
                 const userRef = usersRef.doc(uid);
 
                 const globalRef = db.collection('users').doc(uid);
-                const [userSnap, usersSnap, globalSnap] = await Promise.all([
+                const [userSnapResult, usersSnapResult, globalSnapResult] = await Promise.allSettled([
                     userRef.get(),
                     usersRef.limit(1).get(),
                     globalRef.get()
                 ]);
 
+                if (userSnapResult.status !== 'fulfilled' || usersSnapResult.status !== 'fulfilled') {
+                    throw userSnapResult.reason || usersSnapResult.reason;
+                }
+
+                const userSnap = userSnapResult.value;
+                const usersSnap = usersSnapResult.value;
+                const globalSnap = globalSnapResult.status === 'fulfilled' ? globalSnapResult.value : null;
+
                 const existing = userSnap.exists ? userSnap.data() : {};
-                const globalData = globalSnap.exists ? globalSnap.data() : {};
+                const globalData = globalSnap && globalSnap.exists ? globalSnap.data() : {};
                 const clientRole = existing && existing.role ? existing.role : '';
                 const globalRole = globalData && globalData.role ? globalData.role : '';
                 const clientOverride = existing && existing.permissionsOverride ? existing.permissionsOverride : null;
@@ -7834,14 +7842,18 @@
 
                 await userRef.set(clientPayload, { merge: true });
 
-                await globalRef.set({
-                    email: userEmail,
-                    name: userName,
-                    providerId: primaryProvider,
-                    providerLabel: providerLabel,
-                    providers: providerIds,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+                try {
+                    await globalRef.set({
+                        email: userEmail,
+                        name: userName,
+                        providerId: primaryProvider,
+                        providerLabel: providerLabel,
+                        providers: providerIds,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                } catch (err) {
+                    console.warn('Global user update failed:', err);
+                }
 
                 setCurrentRole(role, permissionsOverride);
             } catch (err) {
@@ -16919,6 +16931,37 @@
       return null;
     }
 
+    var pendingLinkCredential = null;
+    var pendingLinkEmail = '';
+
+    function setPendingLinkCredential(email, credential) {
+      pendingLinkEmail = (email || '').toLowerCase();
+      pendingLinkCredential = credential || null;
+    }
+
+    function clearPendingLinkCredential() {
+      pendingLinkEmail = '';
+      pendingLinkCredential = null;
+    }
+
+    function tryLinkPendingCredential(user) {
+      if (!pendingLinkCredential || !user) return null;
+      var userEmail = (user.email || '').toLowerCase();
+      if (pendingLinkEmail && userEmail && pendingLinkEmail !== userEmail) return null;
+      return user.linkWithCredential(pendingLinkCredential)
+        .then(function() {
+          clearPendingLinkCredential();
+          alert('Ucet byl propojen. Nyni se muzete prihlasit pres oba providery.');
+        })
+        .catch(function(err) {
+          console.warn('Credential link failed:', err);
+          var code = err && err.code ? err.code : '';
+          if (code === 'auth/provider-already-linked' || code === 'auth/credential-already-in-use') {
+            clearPendingLinkCredential();
+          }
+        });
+    }
+
     function handleAccountLinking(error) {
       if (!error || error.code !== 'auth/account-exists-with-different-credential') return false;
       var email = error.email;
@@ -16927,6 +16970,7 @@
         alert('Ucet uz existuje pod jinym prihlasenim. Prihlaste se puvodnim providerem a propojte ucty.');
         return true;
       }
+      setPendingLinkCredential(email, pendingCred);
       auth.fetchSignInMethodsForEmail(email)
         .then(function(methods) {
           if (!methods || methods.length === 0) {
@@ -16934,18 +16978,11 @@
             if (window.isDomainAllowed && !window.isDomainAllowed(email)) {
               domainInfo = ' Email je mimo povolene domeny.';
             }
-            if (pendingCred) {
-                  return auth.signInWithCredential(pendingCred)
-                    .then(function() {
-                      alert('Prihlaseni bylo obnoveno primo z Microsoft kredencialu.');
-                    })
-                    .catch(function(err) {
-                      console.error('Credential sign-in error:', err);
-                      var detail = err && err.message ? (' Detail: ' + err.message) : '';
-                      alert('Nenasel jsem existujici metodu prihlaseni pro tento email (' + email + ').' + domainInfo + ' Pokud byl ucet smazan ve Firebase Auth, zkuste ho odstranit i z providers a prihlasit se znovu.' + detail);
-                    });
-                }
-            alert('Nenasel jsem existujici metodu prihlaseni pro tento email (' + email + ').' + domainInfo);
+            alert('Ucet uz existuje pod jinym providerem. Prihlaste se existujicim providerem (Google/Microsoft/Magic link) a ucet se po prihlaseni propoji.' + domainInfo);
+            return;
+          }
+          if (methods.length > 1) {
+            alert('Ucet ma vice provideru: ' + methods.join(', ') + '. Prihlaste se jednim z nich a ucet se propoji.');
             return;
           }
           var method = methods[0];
@@ -16958,10 +16995,7 @@
             return auth.signInWithPopup(googleProvider)
               .then(function(result) {
                 if (!result || !result.user) return;
-                return result.user.linkWithCredential(pendingCred);
-              })
-              .then(function() {
-                alert('Ucet byl propojen. Nyni se muzete prihlasit pres oba providery.');
+                return tryLinkPendingCredential(result.user);
               });
           }
           if (method === 'microsoft.com') {
@@ -16988,10 +17022,7 @@
             return auth.signInWithPopup(provider)
               .then(function(result) {
                 if (!result || !result.user) return;
-                return result.user.linkWithCredential(pendingCred);
-              })
-              .then(function() {
-                alert('Ucet byl propojen. Nyni se muzete prihlasit pres oba providery.');
+                return tryLinkPendingCredential(result.user);
               });
           }
           if (method === 'password') {
@@ -17253,6 +17284,9 @@
         return;
       }
       updateAuthUI(user);
+      if (user) {
+        tryLinkPendingCredential(user);
+      }
       if (window.onAuthRoleChanged) {
         window.onAuthRoleChanged(user);
       }
