@@ -3421,6 +3421,29 @@
         .modal-close:hover {
             color: var(--accent-cyan);
         }
+
+        #helpdeskTicketModal .modal-content,
+        #helpdeskDetailModal .modal-content {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            color: #111827;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
+        }
+
+        #helpdeskTicketModal .modal-header h2,
+        #helpdeskDetailModal .modal-header h2 {
+            color: #111827;
+        }
+
+        #helpdeskTicketModal .modal-close,
+        #helpdeskDetailModal .modal-close {
+            color: #6b7280;
+        }
+
+        #helpdeskTicketModal .modal-close:hover,
+        #helpdeskDetailModal .modal-close:hover {
+            color: #111827;
+        }
         
         /* Connections view */
         .connections-container {
@@ -5994,6 +6017,7 @@
                                 <h3>Kontakt</h3>
                                 <div class="client-detail-row"><span>Kontaktni osoba</span><strong id="clientDetailContact">-</strong></div>
                                 <div class="client-detail-row"><span>E-mail</span><strong id="clientDetailEmail">-</strong></div>
+                                <div class="client-detail-row"><span>Helpdesk email</span><strong id="clientDetailHelpdeskEmail">-</strong></div>
                                 <div class="client-detail-row"><span>Telefon</span><strong id="clientDetailPhone">-</strong></div>
                             </div>
                             <div class="client-detail-card">
@@ -6041,6 +6065,11 @@
                                     <div class="form-group">
                                         <label>E-mail</label>
                                         <input type="email" id="newClientEmail" placeholder="napr. info@firma.cz">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Helpdesk emaily</label>
+                                        <input type="text" id="newClientHelpdeskEmails" placeholder="napr. firma@cxtech.cz, podpora@cxtech.cz">
+                                        <div class="role-note">Adresy nebo domeny pro automaticke tikety (napr. @firma.cz). Oddel carkou.</div>
                                     </div>
                                     <div class="form-group">
                                         <label>ICO</label>
@@ -6768,6 +6797,8 @@
                     <option value="technician">Technik</option>
                     <option value="readonly">Read-only</option>
                     <option value="auditor">Auditor</option>
+                    <option value="customer">Zakaznik</option>
+                    <option value="customer_manager">Zakaznik manager</option>
                 </select>
                 <button class="btn btn-secondary" onclick="addRoleInvite()">Pozvat</button>
             </div>
@@ -7174,6 +7205,7 @@
         const HELP_DESK_SOURCES = [
             { id: 'manual', label: 'Manual' },
             { id: 'email', label: 'Email' },
+            { id: 'form', label: 'Formular' },
             { id: 'phone', label: 'Telefon' },
             { id: 'teams', label: 'Teams' },
             { id: 'clickup', label: 'ClickUp' }
@@ -7217,6 +7249,7 @@
                 manageCategories: true,
                 manageRoles: true,
                 manageHelpdesk: true,
+                viewHelpdesk: true,
                 manageTime: true,
                 viewTimeAll: true
             },
@@ -7229,6 +7262,7 @@
                 manageCategories: false,
                 manageRoles: false,
                 manageHelpdesk: true,
+                viewHelpdesk: true,
                 manageTime: true,
                 viewTimeAll: false
             },
@@ -7241,6 +7275,7 @@
                 manageCategories: false,
                 manageRoles: false,
                 manageHelpdesk: false,
+                viewHelpdesk: true,
                 manageTime: false,
                 viewTimeAll: false
             },
@@ -7253,8 +7288,35 @@
                 manageCategories: false,
                 manageRoles: false,
                 manageHelpdesk: false,
+                viewHelpdesk: true,
                 manageTime: false,
                 viewTimeAll: true
+            },
+            customer: {
+                deleteRacks: false,
+                editTopology: false,
+                viewSensitive: false,
+                manageRacks: false,
+                manageDevices: false,
+                manageCategories: false,
+                manageRoles: false,
+                manageHelpdesk: false,
+                viewHelpdesk: true,
+                manageTime: false,
+                viewTimeAll: false
+            },
+            customer_manager: {
+                deleteRacks: false,
+                editTopology: false,
+                viewSensitive: false,
+                manageRacks: false,
+                manageDevices: false,
+                manageCategories: false,
+                manageRoles: false,
+                manageHelpdesk: false,
+                viewHelpdesk: true,
+                manageTime: false,
+                viewTimeAll: false
             }
         };
 
@@ -7262,7 +7324,9 @@
             admin: 'Admin',
             technician: 'Technik',
             readonly: 'Read-only',
-            auditor: 'Auditor'
+            auditor: 'Auditor',
+            customer: 'Zakaznik',
+            customer_manager: 'Zakaznik manager'
         };
 
         const ROLE_PERMISSION_LABELS = {
@@ -7271,6 +7335,7 @@
             manageCategories: 'Sprava kategorii',
             manageRoles: 'Sprava roli',
             manageHelpdesk: 'Sprava helpdesku',
+            viewHelpdesk: 'Zobrazeni helpdesku',
             manageTime: 'Zapisy casu',
             viewTimeAll: 'Prehled vykazu',
             editTopology: 'Upravy topologie',
@@ -7278,6 +7343,7 @@
             viewSensitive: 'Citliva data'
         };
         const ROLE_PERMISSION_ORDER = [
+            'viewHelpdesk',
             'manageRacks',
             'manageDevices',
             'manageCategories',
@@ -7399,6 +7465,21 @@
             return getEffectivePermissions(currentUserRole, currentUserPermissionsOverride);
         }
 
+        function isCustomerRole(role) {
+            return role === 'customer' || role === 'customer_manager';
+        }
+
+        function isCustomerManagerRole() {
+            return currentUserRole === 'customer_manager';
+        }
+
+        function getCurrentUserEmailLower() {
+            if (window.auth && auth.currentUser && auth.currentUser.email) {
+                return auth.currentUser.email.toLowerCase();
+            }
+            return '';
+        }
+
         function getRolePermissionLabels(role, override) {
             const permissions = getEffectivePermissions(role, override);
             const labels = ROLE_PERMISSION_ORDER
@@ -7464,12 +7545,34 @@
             return getCurrentUserPermissions().manageHelpdesk;
         }
 
+        function canViewHelpdesk() {
+            return getCurrentUserPermissions().viewHelpdesk;
+        }
+
         function canViewAllTimeEntries() {
             return getCurrentUserPermissions().viewTimeAll;
         }
 
         function canViewReports() {
             return currentUserRole === 'admin';
+        }
+
+        function hasCustomerExtraAccess() {
+            if (!isCustomerManagerRole()) return false;
+            const perms = getCurrentUserPermissions();
+            const keys = [
+                'manageRacks',
+                'manageDevices',
+                'manageCategories',
+                'manageTime',
+                'viewTimeAll',
+                'editTopology',
+                'deleteRacks',
+                'viewSensitive',
+                'manageRoles',
+                'manageHelpdesk'
+            ];
+            return keys.some((key) => !!perms[key]);
         }
 
         function updateRoleLabel() {
@@ -7506,6 +7609,8 @@
             const reportsNavBtn = document.querySelector('.view-toggle-btn[data-view="reports"]');
             const dashboardReportsBtn = document.getElementById('dashboardReportsBtn');
             const timeAllToggle = document.getElementById('timeAllClientsToggle');
+            const isCustomer = isCustomerRole(currentUserRole);
+            const allowCustomerExtras = hasCustomerExtraAccess();
 
             moduleButtons.forEach((button) => {
                 button.disabled = !canManageCategories();
@@ -7532,6 +7637,11 @@
                 switchView('dashboard');
             }
 
+            const helpdeskBtn = document.querySelector('.view-toggle-btn[data-view="helpdesk"]');
+            if (helpdeskBtn) {
+                helpdeskBtn.style.display = canViewHelpdesk() ? '' : 'none';
+            }
+
             if (timeAllToggle) {
                 const canViewAll = canViewAllTimeEntries();
                 timeAllToggle.disabled = !canViewAll;
@@ -7544,6 +7654,44 @@
 
             if (helpdeskNewTicketBtn) {
                 helpdeskNewTicketBtn.disabled = !canManageHelpdesk();
+            }
+
+            if (isCustomer) {
+                const sectionClient = document.querySelector('.sidebar-section[data-section="client"]');
+                const sectionNetwork = document.querySelector('.sidebar-section[data-section="network"]');
+                const sectionComputers = document.querySelector('.sidebar-section[data-section="computers"]');
+                const sectionTime = document.querySelector('.sidebar-section[data-section="time"]');
+                const sectionReports = document.querySelector('.sidebar-section[data-section="reports"]');
+                const sectionTeams = document.querySelector('.sidebar-section[data-section="teams"]');
+                const sectionAdmin = document.querySelector('.sidebar-section[data-section="admin"]');
+                const sectionModules = document.querySelector('.sidebar-section[data-section="modules"]');
+
+                const showNetwork = allowCustomerExtras && (canManageRacks() || canManageDevices() || canEditTopology() || canViewSensitive());
+                const showComputers = allowCustomerExtras && (canManageDevices() || canViewSensitive());
+                const showTime = allowCustomerExtras && (canManageTimeEntries() || canViewAllTimeEntries());
+                const showReports = allowCustomerExtras && canViewReports();
+                const showTeams = allowCustomerExtras && (canManageHelpdesk() || canManageRoles());
+                const showAdmin = allowCustomerExtras && canManageRoles();
+
+                if (sectionClient) sectionClient.style.display = 'none';
+                if (sectionNetwork) sectionNetwork.style.display = showNetwork ? '' : 'none';
+                if (sectionComputers) sectionComputers.style.display = showComputers ? '' : 'none';
+                if (sectionTime) sectionTime.style.display = showTime ? '' : 'none';
+                if (sectionReports) sectionReports.style.display = showReports ? '' : 'none';
+                if (sectionTeams) sectionTeams.style.display = showTeams ? '' : 'none';
+                if (sectionAdmin) sectionAdmin.style.display = showAdmin ? '' : 'none';
+                if (sectionModules) sectionModules.style.display = 'none';
+
+                if (currentView !== 'helpdesk' && !allowCustomerExtras) {
+                    switchView('helpdesk');
+                }
+            } else {
+                const sections = document.querySelectorAll('.sidebar-section');
+                sections.forEach((section) => {
+                    if (section.style.display === 'none') {
+                        section.style.display = '';
+                    }
+                });
             }
 
             if (!currentClientId) {
@@ -9652,9 +9800,39 @@
             document.getElementById('addDeviceBtn').disabled = true;
             document.getElementById('addConnectionBtn').disabled = true;
         }
+
+        function canAccessView(view) {
+            if (!isCustomerRole(currentUserRole)) return true;
+            if (view === 'helpdesk') return canViewHelpdesk();
+            const perms = getCurrentUserPermissions();
+            const allowExtras = hasCustomerExtraAccess();
+            if (!allowExtras) return false;
+            if (['racks', 'network', 'topology', 'overview'].includes(view)) {
+                return perms.manageRacks || perms.manageDevices || perms.editTopology || perms.viewSensitive;
+            }
+            if (view === 'computers') {
+                return perms.manageDevices || perms.viewSensitive;
+            }
+            if (view === 'time') {
+                return perms.manageTime || perms.viewTimeAll;
+            }
+            if (view === 'reports') {
+                return canViewReports();
+            }
+            if (view === 'teams') {
+                return perms.manageHelpdesk || perms.manageRoles;
+            }
+            if (view === 'clients') {
+                return perms.manageRoles;
+            }
+            return false;
+        }
         
         // View switching
         function switchView(view, button) {
+            if (!canAccessView(view)) {
+                view = canViewHelpdesk() ? 'helpdesk' : 'dashboard';
+            }
             if (view === 'reports' && !canViewReports()) {
                 alert('Nemate opravneni zobrazit reporty');
                 view = 'dashboard';
@@ -10019,9 +10197,16 @@
                 clientSelect.innerHTML = options.map(option =>
                     `<option value="${option.value}">${escapeHtml(option.label)}</option>`
                 ).join('');
-                clientSelect.value = options.some(option => option.value === helpdeskFilters.clientId)
-                    ? helpdeskFilters.clientId
-                    : 'all';
+                if (isCustomerRole(currentUserRole) && currentClientId) {
+                    helpdeskFilters.clientId = currentClientId;
+                    clientSelect.value = currentClientId;
+                    clientSelect.disabled = true;
+                } else {
+                    clientSelect.disabled = false;
+                    clientSelect.value = options.some(option => option.value === helpdeskFilters.clientId)
+                        ? helpdeskFilters.clientId
+                        : 'all';
+                }
             }
 
             const statusSelect = document.getElementById('helpdeskStatusFilter');
@@ -10061,9 +10246,16 @@
                 assigneeSelect.innerHTML = options.map(option =>
                     `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`
                 ).join('');
-                assigneeSelect.value = options.some(option => option.value === helpdeskFilters.assignee)
-                    ? helpdeskFilters.assignee
-                    : 'all';
+                if (isCustomerRole(currentUserRole)) {
+                    helpdeskFilters.assignee = 'all';
+                    assigneeSelect.value = 'all';
+                    assigneeSelect.disabled = true;
+                } else {
+                    assigneeSelect.disabled = false;
+                    assigneeSelect.value = options.some(option => option.value === helpdeskFilters.assignee)
+                        ? helpdeskFilters.assignee
+                        : 'all';
+                }
             }
 
             const searchInput = document.getElementById('helpdeskSearch');
@@ -10091,12 +10283,13 @@
         function renderHelpdeskQueues() {
             const queueList = document.getElementById('helpdeskQueueList');
             if (!queueList) return;
+            const scoped = getHelpdeskAccessibleTickets();
             const active = HELP_DESK_QUEUES.some(queue => queue.id === helpdeskFilters.queue)
                 ? helpdeskFilters.queue
                 : 'open';
             helpdeskFilters.queue = active;
             queueList.innerHTML = HELP_DESK_QUEUES.map(queue => {
-                const count = helpdeskTickets.filter(ticket => queue.match(ticket)).length;
+                const count = scoped.filter(ticket => queue.match(ticket)).length;
                 const isActive = queue.id === active ? 'active' : '';
                 return `
                     <button class="helpdesk-queue-item ${isActive}" type="button" onclick="setHelpdeskQueue('${queue.id}')">
@@ -10110,10 +10303,11 @@
         function renderHelpdeskMetrics() {
             const metricsEl = document.getElementById('helpdeskMetrics');
             if (!metricsEl) return;
-            const openCount = helpdeskTickets.filter(ticket => !['resolved', 'closed'].includes(ticket.status)).length;
-            const waitingCount = helpdeskTickets.filter(ticket => ticket.status === 'waiting').length;
-            const dueSoonCount = helpdeskTickets.filter(ticket => isHelpdeskDueSoon(ticket)).length;
-            const overdueCount = helpdeskTickets.filter(ticket => isHelpdeskOverdue(ticket)).length;
+            const scoped = getHelpdeskAccessibleTickets();
+            const openCount = scoped.filter(ticket => !['resolved', 'closed'].includes(ticket.status)).length;
+            const waitingCount = scoped.filter(ticket => ticket.status === 'waiting').length;
+            const dueSoonCount = scoped.filter(ticket => isHelpdeskDueSoon(ticket)).length;
+            const overdueCount = scoped.filter(ticket => isHelpdeskOverdue(ticket)).length;
             metricsEl.innerHTML = `
                 <div class="helpdesk-metric">
                     <div class="helpdesk-metric-value">${openCount}</div>
@@ -10134,8 +10328,35 @@
             `;
         }
 
-        function getHelpdeskFilteredTickets() {
+        function isHelpdeskTicketOwnedByUser(ticket, userEmail) {
+            if (!ticket || !userEmail) return false;
+            const direct = (ticket.requesterEmail || ticket.createdByEmail || '').toLowerCase();
+            if (direct && direct === userEmail) return true;
+            const sender = ticket.external && ticket.external.sender ? ticket.external.sender.toLowerCase() : '';
+            if (sender && sender === userEmail) return true;
+            return false;
+        }
+
+        function getHelpdeskAccessibleTickets() {
             let list = [...helpdeskTickets];
+            if (!isCustomerRole(currentUserRole)) {
+                return list;
+            }
+            const email = getCurrentUserEmailLower();
+            if (!email) return [];
+            if (currentUserRole === 'customer') {
+                return list.filter(ticket => isHelpdeskTicketOwnedByUser(ticket, email));
+            }
+            if (currentUserRole === 'customer_manager') {
+                const clientId = currentClientId || '';
+                if (!clientId) return [];
+                return list.filter(ticket => ticket.clientId === clientId);
+            }
+            return list;
+        }
+
+        function getHelpdeskFilteredTickets() {
+            let list = getHelpdeskAccessibleTickets();
             const queue = HELP_DESK_QUEUES.find(item => item.id === helpdeskFilters.queue);
             if (queue) {
                 list = list.filter(ticket => queue.match(ticket));
@@ -10546,6 +10767,10 @@
             const tags = tagsInput
                 ? tagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean)
                 : [];
+            const currentEmail = getCurrentUserEmailLower();
+            const currentName = auth && auth.currentUser
+                ? (auth.currentUser.displayName || auth.currentUser.email || '')
+                : '';
 
             const existingIndex = helpdeskTickets.findIndex(ticket => ticket.id === ticketId);
             const baseTicket = existingIndex >= 0 ? helpdeskTickets[existingIndex] : null;
@@ -10566,6 +10791,9 @@
                 resolvedAt: baseTicket ? baseTicket.resolvedAt : null,
                 attachments: baseTicket ? (baseTicket.attachments || []) : [],
                 chat: baseTicket ? (baseTicket.chat || []) : [],
+                requesterEmail: baseTicket ? (baseTicket.requesterEmail || currentEmail) : currentEmail,
+                createdByEmail: baseTicket ? (baseTicket.createdByEmail || currentEmail) : currentEmail,
+                createdByName: baseTicket ? (baseTicket.createdByName || currentName) : currentName,
                 external: baseTicket ? baseTicket.external : {
                     provider: '',
                     externalId: '',
@@ -13013,6 +13241,10 @@
         
         // Client management functions
         function openClientModal(clientId) {
+            if (isCustomerRole(currentUserRole)) {
+                alert('Nemate opravneni spravovat klienty');
+                return;
+            }
             switchView('clients');
             const panel = document.getElementById('clientFormPanel');
             const submitBtn = document.getElementById('clientSubmitBtn');
@@ -13068,6 +13300,10 @@
         }
         
         function openClientManagerModal() {
+            if (isCustomerRole(currentUserRole)) {
+                alert('Nemate opravneni spravovat klienty');
+                return;
+            }
             switchView('clients');
             closeClientModal();
             renderClientDetailsPanel();
@@ -13083,6 +13319,7 @@
             document.getElementById('newClientType').value = 'standard';
             document.getElementById('newClientContact').value = '';
             document.getElementById('newClientEmail').value = '';
+            document.getElementById('newClientHelpdeskEmails').value = '';
             document.getElementById('newClientPhone').value = '';
             document.getElementById('newClientAddress').value = '';
             document.getElementById('newClientColor').value = '#f89a55';
@@ -13113,6 +13350,13 @@
             document.getElementById('newClientType').value = client.type || 'standard';
             document.getElementById('newClientContact').value = client.contact || '';
             document.getElementById('newClientEmail').value = client.email || '';
+            const helpdeskEmails = Array.isArray(client.helpdeskEmails) ? client.helpdeskEmails : [];
+            const helpdeskDomains = Array.isArray(client.helpdeskDomains) ? client.helpdeskDomains : [];
+            const helpdeskCombined = [
+                ...helpdeskEmails,
+                ...helpdeskDomains.map((domain) => `@${domain}`)
+            ];
+            document.getElementById('newClientHelpdeskEmails').value = helpdeskCombined.join(', ');
             document.getElementById('newClientPhone').value = client.phone || '';
             document.getElementById('newClientAddress').value = client.address || '';
             document.getElementById('newClientColor').value = client.color || '#f89a55';
@@ -13249,6 +13493,34 @@
             return digits.length === 8 ? digits : '';
         }
 
+        function parseHelpdeskRouting(value) {
+            const emails = [];
+            const domains = [];
+            (value || '')
+                .split(/[\s,;]+/)
+                .map((item) => item.trim().toLowerCase())
+                .filter(Boolean)
+                .forEach((item) => {
+                    if (item.startsWith('@')) {
+                        const domain = item.slice(1);
+                        if (domain) domains.push(domain);
+                        return;
+                    }
+                    if (item.includes('@')) {
+                        emails.push(item);
+                        return;
+                    }
+                    if (item.includes('.')) {
+                        domains.push(item);
+                    }
+                });
+            const uniq = (list) => list.filter((val, idx, arr) => arr.indexOf(val) === idx);
+            return {
+                emails: uniq(emails),
+                domains: uniq(domains)
+            };
+        }
+
         function setAresStatus(message) {
             const note = document.getElementById('aresStatusNote');
             if (note) {
@@ -13330,6 +13602,7 @@
             const type = document.getElementById('newClientType').value;
             const contact = document.getElementById('newClientContact').value;
             const email = document.getElementById('newClientEmail').value;
+            const helpdeskEmailsInput = document.getElementById('newClientHelpdeskEmails')?.value || '';
             const phone = document.getElementById('newClientPhone').value;
             const address = document.getElementById('newClientAddress').value;
             const color = document.getElementById('newClientColor')?.value || '#f89a55';
@@ -13352,6 +13625,13 @@
                 type,
                 contact,
                 email,
+                ...(() => {
+                    const routing = parseHelpdeskRouting(helpdeskEmailsInput);
+                    return {
+                        helpdeskEmails: routing.emails,
+                        helpdeskDomains: routing.domains
+                    };
+                })(),
                 phone,
                 address,
                 color,
@@ -13499,6 +13779,7 @@
             const colorEl = document.getElementById('clientDetailColor');
             const contactEl = document.getElementById('clientDetailContact');
             const emailEl = document.getElementById('clientDetailEmail');
+            const helpdeskEmailEl = document.getElementById('clientDetailHelpdeskEmail');
             const phoneEl = document.getElementById('clientDetailPhone');
             const addressEl = document.getElementById('clientDetailAddress');
             const pricingEl = document.getElementById('clientDetailPricing');
@@ -13523,6 +13804,15 @@
             }
             if (contactEl) contactEl.textContent = client.contact || '-';
             if (emailEl) emailEl.textContent = client.email || '-';
+            if (helpdeskEmailEl) {
+                const emails = Array.isArray(client.helpdeskEmails) ? client.helpdeskEmails : [];
+                const domains = Array.isArray(client.helpdeskDomains) ? client.helpdeskDomains : [];
+                const combined = [
+                    ...emails,
+                    ...domains.map((domain) => `@${domain}`)
+                ];
+                helpdeskEmailEl.textContent = combined.length ? combined.join(', ') : '-';
+            }
             if (phoneEl) phoneEl.textContent = client.phone || '-';
             if (addressEl) addressEl.textContent = client.address || '-';
             if (pricingEl) pricingEl.textContent = buildPricingSummary(client);
