@@ -6788,8 +6788,10 @@
                 <h2>Sprava roli</h2>
                 <button class="modal-close" onclick="closeRoleManagerModal()">X</button>
             </div>
-            <div class="role-note">Role jsou nacitane z Firestore cesty clients/{id}/users.</div>
+            <div class="role-note">Globalni role: kolekce users. Klientske role: clients/{id}/users.</div>
             <div class="role-note">Legenda: text u role shrnuje aktivni prava. Prava lze upravit i individualne u uzivatele.</div>
+            <div class="role-note">Globalni seznam uzivatelu (vychozi role pro vsechny klienty).</div>
+            <div id="roleManagerGlobalList"></div>
             <div class="role-invite-form">
                 <input type="email" id="roleInviteEmail" placeholder="email@firma.cz">
                 <select id="roleInviteRole" class="role-select">
@@ -6802,6 +6804,7 @@
                 </select>
                 <button class="btn btn-secondary" onclick="addRoleInvite()">Pozvat</button>
             </div>
+            <div class="role-note">Uzivatele aktualniho klienta (prepise globalni roli jen pro tento klient).</div>
             <div id="roleManagerList"></div>
         </div>
     </div>
@@ -7365,6 +7368,7 @@
         let currentUserPermissionsOverride = null;
         let roleManagerUsersCache = {};
         let roleManagerInvitesCache = {};
+        let roleManagerGlobalUsersCache = {};
         let permissionOverrideState = {
             uid: null,
             role: null,
@@ -7503,6 +7507,35 @@
             const override = userEntry && userEntry.permissionsOverride ? userEntry.permissionsOverride : null;
             if (cell) cell.textContent = getRolePermissionText(role, override);
             updateUserRole(uid, role);
+        }
+
+        function handleGlobalRoleSelectChange(uid, selectEl) {
+            const role = selectEl && selectEl.value ? selectEl.value : 'readonly';
+            const userEntry = roleManagerGlobalUsersCache ? roleManagerGlobalUsersCache[uid] : null;
+            if (userEntry) {
+                userEntry.role = role;
+            }
+            updateGlobalUserRole(uid, role);
+        }
+
+        async function updateGlobalUserRole(uid, role) {
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat role');
+                return;
+            }
+            if (!window.db) return;
+            try {
+                const safeRole = ROLE_PERMISSIONS[role] ? role : 'readonly';
+                await db.collection('users')
+                    .doc(uid)
+                    .set({
+                        role: safeRole,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                await loadRoleManagerList();
+            } catch (err) {
+                console.warn('Global role update failed:', err);
+            }
         }
 
         function canViewSensitive() {
@@ -7731,32 +7764,45 @@
                 const usersRef = clientDoc.collection('users');
                 const userRef = usersRef.doc(uid);
 
-                const [userSnap, usersSnap] = await Promise.all([
+                const globalRef = db.collection('users').doc(uid);
+                const [userSnap, usersSnap, globalSnap] = await Promise.all([
                     userRef.get(),
-                    usersRef.limit(1).get()
+                    usersRef.limit(1).get(),
+                    globalRef.get()
                 ]);
 
                 const existing = userSnap.exists ? userSnap.data() : {};
-                let role = existing && existing.role ? existing.role : 'technician';
-                const permissionsOverride = existing && existing.permissionsOverride ? existing.permissionsOverride : null;
+                const globalData = globalSnap.exists ? globalSnap.data() : {};
+                const clientRole = existing && existing.role ? existing.role : '';
+                const globalRole = globalData && globalData.role ? globalData.role : '';
+                const clientOverride = existing && existing.permissionsOverride ? existing.permissionsOverride : null;
+                const globalOverride = globalData && globalData.permissionsOverride ? globalData.permissionsOverride : null;
+                let role = clientRole || globalRole || 'technician';
+                let permissionsOverride = clientOverride || globalOverride || null;
+                let shouldPersistClientRole = false;
 
-                if (usersSnap.empty) {
+                if (!clientRole && !globalRole && usersSnap.empty) {
                     role = 'admin';
+                    shouldPersistClientRole = true;
                 }
 
-                if ((!existing || !existing.role) && auth.currentUser.email) {
+                if (!clientRole && !globalRole && auth.currentUser.email) {
                     const emailKey = normalizeEmailKey(auth.currentUser.email);
                     const inviteSnap = await clientDoc.collection('roleInvites').doc(emailKey).get();
                     if (inviteSnap.exists) {
                         const invite = inviteSnap.data();
                         if (invite && invite.role) {
                             role = invite.role;
+                            shouldPersistClientRole = true;
                         }
                     }
                 }
 
                 if (isBootstrapAdmin) {
                     role = 'admin';
+                    if (!clientRole) {
+                        shouldPersistClientRole = true;
+                    }
                 }
 
                 const providerData = auth.currentUser.providerData || [];
@@ -7769,10 +7815,28 @@
                 const primaryProvider = preferredProvider || auth.currentUser.providerId || '';
                 const providerLabel = formatAuthProviderLabel(primaryProvider);
 
-                await userRef.set({
-                    role: role,
-                    email: auth.currentUser.email || '',
-                    name: auth.currentUser.displayName || '',
+                const userEmail = auth.currentUser.email || '';
+                const userName = auth.currentUser.displayName || '';
+                const clientPayload = {
+                    email: userEmail,
+                    name: userName,
+                    providerId: primaryProvider,
+                    providerLabel: providerLabel,
+                    providers: providerIds,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                if (clientRole || shouldPersistClientRole) {
+                    clientPayload.role = role;
+                }
+                if (clientOverride) {
+                    clientPayload.permissionsOverride = clientOverride;
+                }
+
+                await userRef.set(clientPayload, { merge: true });
+
+                await globalRef.set({
+                    email: userEmail,
+                    name: userName,
                     providerId: primaryProvider,
                     providerLabel: providerLabel,
                     providers: providerIds,
@@ -8090,9 +8154,10 @@
             if (!window.db || !currentClientId) return;
             try {
                 const clientDoc = db.collection('clients').doc(currentClientId);
-                const [usersSnap, invitesSnap] = await Promise.all([
+                const [usersSnap, invitesSnap, globalUsersSnap] = await Promise.all([
                     clientDoc.collection('users').get(),
-                    clientDoc.collection('roleInvites').get()
+                    clientDoc.collection('roleInvites').get(),
+                    db.collection('users').get()
                 ]);
 
                 const users = {};
@@ -8105,7 +8170,12 @@
                     invites[doc.id] = doc.data();
                 });
 
-                renderRoleManagerList(users, invites);
+                const globalUsers = {};
+                globalUsersSnap.forEach((doc) => {
+                    globalUsers[doc.id] = doc.data();
+                });
+
+                renderRoleManagerList(users, invites, globalUsers);
             } catch (err) {
                 console.warn('Role list load failed:', err);
             }
@@ -8166,24 +8236,56 @@
             }
         }
 
-        function renderRoleManagerList(users, invites) {
+        function renderRoleManagerList(users, invites, globalUsers) {
             const container = document.getElementById('roleManagerList');
-            if (!container) return;
+            const globalContainer = document.getElementById('roleManagerGlobalList');
+            if (!container && !globalContainer) return;
             roleManagerUsersCache = users || {};
             roleManagerInvitesCache = invites || {};
-            const entries = Object.entries(users || {});
+            roleManagerGlobalUsersCache = globalUsers || {};
+            const sortByLabel = (a, b) => {
+                const aUser = a[1] || {};
+                const bUser = b[1] || {};
+                const aLabel = (aUser.email || aUser.name || a[0] || '').toLowerCase();
+                const bLabel = (bUser.email || bUser.name || b[0] || '').toLowerCase();
+                return aLabel.localeCompare(bLabel);
+            };
+            const entries = Object.entries(users || {}).sort(sortByLabel);
             const inviteEntries = Object.entries(invites || {});
+            const globalEntries = Object.entries(globalUsers || {}).sort(sortByLabel);
 
             const roleOptions = Object.keys(ROLE_LABELS)
                 .map((role) => `<option value="${role}">${ROLE_LABELS[role]}</option>`)
                 .join('');
+
+            const globalRows = globalEntries.map(([uid, user]) => {
+                const email = user.email || uid;
+                const name = user.name || '';
+                const providerId = user.providerId || (user.providers && user.providers[0]) || '';
+                const providerLabel = user.providerLabel || formatAuthProviderLabel(providerId);
+                const role = user.role || 'readonly';
+                return `
+                    <tr>
+                        <td>${name || '-'}</td>
+                        <td>${email}</td>
+                        <td>${providerLabel}</td>
+                        <td>
+                            <select class="role-select" onchange="handleGlobalRoleSelectChange('${uid}', this)">
+                                ${roleOptions}
+                            </select>
+                        </td>
+                        <td class="role-permission-cell">${getRolePermissionText(role, null)}</td>
+                    </tr>
+                `;
+            });
 
             const userRows = entries.map(([uid, user]) => {
                 const email = user.email || uid;
                 const name = user.name || '';
                 const providerId = user.providerId || (user.providers && user.providers[0]) || '';
                 const providerLabel = user.providerLabel || formatAuthProviderLabel(providerId);
-                const role = user.role || 'readonly';
+                const globalRole = (globalUsers && globalUsers[uid] && globalUsers[uid].role) ? globalUsers[uid].role : '';
+                const role = user.role || globalRole || 'readonly';
                 const override = user.permissionsOverride || null;
                 return `
                     <tr>
@@ -8218,6 +8320,25 @@
                     </tr>
                 `;
             });
+
+            const globalTable = globalEntries.length
+                ? `
+                    <table class="role-manager-table">
+                        <thead>
+                            <tr>
+                                <th>Uzivatel</th>
+                                <th>Email / UID</th>
+                                <th>Prihlaseni</th>
+                                <th>Globalni role</th>
+                                <th>Prava</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${globalRows.join('')}
+                        </tbody>
+                    </table>
+                `
+                : '<div class="empty-state"><p>Zatim zadni globalni uzivatele</p></div>';
 
             const userTable = entries.length
                 ? `
@@ -8260,12 +8381,27 @@
                 `
                 : '';
 
-            container.innerHTML = userTable + inviteTable;
+            if (globalContainer) {
+                globalContainer.innerHTML = globalTable;
+            }
+            if (container) {
+                container.innerHTML = userTable + inviteTable;
+            }
+
+            if (globalContainer) {
+                globalEntries.forEach(([uid, user], index) => {
+                    const select = globalContainer.querySelectorAll('.role-select')[index];
+                    if (select) {
+                        select.value = user.role || 'readonly';
+                    }
+                });
+            }
 
             entries.forEach(([uid, user], index) => {
-                const select = container.querySelectorAll('.role-select')[index];
+                const select = container ? container.querySelectorAll('.role-select')[index] : null;
                 if (select) {
-                    select.value = user.role || 'readonly';
+                    const globalRole = (globalUsers && globalUsers[uid] && globalUsers[uid].role) ? globalUsers[uid].role : '';
+                    select.value = user.role || globalRole || 'readonly';
                 }
             });
         }
@@ -8277,7 +8413,9 @@
             }
             const user = roleManagerUsersCache ? roleManagerUsersCache[uid] : null;
             if (!user) return;
-            const role = ROLE_PERMISSIONS[user.role] ? user.role : 'readonly';
+            const globalUser = roleManagerGlobalUsersCache ? roleManagerGlobalUsersCache[uid] : null;
+            const baseRole = user.role || (globalUser && globalUser.role) || 'readonly';
+            const role = ROLE_PERMISSIONS[baseRole] ? baseRole : 'readonly';
             const override = user.permissionsOverride || null;
             const basePermissions = getRolePermissions(role);
             const effectivePermissions = getEffectivePermissions(role, override);
