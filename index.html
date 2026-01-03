@@ -6083,7 +6083,8 @@
                 </div>
                 <div class="form-group">
                     <label>Prirazeno</label>
-                    <input type="text" id="helpdeskTicketAssignee" placeholder="Napriklad: JB">
+                    <input type="text" id="helpdeskTicketAssignee" placeholder="Napriklad: JB" list="helpdeskAssigneeOptions">
+                    <datalist id="helpdeskAssigneeOptions"></datalist>
                 </div>
                 <div class="form-group">
                     <label>Termin</label>
@@ -6119,7 +6120,11 @@
             <div class="time-form">
                 <div class="form-group">
                     <label>Klient</label>
-                    <select id="timeEntryClient"></select>
+                    <select id="timeEntryClient" onchange="onTimeEntryClientChange()"></select>
+                </div>
+                <div class="form-group">
+                    <label>Tiket</label>
+                    <select id="timeEntryTicket"></select>
                 </div>
                 <div class="form-group">
                     <label>Kategorie</label>
@@ -6506,6 +6511,7 @@
         let timeSelectionActive = false;
         let timeViewAllClients = false;
         let timeTechnicianFilter = 'all';
+        let timeEntryDefaults = { clientId: null, ticketId: null };
         let teamsState = {
             tab: 'chats',
             threadTab: 'posts',
@@ -6535,6 +6541,8 @@
         };
         let helpdeskTickets = [];
         let helpdeskSelectedId = null;
+        let helpdeskAssignees = [];
+        let helpdeskAssigneesClientId = null;
         let helpdeskFilters = {
             queue: 'open',
             status: 'all',
@@ -8322,6 +8330,103 @@
             scheduleCloudSave();
         }
 
+        function getHelpdeskAssigneeFallback() {
+            const fallback = [];
+            helpdeskTickets.forEach(ticket => {
+                const name = (ticket.assignee || '').trim();
+                if (name) {
+                    fallback.push({ value: name });
+                }
+            });
+            if (window.auth && auth.currentUser) {
+                const name = (auth.currentUser.displayName || '').trim();
+                const email = (auth.currentUser.email || '').trim();
+                const value = name || email;
+                if (value) {
+                    fallback.push({ value, name, email });
+                }
+            }
+            return fallback;
+        }
+
+        function buildHelpdeskAssigneeOptions(entries) {
+            const list = Array.isArray(entries) ? entries : [];
+            const nameCounts = list.reduce((acc, item) => {
+                const key = (item.name || '').trim().toLowerCase();
+                if (key) {
+                    acc[key] = (acc[key] || 0) + 1;
+                }
+                return acc;
+            }, {});
+            const options = list.map(item => {
+                const name = (item.name || '').trim();
+                const email = (item.email || '').trim();
+                let value = (item.value || '').trim();
+                if (!value) {
+                    if (name) {
+                        const duplicate = nameCounts[name.toLowerCase()] > 1;
+                        value = duplicate && email ? `${name} (${email})` : name;
+                    } else if (email) {
+                        value = email;
+                    }
+                }
+                return {
+                    value,
+                    label: name && email ? email : ''
+                };
+            }).filter(option => option.value);
+
+            const seen = new Set();
+            return options.filter(option => {
+                const key = option.value.toLowerCase();
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+        }
+
+        async function loadHelpdeskAssignees(force) {
+            if (helpdeskAssigneesClientId === currentClientId && helpdeskAssignees.length && !force) {
+                return helpdeskAssignees;
+            }
+            if (!currentClientId || !window.db || !window.auth || !auth.currentUser) {
+                helpdeskAssignees = buildHelpdeskAssigneeOptions(getHelpdeskAssigneeFallback());
+                helpdeskAssigneesClientId = currentClientId || null;
+                return helpdeskAssignees;
+            }
+            try {
+                const clientDoc = db.collection('clients').doc(currentClientId);
+                const usersSnap = await clientDoc.collection('users').get();
+                const entries = [];
+                usersSnap.forEach(doc => {
+                    const data = doc.data() || {};
+                    const name = (data.name || '').trim();
+                    const email = (data.email || '').trim();
+                    const value = name || email || doc.id;
+                    if (value) {
+                        entries.push({ name, email, value });
+                    }
+                });
+                helpdeskAssignees = buildHelpdeskAssigneeOptions(entries.concat(getHelpdeskAssigneeFallback()));
+                helpdeskAssigneesClientId = currentClientId;
+            } catch (err) {
+                helpdeskAssignees = buildHelpdeskAssigneeOptions(getHelpdeskAssigneeFallback());
+            }
+            return helpdeskAssignees;
+        }
+
+        function renderHelpdeskAssigneeOptions() {
+            const listEl = document.getElementById('helpdeskAssigneeOptions');
+            if (!listEl) return;
+            const options = helpdeskAssignees.length
+                ? helpdeskAssignees
+                : buildHelpdeskAssigneeOptions(getHelpdeskAssigneeFallback());
+            listEl.innerHTML = options.map(option => {
+                const labelAttr = option.label ? ` label="${escapeHtml(option.label)}"` : '';
+                return `<option value="${escapeHtml(option.value)}"${labelAttr}></option>`;
+            }).join('');
+        }
+
         function createHelpdeskTicketId() {
             const stamp = Date.now().toString(36).toUpperCase();
             const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
@@ -8372,6 +8477,42 @@
             const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
             const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
             return dueDay < nowDay;
+        }
+
+        function hasLocalTimeEntryForTicket(ticketId, clientId) {
+            if (!ticketId) return false;
+            return timeEntries.some(entry => entry.ticketId === ticketId && (!clientId || entry.clientId === clientId));
+        }
+
+        async function hasTimeEntryForTicket(ticketId, clientId) {
+            if (!ticketId) return false;
+            if (hasLocalTimeEntryForTicket(ticketId, clientId)) return true;
+            if (!clientId || !window.db || !window.auth || !auth.currentUser) return false;
+            try {
+                const snapshot = await db.collection('clients')
+                    .doc(clientId)
+                    .collection('timeEntries')
+                    .where('ticketId', '==', ticketId)
+                    .limit(1)
+                    .get();
+                return !snapshot.empty;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        async function ensureHelpdeskTimeLogged(ticket) {
+            if (!ticket || !ticket.id) return false;
+            const clientId = ticket.clientId || currentClientId;
+            if (!clientId) {
+                alert('Tiket nema prirazeneho klienta. Nejprve ho doplnte a pak vykazujte hodiny.');
+                return false;
+            }
+            const hasEntry = await hasTimeEntryForTicket(ticket.id, clientId);
+            if (hasEntry) return true;
+            alert('Tiket nelze uzavrit bez vykazanych hodin. Oteviram zapis.');
+            openTimeEntryModal({ clientId, ticketId: ticket.id });
+            return false;
         }
 
         function setHelpdeskQueue(queueId) {
@@ -8440,10 +8581,11 @@
 
             const assigneeSelect = document.getElementById('helpdeskAssigneeFilter');
             if (assigneeSelect) {
-                const assignees = Array.from(new Set(helpdeskTickets
+                const ticketAssignees = helpdeskTickets
                     .map(ticket => (ticket.assignee || '').trim())
-                    .filter(Boolean)
-                )).sort();
+                    .filter(Boolean);
+                const knownAssignees = helpdeskAssignees.map(item => item.value).filter(Boolean);
+                const assignees = Array.from(new Set([...knownAssignees, ...ticketAssignees])).sort();
                 const options = [
                     { value: 'all', label: 'Vse' },
                     { value: 'unassigned', label: 'Neprirazeno' },
@@ -8707,6 +8849,10 @@
         function renderHelpdeskView() {
             const view = document.getElementById('helpdeskView');
             if (!view) return;
+            loadHelpdeskAssignees().then(() => {
+                renderHelpdeskAssigneeOptions();
+                renderHelpdeskFiltersUI();
+            });
             renderHelpdeskQueues();
             renderHelpdeskFiltersUI();
             renderHelpdeskMetrics();
@@ -8755,7 +8901,7 @@
             }
         }
 
-        function openHelpdeskTicketModal(ticketId) {
+        async function openHelpdeskTicketModal(ticketId) {
             if (!canManageHelpdesk()) {
                 alert('Nemate opravneni spravovat helpdesk');
                 return;
@@ -8774,6 +8920,8 @@
             const tagsInput = document.getElementById('helpdeskTicketTags');
 
             renderHelpdeskTicketFormOptions();
+            await loadHelpdeskAssignees();
+            renderHelpdeskAssigneeOptions();
 
             const ticket = ticketId ? helpdeskTickets.find(item => item.id === ticketId) : null;
             if (ticket) {
@@ -8878,13 +9026,17 @@
             renderHelpdeskView();
         }
 
-        function updateHelpdeskTicketStatus(ticketId, status) {
+        async function updateHelpdeskTicketStatus(ticketId, status) {
             if (!canManageHelpdesk()) {
                 alert('Nemate opravneni spravovat helpdesk');
                 return;
             }
             const ticket = helpdeskTickets.find(item => item.id === ticketId);
             if (!ticket) return;
+            if (['resolved', 'closed'].includes(status)) {
+                const canClose = await ensureHelpdeskTimeLogged(ticket);
+                if (!canClose) return;
+            }
             ticket.status = status;
             ticket.updatedAt = Date.now();
             if (['resolved', 'closed'].includes(status)) {
@@ -12242,7 +12394,7 @@
             openTimeEntryModal();
         }
 
-        function openTimeEntryModal() {
+        function openTimeEntryModal(options = {}) {
             if (!canManageTimeEntries()) {
                 alert('Nemate opravneni zapisovat hodiny');
                 return;
@@ -12253,7 +12405,14 @@
             }
             const modal = document.getElementById('timeEntryModal');
             if (!modal) return;
-            buildTimeClientOptions();
+            timeEntryDefaults = {
+                clientId: options.clientId || currentClientId || null,
+                ticketId: options.ticketId || null
+            };
+            buildTimeClientOptions(timeEntryDefaults.clientId);
+            const clientSelect = document.getElementById('timeEntryClient');
+            const selectedClientId = clientSelect ? clientSelect.value : timeEntryDefaults.clientId;
+            buildTimeTicketOptions(selectedClientId, timeEntryDefaults.ticketId);
             buildTimeActivityOptions();
             fillTimeEntryModal();
             modal.classList.add('active');
@@ -12266,15 +12425,49 @@
             }
         }
 
-        function buildTimeClientOptions() {
+        function buildTimeClientOptions(preferredId) {
             const select = document.getElementById('timeEntryClient');
             if (!select) return;
             select.innerHTML = clients.map(client =>
                 `<option value="${client.id}">${client.name}</option>`
             ).join('');
-            if (currentClientId && clients.some(c => c.id === currentClientId)) {
+            const preferred = preferredId && clients.some(c => c.id === preferredId) ? preferredId : null;
+            if (preferred) {
+                select.value = preferred;
+            } else if (currentClientId && clients.some(c => c.id === currentClientId)) {
                 select.value = currentClientId;
             }
+        }
+
+        function buildTimeTicketOptions(clientId, selectedTicketId) {
+            const select = document.getElementById('timeEntryTicket');
+            if (!select) return;
+            const tickets = helpdeskTickets
+                .filter(ticket => ticket.clientId === clientId)
+                .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+            const options = [
+                { value: '', label: 'Bez tiketu' },
+                ...tickets.map(ticket => ({
+                    value: ticket.id,
+                    label: `${ticket.id} - ${ticket.title || 'Bez nazvu'}`
+                }))
+            ];
+            select.innerHTML = options.map(option =>
+                `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`
+            ).join('');
+            if (selectedTicketId && options.some(option => option.value === selectedTicketId)) {
+                select.value = selectedTicketId;
+            } else {
+                select.value = '';
+            }
+        }
+
+        function onTimeEntryClientChange() {
+            const clientSelect = document.getElementById('timeEntryClient');
+            const clientId = clientSelect ? clientSelect.value : '';
+            timeEntryDefaults.clientId = clientId || null;
+            timeEntryDefaults.ticketId = null;
+            buildTimeTicketOptions(clientId, null);
         }
 
         function buildTimeActivityOptions() {
@@ -12347,6 +12540,7 @@
             const descInput = document.getElementById('timeEntryDesc');
             const activityInput = document.getElementById('timeEntryActivity');
             const categorySelect = document.getElementById('timeEntryCategory');
+            const ticketSelect = document.getElementById('timeEntryTicket');
 
             if (startInput) startInput.value = start;
             if (endInput) endInput.value = end;
@@ -12354,6 +12548,12 @@
             if (descInput) descInput.value = '';
             if (activityInput) activityInput.value = '';
             if (categorySelect) categorySelect.value = 'client';
+            if (ticketSelect) {
+                const ticketId = timeEntryDefaults.ticketId || '';
+                ticketSelect.value = Array.from(ticketSelect.options).some(option => option.value === ticketId)
+                    ? ticketId
+                    : '';
+            }
             updateTimeEntrySummary();
         }
 
@@ -13411,6 +13611,7 @@
             const hoursInput = document.getElementById('timeEntryHours');
             const descInput = document.getElementById('timeEntryDesc');
             const categorySelect = document.getElementById('timeEntryCategory');
+            const ticketSelect = document.getElementById('timeEntryTicket');
             const clientId = clientSelect ? clientSelect.value : currentClientId;
             const activity = activityInput ? activityInput.value.trim() : '';
             const start = startInput ? startInput.value : '';
@@ -13418,6 +13619,7 @@
             const hours = hoursInput ? parseFloat(hoursInput.value) : 0;
             const description = descInput ? descInput.value.trim() : '';
             const categoryType = categorySelect && categorySelect.value ? categorySelect.value : 'client';
+            const ticketId = ticketSelect ? ticketSelect.value : '';
 
             if (!clientId) {
                 alert('Vyberte klienta');
@@ -13463,6 +13665,7 @@
                     description,
                     category: activity,
                     categoryType,
+                    ticketId: ticketId || '',
                     startHour,
                     endHour,
                     userId: user.uid,
