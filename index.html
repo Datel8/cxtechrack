@@ -7128,6 +7128,7 @@
         let helpdeskSelectedId = null;
         let helpdeskAssignees = [];
         let helpdeskAssigneesClientId = null;
+        let helpdeskTicketsLoaded = false;
         let helpdeskFilters = {
             queue: 'open',
             status: 'all',
@@ -8868,12 +8869,15 @@
                     const clientId = `atera-${rawId}`;
                     const existing = existingMap.get(clientId);
                     const nameOverride = existing && existing.nameOverride ? existing.nameOverride : '';
+                    const logoUrl = item.Logo || item.logo || item.logoUrl || item.logoURL || '';
+                    const storedLogo = existing ? (existing.logoUrl || existing.logo) : '';
                     return {
                         id: clientId,
                         externalId: String(rawId),
                         name: nameOverride || name,
                         nameOverride: nameOverride,
                         ateraName: name,
+                        logoUrl: logoUrl || storedLogo || '',
                         type: 'atera',
                         source: 'atera',
                         createdAt: new Date().toISOString()
@@ -9508,7 +9512,7 @@
                 clientData = JSON.parse(savedClientData);
             }
 
-            loadHelpdeskTickets();
+            await loadHelpdeskTickets();
             
             // Check if there was a previously selected client
             const lastClientId = localStorage.getItem('rackManagerLastClient');
@@ -9733,17 +9737,26 @@
         }
 
         // Helpdesk
-        function loadHelpdeskTickets() {
+        async function loadHelpdeskTickets(force) {
+            if (helpdeskTicketsLoaded && !force) return;
+            helpdeskTickets = [];
+            if (!window.db || !window.auth || !auth.currentUser || !window.GLOBAL_PATH) {
+                return;
+            }
             try {
-                const stored = JSON.parse(localStorage.getItem('rackManagerHelpdeskTickets') || '[]');
-                helpdeskTickets = Array.isArray(stored) ? stored : [];
+                const snap = await db.doc(GLOBAL_PATH).get();
+                if (snap.exists) {
+                    const data = snap.data() || {};
+                    helpdeskTickets = Array.isArray(data.helpdeskTickets) ? data.helpdeskTickets : [];
+                }
+                helpdeskTicketsLoaded = true;
             } catch (err) {
-                helpdeskTickets = [];
+                console.warn('Helpdesk load failed:', err);
             }
         }
 
         function saveHelpdeskTickets() {
-            localStorage.setItem('rackManagerHelpdeskTickets', JSON.stringify(helpdeskTickets));
+            helpdeskTicketsLoaded = true;
             scheduleCloudSave();
         }
 
@@ -10251,14 +10264,15 @@
             const chatAuthorDefault = getHelpdeskCurrentUserLabel();
             const attachmentsHtml = attachments.length
                 ? attachments.map((attachment) => {
+                    const url = attachment.url || attachment.dataUrl || '';
                     const isImage = attachment.type && attachment.type.startsWith('image/');
                     const ext = getHelpdeskFileExtension(attachment.name).toUpperCase();
-                    const preview = isImage && attachment.dataUrl
-                        ? `<img src="${attachment.dataUrl}" alt="${escapeHtml(attachment.name || 'Priloha')}">`
+                    const preview = isImage && url
+                        ? `<img src="${url}" alt="${escapeHtml(attachment.name || 'Priloha')}">`
                         : `<span>${escapeHtml(ext)}</span>`;
                     const meta = `${formatHelpdeskFileSize(attachment.size)} / ${formatHelpdeskTimestamp(attachment.createdAt)}`;
-                    const download = attachment.dataUrl
-                        ? `<a class="btn-small" href="${attachment.dataUrl}" download="${escapeHtml(attachment.name || 'priloha')}">Stahnout</a>`
+                    const download = url
+                        ? `<a class="btn-small" href="${url}" target="_blank" rel="noopener" download="${escapeHtml(attachment.name || 'priloha')}">Otevrit</a>`
                         : '';
                     const removeBtn = canEdit
                         ? `<button class="btn-small btn-secondary" type="button" onclick="removeHelpdeskAttachment('${ticket.id}', '${attachment.id}')">Odebrat</button>`
@@ -10390,9 +10404,10 @@
             openHelpdeskDetailModal(ticketId);
         }
 
-        function renderHelpdeskView() {
+        async function renderHelpdeskView() {
             const view = document.getElementById('helpdeskView');
             if (!view) return;
+            await loadHelpdeskTickets();
             loadHelpdeskAssignees().then(() => {
                 renderHelpdeskAssigneeOptions();
                 renderHelpdeskFiltersUI();
@@ -10620,13 +10635,55 @@
             input.click();
         }
 
-        function readHelpdeskFileAsDataUrl(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = () => reject(reader.error || new Error('File read failed'));
-                reader.readAsDataURL(file);
-            });
+        function getHelpdeskAttachmentPath(ticketId, attachmentId) {
+            const clientId = currentClientId || 'global';
+            return `helpdesk/${clientId}/${ticketId}/${attachmentId}`;
+        }
+
+        function ensureHelpdeskStorage() {
+            if (!window.storage) {
+                alert('Firebase Storage neni nastavena.');
+                return false;
+            }
+            return true;
+        }
+
+        async function uploadHelpdeskFileAttachment(ticketId, file) {
+            if (!ensureHelpdeskStorage()) return null;
+            const attachmentId = `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+            const path = getHelpdeskAttachmentPath(ticketId, attachmentId);
+            const ref = storage.ref(path);
+            await ref.put(file);
+            const url = await ref.getDownloadURL();
+            return {
+                id: attachmentId,
+                name: file.name || 'priloha',
+                type: file.type || 'application/octet-stream',
+                size: file.size || 0,
+                url: url,
+                path: path,
+                createdAt: Date.now(),
+                source: 'upload'
+            };
+        }
+
+        async function uploadHelpdeskDataUrlAttachment(ticketId, dataUrl, meta) {
+            if (!ensureHelpdeskStorage()) return null;
+            const attachmentId = `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+            const path = getHelpdeskAttachmentPath(ticketId, attachmentId);
+            const ref = storage.ref(path);
+            await ref.putString(dataUrl, 'data_url', { contentType: meta.type || 'image/jpeg' });
+            const url = await ref.getDownloadURL();
+            return {
+                id: attachmentId,
+                name: meta.name || 'screenshot.jpg',
+                type: meta.type || 'image/jpeg',
+                size: meta.size || 0,
+                url: url,
+                path: path,
+                createdAt: Date.now(),
+                source: meta.source || 'screenshot'
+            };
         }
 
         async function handleHelpdeskAttachmentUpload(event) {
@@ -10652,17 +10709,11 @@
                     continue;
                 }
                 try {
-                    const dataUrl = await readHelpdeskFileAsDataUrl(file);
-                    ticket.attachments.push({
-                        id: `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-                        name: file.name || 'priloha',
-                        type: file.type || 'application/octet-stream',
-                        size: file.size || 0,
-                        dataUrl: dataUrl,
-                        createdAt: Date.now(),
-                        source: 'upload'
-                    });
-                    added += 1;
+                    const attachment = await uploadHelpdeskFileAttachment(ticket.id, file);
+                    if (attachment) {
+                        ticket.attachments.push(attachment);
+                        added += 1;
+                    }
                 } catch (err) {
                     console.warn('Helpdesk attachment read failed:', err);
                 }
@@ -10679,14 +10730,23 @@
             }
         }
 
-        function removeHelpdeskAttachment(ticketId, attachmentId) {
+        async function removeHelpdeskAttachment(ticketId, attachmentId) {
             if (!canManageHelpdesk()) {
                 alert('Nemate opravneni spravovat helpdesk');
                 return;
             }
             const ticket = getHelpdeskTicketById(ticketId);
             if (!ticket) return;
-            ticket.attachments = (ticket.attachments || []).filter(att => att.id !== attachmentId);
+            const attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
+            const removed = attachments.find(att => att.id === attachmentId);
+            ticket.attachments = attachments.filter(att => att.id !== attachmentId);
+            if (removed && removed.path && window.storage) {
+                try {
+                    await storage.ref(removed.path).delete();
+                } catch (err) {
+                    console.warn('Helpdesk attachment delete failed:', err);
+                }
+            }
             ticket.updatedAt = Date.now();
             saveHelpdeskTickets();
             renderHelpdeskView();
@@ -10743,20 +10803,20 @@
                     return;
                 }
 
-                ticket.attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
-                ticket.attachments.push({
-                    id: `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+                const attachment = await uploadHelpdeskDataUrlAttachment(ticket.id, dataUrl, {
                     name: `screenshot-${new Date().toISOString().slice(0, 10)}.jpg`,
                     type: 'image/jpeg',
                     size: size,
-                    dataUrl: dataUrl,
-                    createdAt: Date.now(),
                     source: 'screenshot'
                 });
-                ticket.updatedAt = Date.now();
-                saveHelpdeskTickets();
-                renderHelpdeskView();
-                renderHelpdeskDetail(helpdeskSelectedId);
+                if (attachment) {
+                    ticket.attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
+                    ticket.attachments.push(attachment);
+                    ticket.updatedAt = Date.now();
+                    saveHelpdeskTickets();
+                    renderHelpdeskView();
+                    renderHelpdeskDetail(helpdeskSelectedId);
+                }
             } catch (err) {
                 alert('Snimek obrazovky se nepodarilo poridit.');
             } finally {
@@ -10786,6 +10846,7 @@
             }
             saveHelpdeskTickets();
             renderHelpdeskView();
+            renderHelpdeskDetail(helpdeskSelectedId);
         }
 
         // Teams integration
@@ -16133,10 +16194,8 @@
         function hasLocalData() {
             try {
                 const list = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
-                const tickets = JSON.parse(localStorage.getItem('rackManagerHelpdeskTickets') || '[]');
                 const ateraConfig = JSON.parse(localStorage.getItem('rackManagerAteraConfig') || 'null');
                 return (Array.isArray(list) && list.length > 0)
-                    || (Array.isArray(tickets) && tickets.length > 0)
                     || !!ateraConfig;
             } catch (err) {
                 return false;
@@ -16157,7 +16216,8 @@
             localStorage.setItem('rackManagerClients', JSON.stringify(cloudClients));
             localStorage.setItem('rackManagerClientData', JSON.stringify(cloudClientData));
             if (hasHelpdeskTickets) {
-                localStorage.setItem('rackManagerHelpdeskTickets', JSON.stringify(cloudHelpdeskTickets));
+                helpdeskTickets = Array.isArray(cloudHelpdeskTickets) ? cloudHelpdeskTickets : [];
+                helpdeskTicketsLoaded = true;
             }
             if (cloudLastClientId) {
                 localStorage.setItem('rackManagerLastClient', cloudLastClientId);
@@ -16212,9 +16272,11 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 <script>
   var auth;
   var db;
+  var storage;
 
   // Load Firebase config from /api/config (Vercel env)
   async function loadFirebaseConfig() {
@@ -16231,8 +16293,10 @@
 
     auth = firebase.auth();
     db = firebase.firestore();
+    storage = firebase.storage();
     window.auth = auth;
     window.db = db;
+    window.storage = storage;
 
     function isLocalHost() {
       return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -16820,7 +16884,9 @@
       var lastClientId = localStorage.getItem('rackManagerLastClient') || null;
       var m365Config = JSON.parse(localStorage.getItem('rackManagerM365Config') || '{}');
       var ateraConfig = JSON.parse(localStorage.getItem('rackManagerAteraConfig') || '{}');
-      var helpdeskTickets = JSON.parse(localStorage.getItem('rackManagerHelpdeskTickets') || '[]');
+      var helpdeskPayload = (typeof helpdeskTickets !== 'undefined' && Array.isArray(helpdeskTickets))
+        ? helpdeskTickets
+        : [];
 
       var payload = {
         clients: clients,
@@ -16828,7 +16894,7 @@
         lastClientId: lastClientId,
         m365Config: m365Config,
         ateraConfig: ateraConfig,
-        helpdeskTickets: helpdeskTickets,
+        helpdeskTickets: helpdeskPayload,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         updatedAtMs: Date.now(),
         updatedBy: user.email || user.uid
