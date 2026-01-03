@@ -5067,6 +5067,135 @@
             background: #f9fafb;
         }
 
+        .helpdesk-chat-list {
+            display: grid;
+            gap: 0.6rem;
+            max-height: 240px;
+            overflow-y: auto;
+            padding-right: 0.2rem;
+        }
+
+        .helpdesk-chat-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 0.65rem 0.75rem;
+            background: #f9fafb;
+        }
+
+        .helpdesk-chat-item.customer {
+            border-color: rgba(248, 154, 85, 0.5);
+            background: #fff7ed;
+        }
+
+        .helpdesk-chat-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 0.4rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+        }
+
+        .helpdesk-chat-body {
+            margin-top: 0.35rem;
+            font-size: 0.85rem;
+            color: #111827;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .helpdesk-chat-form {
+            display: grid;
+            gap: 0.6rem;
+            margin-top: 0.75rem;
+        }
+
+        .helpdesk-chat-form input,
+        .helpdesk-chat-form select,
+        .helpdesk-chat-form textarea {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            color: #1f2937;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            padding: 0.55rem 0.65rem;
+        }
+
+        .helpdesk-chat-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .helpdesk-attachment-grid {
+            display: grid;
+            gap: 0.65rem;
+        }
+
+        .helpdesk-attachment-card {
+            display: grid;
+            grid-template-columns: 56px 1fr;
+            gap: 0.7rem;
+            padding: 0.6rem 0.7rem;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            align-items: center;
+        }
+
+        .helpdesk-attachment-preview {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+        }
+
+        .helpdesk-attachment-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .helpdesk-attachment-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #111827;
+            word-break: break-all;
+        }
+
+        .helpdesk-attachment-meta {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.2rem;
+        }
+
+        .helpdesk-attachment-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+        }
+
+        .helpdesk-attachment-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.6rem;
+        }
+
         @media (max-width: 1200px) {
             .helpdesk-layout {
                 grid-template-columns: minmax(0, 1fr);
@@ -7041,6 +7170,7 @@
             { id: 'teams', label: 'Teams' },
             { id: 'clickup', label: 'ClickUp' }
         ];
+        const HELP_DESK_MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
         const HELP_DESK_QUEUES = [
             { id: 'open', label: 'Otevrene', match: ticket => !['resolved', 'closed'].includes(ticket.status) },
             { id: 'waiting', label: 'Ceka na klienta', match: ticket => ticket.status === 'waiting' },
@@ -9732,6 +9862,43 @@
             return date.toISOString().slice(0, 10);
         }
 
+        function formatHelpdeskTimestamp(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '-';
+            const iso = date.toISOString();
+            return `${iso.slice(0, 10)} ${iso.slice(11, 16)}`;
+        }
+
+        function getHelpdeskCurrentUserLabel() {
+            if (window.auth && auth.currentUser) {
+                return auth.currentUser.displayName || auth.currentUser.email || auth.currentUser.uid || 'Technik';
+            }
+            return 'Technik';
+        }
+
+        function formatHelpdeskFileSize(bytes) {
+            const size = Number(bytes) || 0;
+            if (size <= 0) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB'];
+            const idx = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1);
+            const value = size / Math.pow(1024, idx);
+            return `${value.toFixed(value >= 10 || idx === 0 ? 0 : 1)} ${units[idx]}`;
+        }
+
+        function getHelpdeskFileExtension(name) {
+            const safeName = (name || '').trim();
+            if (!safeName) return 'file';
+            const parts = safeName.split('.');
+            return parts.length > 1 ? parts[parts.length - 1].slice(0, 4) : 'file';
+        }
+
+        function getHelpdeskDataUrlSize(dataUrl) {
+            if (!dataUrl) return 0;
+            const base64 = dataUrl.split(',')[1] || '';
+            return Math.floor(base64.length * 3 / 4);
+        }
+
         function getHelpdeskClientName(clientId, fallbackName) {
             if (!clientId) return fallbackName || '-';
             const client = clients.find(item => item.id === clientId);
@@ -10072,6 +10239,51 @@
             const lastSync = external.lastSyncAt ? formatHelpdeskDate(external.lastSyncAt) : '-';
             const canEdit = canManageHelpdesk();
             const actionButtons = [];
+            const attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
+            const chatMessages = Array.isArray(ticket.chat) ? ticket.chat : [];
+            const chatAuthorDefault = getHelpdeskCurrentUserLabel();
+            const attachmentsHtml = attachments.length
+                ? attachments.map((attachment) => {
+                    const isImage = attachment.type && attachment.type.startsWith('image/');
+                    const ext = getHelpdeskFileExtension(attachment.name).toUpperCase();
+                    const preview = isImage && attachment.dataUrl
+                        ? `<img src="${attachment.dataUrl}" alt="${escapeHtml(attachment.name || 'Priloha')}">`
+                        : `<span>${escapeHtml(ext)}</span>`;
+                    const meta = `${formatHelpdeskFileSize(attachment.size)} / ${formatHelpdeskTimestamp(attachment.createdAt)}`;
+                    const download = attachment.dataUrl
+                        ? `<a class="btn-small" href="${attachment.dataUrl}" download="${escapeHtml(attachment.name || 'priloha')}">Stahnout</a>`
+                        : '';
+                    const removeBtn = canEdit
+                        ? `<button class="btn-small btn-secondary" type="button" onclick="removeHelpdeskAttachment('${ticket.id}', '${attachment.id}')">Odebrat</button>`
+                        : '';
+                    return `
+                        <div class="helpdesk-attachment-card">
+                            <div class="helpdesk-attachment-preview">${preview}</div>
+                            <div>
+                                <div class="helpdesk-attachment-name">${escapeHtml(attachment.name || 'Priloha')}</div>
+                                <div class="helpdesk-attachment-meta">${escapeHtml(meta)}</div>
+                                ${download || removeBtn ? `<div class="helpdesk-attachment-actions">${download}${removeBtn}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')
+                : '<div class="helpdesk-empty">Zatim zadne prilohy.</div>';
+            const chatHtml = chatMessages.length
+                ? chatMessages.map((message) => {
+                    const isCustomer = message.channel === 'customer';
+                    const label = isCustomer ? 'Zakaznik' : 'Technik';
+                    const author = message.author || label;
+                    return `
+                        <div class="helpdesk-chat-item ${isCustomer ? 'customer' : ''}">
+                            <div class="helpdesk-chat-meta">
+                                <span>${escapeHtml(label)} · ${escapeHtml(author)}</span>
+                                <span>${escapeHtml(formatHelpdeskTimestamp(message.createdAt))}</span>
+                            </div>
+                            <div class="helpdesk-chat-body">${escapeHtml(message.content || '')}</div>
+                        </div>
+                    `;
+                }).join('')
+                : '<div class="helpdesk-empty">Zatim zadne zpravy.</div>';
 
             if (canEdit) {
                 actionButtons.push(`<button class="btn-small btn-secondary" onclick="openHelpdeskTicketModal('${ticket.id}')">Upravit</button>`);
@@ -10110,6 +10322,37 @@
                 <div class="helpdesk-detail-section">
                     <div class="helpdesk-detail-subtitle">Tagy</div>
                     <div class="helpdesk-ticket-tags">${tags}</div>
+                </div>
+                <div class="helpdesk-detail-section">
+                    <div class="helpdesk-detail-subtitle">Chat se zakaznikem</div>
+                    <div class="helpdesk-chat-list">${chatHtml}</div>
+                    ${canEdit ? `
+                        <div class="helpdesk-chat-form">
+                            <div style="display: grid; grid-template-columns: 140px 1fr; gap: 0.6rem;">
+                                <select id="helpdeskChatChannel">
+                                    <option value="internal">Technik</option>
+                                    <option value="customer">Zakaznik</option>
+                                </select>
+                                <input type="text" id="helpdeskChatAuthor" value="${escapeHtml(chatAuthorDefault)}" placeholder="Jmeno odesilatele">
+                            </div>
+                            <textarea id="helpdeskChatMessage" rows="3" placeholder="Napis zpravu..."></textarea>
+                            <div class="helpdesk-chat-actions">
+                                <button class="btn-small" type="button" onclick="addHelpdeskChatMessage()">Pridat zpravu</button>
+                            </div>
+                        </div>
+                    ` : '<div class="helpdesk-panel-note">Nemate opravneni psat zpravy.</div>'}
+                </div>
+                <div class="helpdesk-detail-section">
+                    <div class="helpdesk-detail-subtitle">Prilohy a screenshoty</div>
+                    <div class="helpdesk-attachment-grid">${attachmentsHtml}</div>
+                    ${canEdit ? `
+                        <div class="helpdesk-attachment-controls">
+                            <input type="file" id="helpdeskAttachmentInput" multiple onchange="handleHelpdeskAttachmentUpload(event)" style="display: none;">
+                            <button class="btn-small" type="button" onclick="triggerHelpdeskAttachmentUpload()">Pridat prilohu</button>
+                            <button class="btn-small btn-secondary" type="button" onclick="captureHelpdeskScreenshot()">Snim obrazovky</button>
+                        </div>
+                        <div class="helpdesk-panel-note">Max ${formatHelpdeskFileSize(HELP_DESK_MAX_ATTACHMENT_BYTES)} na soubor. Snimek vyzaduje potvrzeni sdileni obrazovky.</div>
+                    ` : ''}
                 </div>
                 <div class="helpdesk-detail-section">
                     <div class="helpdesk-detail-subtitle">Integrace</div>
@@ -10285,6 +10528,8 @@
                 createdAt: baseTicket ? baseTicket.createdAt : now,
                 updatedAt: now,
                 resolvedAt: baseTicket ? baseTicket.resolvedAt : null,
+                attachments: baseTicket ? (baseTicket.attachments || []) : [],
+                chat: baseTicket ? (baseTicket.chat || []) : [],
                 external: baseTicket ? baseTicket.external : {
                     provider: '',
                     externalId: '',
@@ -10304,6 +10549,196 @@
             helpdeskSelectedId = ticketId;
             closeHelpdeskTicketModal();
             renderHelpdeskView();
+        }
+
+        function getHelpdeskTicketById(ticketId) {
+            return helpdeskTickets.find(item => item.id === ticketId);
+        }
+
+        function addHelpdeskChatMessage() {
+            if (!canManageHelpdesk()) {
+                alert('Nemate opravneni spravovat helpdesk');
+                return;
+            }
+            const ticket = getHelpdeskTicketById(helpdeskSelectedId);
+            if (!ticket) {
+                alert('Nejprve vyberte tiket.');
+                return;
+            }
+            const channelSelect = document.getElementById('helpdeskChatChannel');
+            const authorInput = document.getElementById('helpdeskChatAuthor');
+            const messageInput = document.getElementById('helpdeskChatMessage');
+            const content = messageInput ? messageInput.value.trim() : '';
+            if (!content) {
+                alert('Zadejte zpravu.');
+                return;
+            }
+            const channel = channelSelect && channelSelect.value === 'customer' ? 'customer' : 'internal';
+            const fallbackAuthor = channel === 'customer' ? 'Zakaznik' : getHelpdeskCurrentUserLabel();
+            const author = authorInput ? (authorInput.value.trim() || fallbackAuthor) : fallbackAuthor;
+            const message = {
+                id: `msg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+                channel,
+                author,
+                content,
+                createdAt: Date.now()
+            };
+            ticket.chat = Array.isArray(ticket.chat) ? ticket.chat : [];
+            ticket.chat.push(message);
+            ticket.updatedAt = Date.now();
+            saveHelpdeskTickets();
+            if (messageInput) messageInput.value = '';
+            renderHelpdeskView();
+        }
+
+        function triggerHelpdeskAttachmentUpload() {
+            const input = document.getElementById('helpdeskAttachmentInput');
+            if (!input) return;
+            input.value = '';
+            input.click();
+        }
+
+        function readHelpdeskFileAsDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error || new Error('File read failed'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function handleHelpdeskAttachmentUpload(event) {
+            if (!canManageHelpdesk()) {
+                alert('Nemate opravneni spravovat helpdesk');
+                return;
+            }
+            const ticket = getHelpdeskTicketById(helpdeskSelectedId);
+            if (!ticket) {
+                alert('Nejprve vyberte tiket.');
+                return;
+            }
+            const input = event && event.target ? event.target : null;
+            const files = input && input.files ? Array.from(input.files) : [];
+            if (!files.length) return;
+            const tooLarge = [];
+            let added = 0;
+            ticket.attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
+
+            for (const file of files) {
+                if (file.size > HELP_DESK_MAX_ATTACHMENT_BYTES) {
+                    tooLarge.push(file.name || 'soubor');
+                    continue;
+                }
+                try {
+                    const dataUrl = await readHelpdeskFileAsDataUrl(file);
+                    ticket.attachments.push({
+                        id: `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+                        name: file.name || 'priloha',
+                        type: file.type || 'application/octet-stream',
+                        size: file.size || 0,
+                        dataUrl: dataUrl,
+                        createdAt: Date.now(),
+                        source: 'upload'
+                    });
+                    added += 1;
+                } catch (err) {
+                    console.warn('Helpdesk attachment read failed:', err);
+                }
+            }
+
+            if (added) {
+                ticket.updatedAt = Date.now();
+                saveHelpdeskTickets();
+                renderHelpdeskView();
+            }
+            if (tooLarge.length) {
+                alert(`Soubor je prilis velky (max ${formatHelpdeskFileSize(HELP_DESK_MAX_ATTACHMENT_BYTES)}): ${tooLarge.join(', ')}`);
+            }
+        }
+
+        function removeHelpdeskAttachment(ticketId, attachmentId) {
+            if (!canManageHelpdesk()) {
+                alert('Nemate opravneni spravovat helpdesk');
+                return;
+            }
+            const ticket = getHelpdeskTicketById(ticketId);
+            if (!ticket) return;
+            ticket.attachments = (ticket.attachments || []).filter(att => att.id !== attachmentId);
+            ticket.updatedAt = Date.now();
+            saveHelpdeskTickets();
+            renderHelpdeskView();
+        }
+
+        async function captureHelpdeskScreenshot() {
+            if (!canManageHelpdesk()) {
+                alert('Nemate opravneni spravovat helpdesk');
+                return;
+            }
+            const ticket = getHelpdeskTicketById(helpdeskSelectedId);
+            if (!ticket) {
+                alert('Nejprve vyberte tiket.');
+                return;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                alert('Snimani obrazovky neni podporovano v tomto prohlizeci.');
+                return;
+            }
+
+            let stream = null;
+            try {
+                stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play().catch(() => {});
+                await new Promise((resolve) => {
+                    if (video.readyState >= 2) resolve();
+                    video.onloadedmetadata = resolve;
+                });
+
+                const maxWidth = 1400;
+                const maxHeight = 900;
+                const scale = Math.min(
+                    1,
+                    maxWidth / (video.videoWidth || maxWidth),
+                    maxHeight / (video.videoHeight || maxHeight)
+                );
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round((video.videoWidth || maxWidth) * scale));
+                canvas.height = Math.max(1, Math.round((video.videoHeight || maxHeight) * scale));
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                let dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                let size = getHelpdeskDataUrlSize(dataUrl);
+                if (size > HELP_DESK_MAX_ATTACHMENT_BYTES) {
+                    dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    size = getHelpdeskDataUrlSize(dataUrl);
+                }
+                if (size > HELP_DESK_MAX_ATTACHMENT_BYTES) {
+                    alert(`Snimek je prilis velky (max ${formatHelpdeskFileSize(HELP_DESK_MAX_ATTACHMENT_BYTES)}).`);
+                    return;
+                }
+
+                ticket.attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
+                ticket.attachments.push({
+                    id: `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+                    name: `screenshot-${new Date().toISOString().slice(0, 10)}.jpg`,
+                    type: 'image/jpeg',
+                    size: size,
+                    dataUrl: dataUrl,
+                    createdAt: Date.now(),
+                    source: 'screenshot'
+                });
+                ticket.updatedAt = Date.now();
+                saveHelpdeskTickets();
+                renderHelpdeskView();
+            } catch (err) {
+                alert('Snimek obrazovky se nepodarilo poridit.');
+            } finally {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            }
         }
 
         async function updateHelpdeskTicketStatus(ticketId, status) {
