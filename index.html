@@ -4726,7 +4726,7 @@
 
         .helpdesk-layout {
             display: grid;
-            grid-template-columns: 260px minmax(0, 1fr) 360px;
+            grid-template-columns: 260px minmax(0, 1fr);
             gap: 0.9rem;
             align-items: start;
             width: 100%;
@@ -6418,10 +6418,6 @@
                         <div class="helpdesk-metrics" id="helpdeskMetrics"></div>
                         <div id="helpdeskList" class="helpdesk-ticket-list"></div>
                     </section>
-
-                    <section class="helpdesk-panel helpdesk-detail">
-                        <div id="helpdeskDetail" class="helpdesk-detail-body"></div>
-                    </section>
                 </div>
             </div>
 
@@ -6613,6 +6609,17 @@
                     <button class="btn btn-secondary" type="button" onclick="closeHelpdeskTicketModal()">Zahodit</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Helpdesk Detail Modal -->
+    <div id="helpdeskDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 980px; width: min(980px, 96vw); max-height: 90vh;">
+            <div class="modal-header">
+                <h2>Detail tiketu</h2>
+                <button class="modal-close" onclick="closeHelpdeskDetailModal()">x</button>
+            </div>
+            <div id="helpdeskDetailBody" class="helpdesk-detail-body" style="max-height: 72vh; overflow-y: auto; padding-right: 0.2rem;"></div>
         </div>
     </div>
 
@@ -10212,7 +10219,7 @@
         }
 
         function renderHelpdeskDetail(ticketId) {
-            const detailEl = document.getElementById('helpdeskDetail');
+            const detailEl = document.getElementById('helpdeskDetailBody');
             if (!detailEl) return;
             if (!ticketId) {
                 detailEl.innerHTML = '<div class="helpdesk-empty">Vyber tiket ze seznamu.</div>';
@@ -10364,9 +10371,23 @@
             `;
         }
 
+        function openHelpdeskDetailModal(ticketId) {
+            if (!ticketId) return;
+            helpdeskSelectedId = ticketId;
+            renderHelpdeskDetail(ticketId);
+            const modal = document.getElementById('helpdeskDetailModal');
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeHelpdeskDetailModal() {
+            const modal = document.getElementById('helpdeskDetailModal');
+            if (modal) modal.classList.remove('active');
+        }
+
         function selectHelpdeskTicket(ticketId) {
             helpdeskSelectedId = ticketId;
             renderHelpdeskView();
+            openHelpdeskDetailModal(ticketId);
         }
 
         function renderHelpdeskView() {
@@ -10380,14 +10401,14 @@
             renderHelpdeskFiltersUI();
             renderHelpdeskMetrics();
             const filtered = getHelpdeskFilteredTickets();
-            if (!helpdeskSelectedId && filtered.length) {
-                helpdeskSelectedId = filtered[0].id;
-            }
             if (helpdeskSelectedId && !filtered.find(ticket => ticket.id === helpdeskSelectedId)) {
-                helpdeskSelectedId = filtered.length ? filtered[0].id : null;
+                const detailModal = document.getElementById('helpdeskDetailModal');
+                const detailOpen = detailModal && detailModal.classList.contains('active');
+                if (!detailOpen) {
+                    helpdeskSelectedId = null;
+                }
             }
             renderHelpdeskList(filtered);
-            renderHelpdeskDetail(helpdeskSelectedId);
         }
 
         function renderHelpdeskTicketFormOptions() {
@@ -10589,6 +10610,7 @@
             saveHelpdeskTickets();
             if (messageInput) messageInput.value = '';
             renderHelpdeskView();
+            renderHelpdeskDetail(helpdeskSelectedId);
         }
 
         function triggerHelpdeskAttachmentUpload() {
@@ -10650,6 +10672,7 @@
                 ticket.updatedAt = Date.now();
                 saveHelpdeskTickets();
                 renderHelpdeskView();
+                renderHelpdeskDetail(helpdeskSelectedId);
             }
             if (tooLarge.length) {
                 alert(`Soubor je prilis velky (max ${formatHelpdeskFileSize(HELP_DESK_MAX_ATTACHMENT_BYTES)}): ${tooLarge.join(', ')}`);
@@ -10667,6 +10690,7 @@
             ticket.updatedAt = Date.now();
             saveHelpdeskTickets();
             renderHelpdeskView();
+            renderHelpdeskDetail(helpdeskSelectedId);
         }
 
         async function captureHelpdeskScreenshot() {
@@ -10732,6 +10756,7 @@
                 ticket.updatedAt = Date.now();
                 saveHelpdeskTickets();
                 renderHelpdeskView();
+                renderHelpdeskDetail(helpdeskSelectedId);
             } catch (err) {
                 alert('Snimek obrazovky se nepodarilo poridit.');
             } finally {
