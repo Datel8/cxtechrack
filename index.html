@@ -746,6 +746,35 @@
             color: var(--text-secondary);
         }
 
+        .role-permission-text {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .permission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.6rem;
+            margin-top: 0.85rem;
+        }
+
+        .permission-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 0.7rem;
+            border-radius: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .permission-item input {
+            accent-color: var(--accent-primary);
+        }
+
         .m365-note {
             font-size: 0.85rem;
             color: var(--text-secondary);
@@ -5960,6 +5989,7 @@
                         </div>
                         <div class="client-form-actions">
                             <button class="btn" id="clientSubmitBtn" onclick="addClient()">Ulozit klienta</button>
+                            <button class="btn btn-secondary" id="ateraUpdateBtn" type="button" onclick="pushAteraCustomerUpdate()" style="display: none;">Prepsat v Atera</button>
                             <button class="btn btn-secondary" type="button" onclick="closeClientModal()">Zahodit</button>
                         </div>
                     </div>
@@ -6594,7 +6624,7 @@
                 <button class="modal-close" onclick="closeRoleManagerModal()">X</button>
             </div>
             <div class="role-note">Role jsou nacitane z Firestore cesty clients/{id}/users.</div>
-            <div class="role-note">Legenda: tagy u role znaci aktivni prava. Zmena role prava automaticky upravi.</div>
+            <div class="role-note">Legenda: text u role shrnuje aktivni prava. Prava lze upravit i individualne u uzivatele.</div>
             <div class="role-invite-form">
                 <input type="email" id="roleInviteEmail" placeholder="email@firma.cz">
                 <select id="roleInviteRole" class="role-select">
@@ -6606,6 +6636,22 @@
                 <button class="btn btn-secondary" onclick="addRoleInvite()">Pozvat</button>
             </div>
             <div id="roleManagerList"></div>
+        </div>
+    </div>
+
+    <!-- Permission Override Modal -->
+    <div id="permissionOverrideModal" class="modal">
+        <div class="modal-content" style="max-width: 680px;">
+            <div class="modal-header">
+                <h2>Prava uzivatele</h2>
+                <button class="modal-close" onclick="closePermissionOverrideModal()">X</button>
+            </div>
+            <div class="role-note" id="permissionOverrideSubtitle">-</div>
+            <div class="permission-grid" id="permissionOverrideList"></div>
+            <div class="client-form-actions" style="margin-top: 1rem;">
+                <button class="btn btn-secondary" type="button" onclick="resetPermissionOverrides()">Reset na roli</button>
+                <button class="btn" type="button" onclick="savePermissionOverrides()">Ulozit prava</button>
+            </div>
         </div>
     </div>
 
@@ -6688,6 +6734,10 @@
                     <div class="form-group">
                         <label>Endpoint zarizeni</label>
                         <input type="text" id="ateraAgentsEndpoint" placeholder="/api/atera-agents">
+                    </div>
+                    <div class="form-group">
+                        <label>Endpoint update klienta</label>
+                        <input type="text" id="ateraUpdateEndpoint" placeholder="/api/atera-update-customer">
                     </div>
                 </div>
                 <div class="client-form-section">
@@ -7108,6 +7158,14 @@
         ];
 
         let currentUserRole = 'readonly';
+        let currentUserPermissionsOverride = null;
+        let roleManagerUsersCache = {};
+        let roleManagerInvitesCache = {};
+        let permissionOverrideState = {
+            uid: null,
+            role: null,
+            basePermissions: null
+        };
 
         const mspModules = [
             {
@@ -7187,33 +7245,49 @@
             return ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.readonly;
         }
 
-        function getRolePermissionLabels(role) {
-            const permissions = getRolePermissions(role);
+        function getEffectivePermissions(role, override) {
+            const base = { ...getRolePermissions(role) };
+            if (override && typeof override === 'object') {
+                Object.keys(override).forEach((key) => {
+                    if (typeof override[key] === 'boolean') {
+                        base[key] = override[key];
+                    }
+                });
+            }
+            return base;
+        }
+
+        function getCurrentUserPermissions() {
+            return getEffectivePermissions(currentUserRole, currentUserPermissionsOverride);
+        }
+
+        function getRolePermissionLabels(role, override) {
+            const permissions = getEffectivePermissions(role, override);
             const labels = ROLE_PERMISSION_ORDER
                 .filter((key) => permissions[key])
                 .map((key) => ROLE_PERMISSION_LABELS[key] || key);
             return labels.length ? labels : [ROLE_PERMISSION_EMPTY_LABEL];
         }
 
-        function renderRolePermissionTags(role) {
-            const labels = getRolePermissionLabels(role);
-            const tags = labels.map((label) => {
-                const muted = label === ROLE_PERMISSION_EMPTY_LABEL ? ' role-permission-tag-muted' : '';
-                return `<span class="role-permission-tag${muted}">${label}</span>`;
-            }).join('');
-            return `<div class="role-permission-tags">${tags}</div>`;
+        function getRolePermissionText(role, override) {
+            return getRolePermissionLabels(role, override).join(', ');
         }
 
         function handleRoleSelectChange(uid, selectEl) {
             const role = selectEl && selectEl.value ? selectEl.value : 'readonly';
             const row = selectEl ? selectEl.closest('tr') : null;
             const cell = row ? row.querySelector('.role-permission-cell') : null;
-            if (cell) cell.innerHTML = renderRolePermissionTags(role);
+            const userEntry = roleManagerUsersCache ? roleManagerUsersCache[uid] : null;
+            if (userEntry) {
+                userEntry.role = role;
+            }
+            const override = userEntry && userEntry.permissionsOverride ? userEntry.permissionsOverride : null;
+            if (cell) cell.textContent = getRolePermissionText(role, override);
             updateUserRole(uid, role);
         }
 
         function canViewSensitive() {
-            return getRolePermissions(currentUserRole).viewSensitive;
+            return getCurrentUserPermissions().viewSensitive;
         }
 
         function getSensitiveValue(value) {
@@ -7221,39 +7295,39 @@
         }
 
         function canEditTopology() {
-            return getRolePermissions(currentUserRole).editTopology;
+            return getCurrentUserPermissions().editTopology;
         }
 
         function canManageRacks() {
-            return getRolePermissions(currentUserRole).manageRacks;
+            return getCurrentUserPermissions().manageRacks;
         }
 
         function canManageDevices() {
-            return getRolePermissions(currentUserRole).manageDevices;
+            return getCurrentUserPermissions().manageDevices;
         }
 
         function canManageCategories() {
-            return getRolePermissions(currentUserRole).manageCategories;
+            return getCurrentUserPermissions().manageCategories;
         }
 
         function canManageRoles() {
-            return getRolePermissions(currentUserRole).manageRoles;
+            return getCurrentUserPermissions().manageRoles;
         }
 
         function canDeleteRacks() {
-            return getRolePermissions(currentUserRole).deleteRacks;
+            return getCurrentUserPermissions().deleteRacks;
         }
 
         function canManageTimeEntries() {
-            return getRolePermissions(currentUserRole).manageTime;
+            return getCurrentUserPermissions().manageTime;
         }
 
         function canManageHelpdesk() {
-            return getRolePermissions(currentUserRole).manageHelpdesk;
+            return getCurrentUserPermissions().manageHelpdesk;
         }
 
         function canViewAllTimeEntries() {
-            return getRolePermissions(currentUserRole).viewTimeAll;
+            return getCurrentUserPermissions().viewTimeAll;
         }
 
         function canViewReports() {
@@ -7346,8 +7420,11 @@
             if (addTimeEntryBtn) addTimeEntryBtn.disabled = !canManageTimeEntries();
         }
 
-        function setCurrentRole(role) {
+        function setCurrentRole(role, permissionsOverride) {
             currentUserRole = ROLE_PERMISSIONS[role] ? role : 'readonly';
+            currentUserPermissionsOverride = permissionsOverride && typeof permissionsOverride === 'object'
+                ? permissionsOverride
+                : null;
             updateRoleLabel();
             applyRolePermissions();
             applyTimeDefaultsForRole();
@@ -7356,7 +7433,7 @@
 
         async function fetchUserRole() {
             if (!currentClientId || !window.auth || !window.db || !auth.currentUser) {
-                setCurrentRole('readonly');
+                setCurrentRole('readonly', null);
                 return;
             }
 
@@ -7375,6 +7452,7 @@
 
                 const existing = userSnap.exists ? userSnap.data() : {};
                 let role = existing && existing.role ? existing.role : 'technician';
+                const permissionsOverride = existing && existing.permissionsOverride ? existing.permissionsOverride : null;
 
                 if (usersSnap.empty) {
                     role = 'admin';
@@ -7415,10 +7493,10 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                setCurrentRole(role);
+                setCurrentRole(role, permissionsOverride);
             } catch (err) {
                 console.warn('Role fetch failed:', err);
-                setCurrentRole('readonly');
+                setCurrentRole('readonly', null);
             }
         }
 
@@ -7427,7 +7505,7 @@
                 fetchUserRole();
                 initTimeTracking();
             } else {
-                setCurrentRole('readonly');
+                setCurrentRole('readonly', null);
             }
         };
 
@@ -7558,7 +7636,8 @@
                 enabled: true,
                 syncIntervalMin: 10,
                 customersEndpoint: '/api/atera-customers',
-                agentsEndpoint: '/api/atera-agents'
+                agentsEndpoint: '/api/atera-agents',
+                updateEndpoint: '/api/atera-update-customer'
             };
             try {
                 const stored = JSON.parse(localStorage.getItem('rackManagerAteraConfig') || '{}');
@@ -7581,11 +7660,13 @@
             const intervalInput = document.getElementById('ateraSyncInterval');
             const customersInput = document.getElementById('ateraCustomersEndpoint');
             const agentsInput = document.getElementById('ateraAgentsEndpoint');
+            const updateInput = document.getElementById('ateraUpdateEndpoint');
 
             if (enableSelect) enableSelect.value = config.enabled === false ? '0' : '1';
             if (intervalInput) intervalInput.value = String(config.syncIntervalMin || 10);
             if (customersInput) customersInput.value = config.customersEndpoint || '/api/atera-customers';
             if (agentsInput) agentsInput.value = config.agentsEndpoint || '/api/atera-agents';
+            if (updateInput) updateInput.value = config.updateEndpoint || '/api/atera-update-customer';
             updateAteraStatusNote();
         }
 
@@ -7610,13 +7691,15 @@
             const intervalInput = document.getElementById('ateraSyncInterval');
             const customersInput = document.getElementById('ateraCustomersEndpoint');
             const agentsInput = document.getElementById('ateraAgentsEndpoint');
+            const updateInput = document.getElementById('ateraUpdateEndpoint');
 
             const intervalValue = intervalInput ? parseInt(intervalInput.value, 10) : 10;
             const config = {
                 enabled: enableSelect ? enableSelect.value === '1' : true,
                 syncIntervalMin: Number.isFinite(intervalValue) && intervalValue > 0 ? intervalValue : 10,
                 customersEndpoint: customersInput ? customersInput.value.trim() : '/api/atera-customers',
-                agentsEndpoint: agentsInput ? agentsInput.value.trim() : '/api/atera-agents'
+                agentsEndpoint: agentsInput ? agentsInput.value.trim() : '/api/atera-agents',
+                updateEndpoint: updateInput ? updateInput.value.trim() : '/api/atera-update-customer'
             };
 
             if (!config.customersEndpoint) {
@@ -7624,6 +7707,9 @@
             }
             if (!config.agentsEndpoint) {
                 config.agentsEndpoint = '/api/atera-agents';
+            }
+            if (!config.updateEndpoint) {
+                config.updateEndpoint = '/api/atera-update-customer';
             }
 
             setAteraConfig(config);
@@ -7797,6 +7883,8 @@
         function renderRoleManagerList(users, invites) {
             const container = document.getElementById('roleManagerList');
             if (!container) return;
+            roleManagerUsersCache = users || {};
+            roleManagerInvitesCache = invites || {};
             const entries = Object.entries(users || {});
             const inviteEntries = Object.entries(invites || {});
 
@@ -7809,6 +7897,8 @@
                 const name = user.name || '';
                 const providerId = user.providerId || (user.providers && user.providers[0]) || '';
                 const providerLabel = user.providerLabel || formatAuthProviderLabel(providerId);
+                const role = user.role || 'readonly';
+                const override = user.permissionsOverride || null;
                 return `
                     <tr>
                         <td>${name || '-'}</td>
@@ -7819,7 +7909,12 @@
                                 ${roleOptions}
                             </select>
                         </td>
-                        <td class="role-permission-cell">${renderRolePermissionTags(user.role || 'readonly')}</td>
+                        <td class="role-permission-cell">
+                            <div class="role-permission-text">${getRolePermissionText(role, override)}</div>
+                        </td>
+                        <td>
+                            <button class="btn-small btn-secondary" type="button" onclick="openPermissionOverrideModal('${uid}')">Prava</button>
+                        </td>
                     </tr>
                 `;
             });
@@ -7830,7 +7925,7 @@
                     <tr>
                         <td>${invite.email || emailKey}</td>
                         <td>${ROLE_LABELS[inviteRole] || inviteRole || 'Read-only'}</td>
-                        <td>${renderRolePermissionTags(inviteRole)}</td>
+                        <td><div class="role-permission-text">${getRolePermissionText(inviteRole, null)}</div></td>
                         <td>
                             <button class="delete-btn" onclick="removeRoleInvite('${emailKey}')">Odebrat</button>
                         </td>
@@ -7848,6 +7943,7 @@
                                 <th>Prihlaseni</th>
                                 <th>Role</th>
                                 <th>Prava</th>
+                                <th>Akce</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -7888,6 +7984,117 @@
             });
         }
 
+        function openPermissionOverrideModal(uid) {
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat role');
+                return;
+            }
+            const user = roleManagerUsersCache ? roleManagerUsersCache[uid] : null;
+            if (!user) return;
+            const role = ROLE_PERMISSIONS[user.role] ? user.role : 'readonly';
+            const override = user.permissionsOverride || null;
+            const basePermissions = getRolePermissions(role);
+            const effectivePermissions = getEffectivePermissions(role, override);
+            permissionOverrideState = {
+                uid: uid,
+                role: role,
+                basePermissions: basePermissions
+            };
+
+            const subtitle = document.getElementById('permissionOverrideSubtitle');
+            if (subtitle) {
+                const label = ROLE_LABELS[role] || role;
+                const name = user.name || user.email || uid;
+                subtitle.textContent = `${name} · role: ${label}`;
+            }
+
+            const list = document.getElementById('permissionOverrideList');
+            if (list) {
+                list.innerHTML = ROLE_PERMISSION_ORDER.map((key) => {
+                    const label = ROLE_PERMISSION_LABELS[key] || key;
+                    const checked = effectivePermissions[key] ? 'checked' : '';
+                    return `
+                        <label class="permission-item">
+                            <input type="checkbox" data-permission-key="${key}" ${checked}>
+                            <span>${label}</span>
+                        </label>
+                    `;
+                }).join('');
+            }
+
+            const modal = document.getElementById('permissionOverrideModal');
+            if (modal) modal.classList.add('active');
+        }
+
+        function closePermissionOverrideModal() {
+            const modal = document.getElementById('permissionOverrideModal');
+            if (modal) modal.classList.remove('active');
+            permissionOverrideState = {
+                uid: null,
+                role: null,
+                basePermissions: null
+            };
+        }
+
+        function resetPermissionOverrides() {
+            const list = document.getElementById('permissionOverrideList');
+            if (!list || !permissionOverrideState.basePermissions) return;
+            list.querySelectorAll('input[data-permission-key]').forEach((input) => {
+                const key = input.getAttribute('data-permission-key');
+                if (!key) return;
+                input.checked = !!permissionOverrideState.basePermissions[key];
+            });
+        }
+
+        async function savePermissionOverrides() {
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat role');
+                return;
+            }
+            if (!window.db || !currentClientId || !permissionOverrideState.uid) return;
+            if (!permissionOverrideState.basePermissions) return;
+            const list = document.getElementById('permissionOverrideList');
+            const overrides = {};
+            ROLE_PERMISSION_ORDER.forEach((key) => {
+                const input = list ? list.querySelector(`input[data-permission-key="${key}"]`) : null;
+                const value = input ? !!input.checked : false;
+                if (value !== !!permissionOverrideState.basePermissions[key]) {
+                    overrides[key] = value;
+                }
+            });
+
+            try {
+                const payload = {};
+                if (Object.keys(overrides).length) {
+                    payload.permissionsOverride = overrides;
+                } else {
+                    payload.permissionsOverride = firebase.firestore.FieldValue.delete();
+                }
+
+                await db.collection('clients')
+                    .doc(currentClientId)
+                    .collection('users')
+                    .doc(permissionOverrideState.uid)
+                    .set(payload, { merge: true });
+
+                if (roleManagerUsersCache && roleManagerUsersCache[permissionOverrideState.uid]) {
+                    roleManagerUsersCache[permissionOverrideState.uid].permissionsOverride =
+                        Object.keys(overrides).length ? overrides : null;
+                }
+
+                if (auth && auth.currentUser && permissionOverrideState.uid === auth.currentUser.uid) {
+                    currentUserPermissionsOverride = Object.keys(overrides).length ? overrides : null;
+                    applyRolePermissions();
+                    renderDashboard();
+                }
+
+                await loadRoleManagerList();
+                closePermissionOverrideModal();
+            } catch (err) {
+                console.warn('Permission override save failed:', err);
+            }
+        }
+
         async function updateUserRole(uid, role) {
             if (!canManageRoles()) {
                 alert('Nemate opravneni spravovat role');
@@ -7905,7 +8112,7 @@
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
                 if (auth && auth.currentUser && uid === auth.currentUser.uid) {
-                    setCurrentRole(safeRole);
+                    setCurrentRole(safeRole, currentUserPermissionsOverride);
                 }
             } catch (err) {
                 console.warn('Role update failed:', err);
@@ -12375,11 +12582,12 @@
             if (submitBtn) submitBtn.textContent = 'Vytvorit klienta';
             updatePricingFields();
             setAresStatus('-');
+            setAteraClientActionVisibility(null);
         }
 
         function fillClientForm(client) {
             if (!client) return;
-            document.getElementById('newClientName').value = client.name || '';
+            document.getElementById('newClientName').value = client.nameOverride || client.name || '';
             document.getElementById('newClientICO').value = client.ico || '';
             document.getElementById('newClientType').value = client.type || 'standard';
             document.getElementById('newClientContact').value = client.contact || '';
@@ -12400,6 +12608,104 @@
             if (overageRate) overageRate.value = client.overageRate || '';
             updatePricingFields();
             setAresStatus('-');
+            setAteraClientActionVisibility(client);
+        }
+
+        function setAteraClientActionVisibility(client) {
+            const button = document.getElementById('ateraUpdateBtn');
+            if (!button) return;
+            const isAtera = client && client.source === 'atera' && client.externalId;
+            button.style.display = isAtera ? 'inline-flex' : 'none';
+            button.disabled = !isAtera;
+        }
+
+        async function pushAteraCustomerUpdate() {
+            const editId = document.getElementById('clientEditId')?.value || '';
+            const clientId = editId || currentClientId;
+            const client = clients.find((item) => item.id === clientId);
+            if (!client || client.source !== 'atera') {
+                alert('Tento klient neni napojeny na Atera.');
+                return;
+            }
+            if (!client.externalId) {
+                alert('Chybi Atera ID klienta.');
+                return;
+            }
+
+            const nameInput = document.getElementById('newClientName');
+            const icoInput = document.getElementById('newClientICO');
+            const addressInput = document.getElementById('newClientAddress');
+            const phoneInput = document.getElementById('newClientPhone');
+            const notesInput = document.getElementById('newClientNotes');
+
+            const name = nameInput ? nameInput.value.trim() : (client.name || '');
+            if (!name) {
+                alert('Nazev klienta je povinny');
+                return;
+            }
+
+            const customer = {
+                CustomerName: name
+            };
+
+            const ico = normalizeIcoValue(icoInput ? icoInput.value : client.ico);
+            if (ico) customer.BusinessNumber = ico;
+            const address = addressInput ? addressInput.value.trim() : (client.address || '');
+            if (address) customer.Address = address;
+            const phone = phoneInput ? phoneInput.value.trim() : (client.phone || '');
+            if (phone) customer.Phone = phone;
+            const notes = notesInput ? notesInput.value.trim() : (client.notes || '');
+            if (notes) customer.Notes = notes;
+
+            const config = getAteraConfig();
+            const endpoint = config.updateEndpoint || '/api/atera-update-customer';
+            const button = document.getElementById('ateraUpdateBtn');
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Ukladam do Atera...';
+            }
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerId: client.externalId,
+                        customer: customer
+                    })
+                });
+
+                if (!response.ok) {
+                    alert(`Atera update selhalo (${response.status}).`);
+                    return;
+                }
+
+                const payload = {
+                    name,
+                    ico,
+                    phone,
+                    address,
+                    notes,
+                    updatedAt: new Date().toISOString()
+                };
+                const baseName = name;
+                payload.ateraName = baseName;
+                payload.nameOverride = '';
+                payload.name = baseName;
+
+                Object.assign(client, payload);
+                saveData();
+                updateClientSelector();
+                render();
+                alert('Klient aktualizovan v Atera.');
+            } catch (err) {
+                alert('Atera update selhalo.');
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = 'Prepsat v Atera';
+                }
+            }
         }
 
         function updatePricingFields() {
@@ -12540,6 +12846,13 @@
             if (editId) {
                 const existing = clients.find(client => client.id === editId);
                 if (!existing) return;
+                if (existing.source === 'atera') {
+                    const baseName = existing.ateraName || name;
+                    const overrideName = baseName && name.trim() !== baseName ? name.trim() : '';
+                    payload.ateraName = baseName;
+                    payload.nameOverride = overrideName;
+                    payload.name = overrideName || baseName;
+                }
                 Object.assign(existing, payload);
                 saveData();
                 updateClientSelector();
@@ -15475,9 +15788,9 @@
         if (overlay) overlay.classList.add('hidden');
         document.body.classList.remove('auth-locked');
         if (window.setCurrentRole) {
-          window.setCurrentRole('admin');
+          window.setCurrentRole('admin', null);
         } else {
-          setCurrentRole('admin');
+          setCurrentRole('admin', null);
         }
         if (window.switchView) {
           switchView('dashboard');
