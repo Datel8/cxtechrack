@@ -5487,6 +5487,7 @@
                         <button class="sidebar-action-btn" id="userManagerBtn" onclick="openRoleManagerModal()">Sprava uzivatelu</button>
                         <button class="sidebar-action-btn" id="roleManagerBtn" onclick="openRoleManagerModal()">Sprava roli</button>
                         <button class="sidebar-action-btn" id="m365ManagerBtn" onclick="openM365Modal()">M365 nastaveni</button>
+                        <button class="sidebar-action-btn" id="ateraManagerBtn" onclick="openAteraModal()">Atera sync</button>
                         <button class="sidebar-action-btn" onclick="openModuleModal()">Kategorie zarizeni</button>
                     </div>
                 </div>
@@ -6629,6 +6630,57 @@
         </div>
     </div>
 
+    <!-- Atera Modal -->
+    <div id="ateraModal" class="modal">
+        <div class="modal-content" style="max-width: 720px;">
+            <div class="modal-header">
+                <h2>Atera sync</h2>
+                <button class="modal-close" onclick="closeAteraModal()">X</button>
+            </div>
+            <div class="client-form-grid" style="margin-top: 1rem;">
+                <div class="client-form-section">
+                    <h3>Zakladni nastaveni</h3>
+                    <div class="form-group">
+                        <label>Povolit sync Atera</label>
+                        <select id="ateraEnableSync">
+                            <option value="1">Ano</option>
+                            <option value="0">Ne</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Interval syncu (min)</label>
+                        <input type="number" id="ateraSyncInterval" min="1" step="1" placeholder="napr. 10">
+                    </div>
+                    <div class="form-group">
+                        <label>Endpoint klienti</label>
+                        <input type="text" id="ateraCustomersEndpoint" placeholder="/api/atera-customers">
+                    </div>
+                    <div class="form-group">
+                        <label>Endpoint zarizeni</label>
+                        <input type="text" id="ateraAgentsEndpoint" placeholder="/api/atera-agents">
+                    </div>
+                </div>
+                <div class="client-form-section">
+                    <h3>Informace</h3>
+                    <div class="role-note" style="margin: 0;">
+                        API klic se nastavuje v serverovem prostredi (Vercel env). Frontend si pamatuje jen cestu k endpointu a interval syncu.
+                    </div>
+                    <div class="form-group" style="margin-top: 0.75rem;">
+                        <label>Stav</label>
+                        <div class="role-note" id="ateraStatusNote">-</div>
+                    </div>
+                    <div class="client-form-actions" style="justify-content: flex-start;">
+                        <button class="btn-small" type="button" onclick="testAteraConnection()">Otestovat spojeni</button>
+                    </div>
+                </div>
+            </div>
+            <div class="client-form-actions" style="margin-top: 1rem;">
+                <button class="btn btn-secondary" onclick="clearAteraConfig()">Vymazat</button>
+                <button class="btn" onclick="saveAteraConfig()">Ulozit nastaveni</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Teams Chat Modal -->
     <div id="teamsChatModal" class="modal">
         <div class="modal-content" style="max-width: 520px;">
@@ -6917,7 +6969,6 @@
             { id: 'all', label: 'Vse', match: () => true }
         ];
         let externalSyncTimer = null;
-        const EXTERNAL_SYNC_INTERVAL = 10 * 60 * 1000;
         let cloudSaveTimer = null;
         try {
             pendingReportShareId = new URLSearchParams(window.location.search).get('reportShare');
@@ -7156,6 +7207,7 @@
             const roleManagerBtn = document.getElementById('roleManagerBtn');
             const userManagerBtn = document.getElementById('userManagerBtn');
             const m365ManagerBtn = document.getElementById('m365ManagerBtn');
+            const ateraManagerBtn = document.getElementById('ateraManagerBtn');
             const addTimeEntryBtn = document.getElementById('addTimeEntryBtn');
             const helpdeskNewTicketBtn = document.getElementById('helpdeskNewTicketBtn');
             const reportsNavBtn = document.querySelector('.view-toggle-btn[data-view="reports"]');
@@ -7173,6 +7225,9 @@
             }
             if (m365ManagerBtn) {
                 m365ManagerBtn.disabled = !canManageRoles();
+            }
+            if (ateraManagerBtn) {
+                ateraManagerBtn.disabled = !canManageRoles();
             }
             if (reportsNavBtn) {
                 reportsNavBtn.style.display = canViewReports() ? 'block' : 'none';
@@ -7414,6 +7469,129 @@
             populateM365Form();
             if (window.updateAuthUI && window.auth) {
                 window.updateAuthUI(window.auth.currentUser);
+            }
+        }
+
+        function getAteraConfig() {
+            const defaults = {
+                enabled: true,
+                syncIntervalMin: 10,
+                customersEndpoint: '/api/atera-customers',
+                agentsEndpoint: '/api/atera-agents'
+            };
+            try {
+                const stored = JSON.parse(localStorage.getItem('rackManagerAteraConfig') || '{}');
+                return { ...defaults, ...(stored || {}) };
+            } catch (err) {
+                return { ...defaults };
+            }
+        }
+
+        function setAteraConfig(config) {
+            localStorage.setItem('rackManagerAteraConfig', JSON.stringify(config || {}));
+            scheduleCloudSave();
+            resetExternalSyncTimer();
+            updateAteraStatusNote();
+        }
+
+        function populateAteraForm() {
+            const config = getAteraConfig();
+            const enableSelect = document.getElementById('ateraEnableSync');
+            const intervalInput = document.getElementById('ateraSyncInterval');
+            const customersInput = document.getElementById('ateraCustomersEndpoint');
+            const agentsInput = document.getElementById('ateraAgentsEndpoint');
+
+            if (enableSelect) enableSelect.value = config.enabled === false ? '0' : '1';
+            if (intervalInput) intervalInput.value = String(config.syncIntervalMin || 10);
+            if (customersInput) customersInput.value = config.customersEndpoint || '/api/atera-customers';
+            if (agentsInput) agentsInput.value = config.agentsEndpoint || '/api/atera-agents';
+            updateAteraStatusNote();
+        }
+
+        function openAteraModal() {
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat nastaveni');
+                return;
+            }
+            const modal = document.getElementById('ateraModal');
+            if (!modal) return;
+            populateAteraForm();
+            modal.classList.add('active');
+        }
+
+        function closeAteraModal() {
+            const modal = document.getElementById('ateraModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function saveAteraConfig() {
+            const enableSelect = document.getElementById('ateraEnableSync');
+            const intervalInput = document.getElementById('ateraSyncInterval');
+            const customersInput = document.getElementById('ateraCustomersEndpoint');
+            const agentsInput = document.getElementById('ateraAgentsEndpoint');
+
+            const intervalValue = intervalInput ? parseInt(intervalInput.value, 10) : 10;
+            const config = {
+                enabled: enableSelect ? enableSelect.value === '1' : true,
+                syncIntervalMin: Number.isFinite(intervalValue) && intervalValue > 0 ? intervalValue : 10,
+                customersEndpoint: customersInput ? customersInput.value.trim() : '/api/atera-customers',
+                agentsEndpoint: agentsInput ? agentsInput.value.trim() : '/api/atera-agents'
+            };
+
+            if (!config.customersEndpoint) {
+                config.customersEndpoint = '/api/atera-customers';
+            }
+            if (!config.agentsEndpoint) {
+                config.agentsEndpoint = '/api/atera-agents';
+            }
+
+            setAteraConfig(config);
+            closeAteraModal();
+            syncExternalClients({ silent: true });
+            syncAteraAssets({ force: true, silent: true });
+        }
+
+        function clearAteraConfig() {
+            localStorage.removeItem('rackManagerAteraConfig');
+            scheduleCloudSave();
+            populateAteraForm();
+            resetExternalSyncTimer();
+        }
+
+        function updateAteraStatusNote(message) {
+            const note = document.getElementById('ateraStatusNote');
+            if (!note) return;
+            if (message) {
+                note.textContent = message;
+                return;
+            }
+            const config = getAteraConfig();
+            if (config.enabled === false) {
+                note.textContent = 'Sync je vypnuty.';
+                return;
+            }
+            note.textContent = 'Sync aktivni.';
+        }
+
+        async function testAteraConnection() {
+            const note = document.getElementById('ateraStatusNote');
+            if (note) note.textContent = 'Testuji spojeni...';
+            const config = getAteraConfig();
+            if (config.enabled === false) {
+                updateAteraStatusNote('Sync je vypnuty.');
+                return;
+            }
+            try {
+                const response = await fetch(config.customersEndpoint || '/api/atera-customers');
+                if (!response.ok) {
+                    updateAteraStatusNote(`Chyba spojeni (${response.status})`);
+                    return;
+                }
+                const data = await response.json();
+                const count = Array.isArray(data.customers) ? data.customers.length : Array.isArray(data.items) ? data.items.length : data.count || 0;
+                updateAteraStatusNote(`OK: ${count} klientu`);
+            } catch (err) {
+                updateAteraStatusNote('Chyba spojeni');
             }
         }
 
@@ -8227,8 +8405,11 @@
         }
 
         async function syncAteraClients(options = {}) {
+            const config = getAteraConfig();
+            if (config.enabled === false) return;
             try {
-                const response = await fetch('/api/atera-customers');
+                const endpoint = config.customersEndpoint || '/api/atera-customers';
+                const response = await fetch(endpoint);
                 if (!response.ok) {
                     if (!options.silent) {
                         console.warn('Atera sync failed:', response.status);
@@ -8351,6 +8532,13 @@
         }
 
         async function syncAteraAssets(options = {}) {
+            const config = getAteraConfig();
+            if (config.enabled === false) {
+                if (!options.silent && options.force) {
+                    alert('Atera sync je vypnuty.');
+                }
+                return;
+            }
             if (ateraAssetsLoading) return;
             const now = Date.now();
             if (!options.force && ateraAssetsLastSync && now - ateraAssetsLastSync < 2 * 60 * 1000) {
@@ -8361,7 +8549,8 @@
             }
             ateraAssetsLoading = true;
             try {
-                const response = await fetch('/api/atera-agents');
+                const endpoint = config.agentsEndpoint || '/api/atera-agents';
+                const response = await fetch(endpoint);
                 if (!response.ok) {
                     if (!options.silent) {
                         console.warn('Atera assets sync failed:', response.status);
@@ -8398,11 +8587,22 @@
 
         function scheduleExternalClientSync() {
             if (externalSyncTimer) return;
+            const config = getAteraConfig();
+            const intervalMinutes = Number(config.syncIntervalMin) || 10;
+            const interval = Math.max(1, intervalMinutes) * 60 * 1000;
             externalSyncTimer = setInterval(() => {
                 if (document.hidden) return;
                 syncExternalClients({ silent: true });
                 syncExternalAssets({ silent: true });
-            }, EXTERNAL_SYNC_INTERVAL);
+            }, interval);
+        }
+
+        function resetExternalSyncTimer() {
+            if (externalSyncTimer) {
+                clearInterval(externalSyncTimer);
+                externalSyncTimer = null;
+            }
+            scheduleExternalClientSync();
         }
 
         function refreshComputersView() {
@@ -8623,14 +8823,17 @@
             const view = document.getElementById('computersView');
             if (!view) return;
             const statusEl = document.getElementById('computersSyncStatus');
-            if (!ateraAssets.length && !ateraAssetsLoading) {
+            const config = getAteraConfig();
+            if (config.enabled === false) {
+                if (statusEl) statusEl.textContent = 'Sync: vypnuto';
+            } else if (!ateraAssets.length && !ateraAssetsLoading) {
                 syncAteraAssets({ silent: true });
             }
             buildComputersFiltersUI();
             const list = getFilteredComputers();
             renderComputersMetrics(list);
             renderComputersList(list);
-            if (statusEl) {
+            if (statusEl && config.enabled !== false) {
                 const label = ateraAssetsLastSync ? new Date(ateraAssetsLastSync).toISOString().slice(0, 16).replace('T', ' ') : '-';
                 statusEl.textContent = ateraAssetsLoading ? 'Sync: nacitam...' : `Sync: ${label}`;
             }
@@ -8882,7 +9085,7 @@
             render();
             fetchUserRole();
             setupClientModalCloseHandlers();
-            scheduleExternalClientSync();
+            resetExternalSyncTimer();
         }
         
         // Save data to localStorage
@@ -15001,7 +15204,10 @@
             try {
                 const list = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
                 const tickets = JSON.parse(localStorage.getItem('rackManagerHelpdeskTickets') || '[]');
-                return (Array.isArray(list) && list.length > 0) || (Array.isArray(tickets) && tickets.length > 0);
+                const ateraConfig = JSON.parse(localStorage.getItem('rackManagerAteraConfig') || 'null');
+                return (Array.isArray(list) && list.length > 0)
+                    || (Array.isArray(tickets) && tickets.length > 0)
+                    || !!ateraConfig;
             } catch (err) {
                 return false;
             }
@@ -15015,6 +15221,8 @@
             const cloudM365Config = payload.m365Config || null;
             const hasHelpdeskTickets = Object.prototype.hasOwnProperty.call(payload, 'helpdeskTickets');
             const cloudHelpdeskTickets = payload.helpdeskTickets || [];
+            const hasAteraConfig = Object.prototype.hasOwnProperty.call(payload, 'ateraConfig');
+            const cloudAteraConfig = payload.ateraConfig || null;
 
             localStorage.setItem('rackManagerClients', JSON.stringify(cloudClients));
             localStorage.setItem('rackManagerClientData', JSON.stringify(cloudClientData));
@@ -15028,6 +15236,13 @@
             }
             if (cloudM365Config) {
                 localStorage.setItem('rackManagerM365Config', JSON.stringify(cloudM365Config));
+            }
+            if (hasAteraConfig) {
+                if (cloudAteraConfig) {
+                    localStorage.setItem('rackManagerAteraConfig', JSON.stringify(cloudAteraConfig));
+                } else {
+                    localStorage.removeItem('rackManagerAteraConfig');
+                }
             }
             setLocalGlobalUpdatedAt(payload.updatedAtMs || 0);
 
@@ -15674,6 +15889,7 @@
       var clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
       var lastClientId = localStorage.getItem('rackManagerLastClient') || null;
       var m365Config = JSON.parse(localStorage.getItem('rackManagerM365Config') || '{}');
+      var ateraConfig = JSON.parse(localStorage.getItem('rackManagerAteraConfig') || '{}');
       var helpdeskTickets = JSON.parse(localStorage.getItem('rackManagerHelpdeskTickets') || '[]');
 
       var payload = {
@@ -15681,6 +15897,7 @@
         clientData: clientData,
         lastClientId: lastClientId,
         m365Config: m365Config,
+        ateraConfig: ateraConfig,
         helpdeskTickets: helpdeskTickets,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         updatedAtMs: Date.now(),
