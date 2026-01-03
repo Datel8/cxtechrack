@@ -5029,6 +5029,259 @@
                 padding: 0.85rem 1rem;
             }
         }
+
+        /* Computers view */
+        #computersView {
+            background: #f7f7f9;
+            border: none;
+            padding: 1.25rem;
+            border-radius: 20px;
+            color: #1c1c1c;
+        }
+
+        #computersView .rack-header {
+            margin-bottom: 1rem;
+            background: #ffffff;
+            border: 1px solid #e6e7eb;
+            border-radius: 16px;
+            padding: 1rem 1.4rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 8px 18px rgba(17, 24, 39, 0.05);
+        }
+
+        .computers-subtitle {
+            margin-top: 0.25rem;
+            font-size: 0.9rem;
+            color: #6b7280;
+            max-width: 560px;
+        }
+
+        .computers-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .computers-sync {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .computers-layout {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr);
+            gap: 0.9rem;
+            align-items: start;
+            width: 100%;
+        }
+
+        .computers-panel {
+            background: #ffffff;
+            border: 1px solid #e6e7eb;
+            border-radius: 14px;
+            padding: 1rem;
+            min-height: 200px;
+        }
+
+        .computers-panel-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #6b7280;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+        }
+
+        .computers-filter-group {
+            display: grid;
+            gap: 0.35rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .computers-filter-group label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6b7280;
+        }
+
+        .computers-filter-group select,
+        .computers-filter-group input {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            color: #1f2937;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            padding: 0.55rem 0.65rem;
+        }
+
+        .computers-list-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .computers-list-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .computers-list-actions select {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .computers-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.6rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .computers-metric {
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 0.65rem 0.75rem;
+            background: #f8fafc;
+        }
+
+        .computers-metric-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .computers-metric-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .computers-list {
+            display: grid;
+            gap: 0.65rem;
+        }
+
+        .computer-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 0.75rem 0.85rem;
+            background: #ffffff;
+        }
+
+        .computer-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .computer-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #111827;
+        }
+
+        .computer-client {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .computer-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .computer-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.45rem;
+        }
+
+        .computer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        .computer-badge.type-server {
+            background: rgba(59, 130, 246, 0.15);
+            color: #1d4ed8;
+        }
+
+        .computer-badge.type-pc {
+            background: rgba(16, 185, 129, 0.15);
+            color: #047857;
+        }
+
+        .computer-badge.type-other {
+            background: rgba(107, 114, 128, 0.2);
+            color: #4b5563;
+        }
+
+        .computer-badge.status-online {
+            background: rgba(34, 197, 94, 0.15);
+            color: #15803d;
+        }
+
+        .computer-badge.status-offline {
+            background: rgba(239, 68, 68, 0.15);
+            color: #b91c1c;
+        }
+
+        .computer-badge.status-unknown {
+            background: rgba(148, 163, 184, 0.2);
+            color: #64748b;
+        }
+
+        .computers-empty {
+            border: 1px dashed #e5e7eb;
+            border-radius: 14px;
+            padding: 1.5rem;
+            text-align: center;
+            color: #6b7280;
+            background: #f9fafb;
+        }
+
+        @media (max-width: 1100px) {
+            .computers-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        @media (max-width: 720px) {
+            #computersView {
+                padding: 1rem;
+            }
+
+            #computersView .rack-header {
+                padding: 0.85rem 1rem;
+            }
+        }
     </style>
 </head>
 
@@ -5120,6 +5373,26 @@
                             <button class="sidebar-action-btn" onclick="openDeviceModal()" id="addDeviceBtn" disabled>Nove zarizeni</button>
                             <button class="sidebar-action-btn" onclick="openConnectionModal()" id="addConnectionBtn" disabled>Nove propojeni</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section" data-section="computers">
+                <button class="sidebar-section-title" type="button" onclick="toggleSidebarSection(this)">
+                    <span class="sidebar-section-label">
+                        <svg class="sidebar-section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+                            <path d="M7 20h10"></path>
+                            <path d="M9 16v4"></path>
+                            <path d="M15 16v4"></path>
+                        </svg>
+                        <span>Pocitace</span>
+                    </span>
+                    <span class="sidebar-section-toggle" aria-hidden="true"></span>
+                </button>
+                <div class="sidebar-section-body">
+                    <div class="sidebar-nav">
+                        <button class="view-toggle-btn nav-btn" data-view="computers" onclick="switchView('computers', this)">Pocitace</button>
                     </div>
                 </div>
             </div>
@@ -5853,6 +6126,50 @@
                 </div>
             </div>
 
+            <div id="computersView" class="computers-view" style="display: none;">
+                <div class="rack-header">
+                    <div>
+                        <h2>Pocitace</h2>
+                        <div class="computers-subtitle">Prehled PC a serveru z Atera inventare.</div>
+                    </div>
+                    <div class="computers-actions">
+                        <button class="btn-small" onclick="refreshComputersView()">Obnovit</button>
+                        <div class="computers-sync" id="computersSyncStatus">Sync: -</div>
+                    </div>
+                </div>
+                <div class="computers-layout">
+                    <aside class="computers-panel">
+                        <div class="computers-panel-title">Filtry</div>
+                        <div class="computers-filter-group">
+                            <label for="computersClientFilter">Klient</label>
+                            <select id="computersClientFilter" onchange="updateComputersFilters()"></select>
+                        </div>
+                        <div class="computers-filter-group">
+                            <label for="computersTypeFilter">Typ</label>
+                            <select id="computersTypeFilter" onchange="updateComputersFilters()"></select>
+                        </div>
+                        <div class="computers-filter-group">
+                            <label for="computersStatusFilter">Status</label>
+                            <select id="computersStatusFilter" onchange="updateComputersFilters()"></select>
+                        </div>
+                        <div class="computers-filter-group">
+                            <label for="computersSearch">Hledat</label>
+                            <input type="text" id="computersSearch" placeholder="Nazev, OS, IP, uzivatel" oninput="updateComputersFilters()">
+                        </div>
+                    </aside>
+                    <section class="computers-panel">
+                        <div class="computers-list-head">
+                            <div class="computers-list-title">Zarizeni</div>
+                            <div class="computers-list-actions">
+                                <select id="computersSort" onchange="updateComputersFilters()"></select>
+                            </div>
+                        </div>
+                        <div id="computersMetrics" class="computers-metrics"></div>
+                        <div id="computersList" class="computers-list"></div>
+                    </section>
+                </div>
+            </div>
+
             <div id="helpdeskView" class="helpdesk-view" style="display: none;">
                 <div class="rack-header">
                     <div>
@@ -6552,12 +6869,32 @@
             search: '',
             sort: 'updated-desc'
         };
+        let ateraAssets = [];
+        let ateraAssetsLastSync = 0;
+        let ateraAssetsLoading = false;
+        let computersFilters = {
+            clientId: 'all',
+            type: 'all',
+            status: 'all',
+            search: '',
+            sort: 'name-asc'
+        };
         const HELP_DESK_STATUSES = [
             { id: 'open', label: 'Otevreno', tone: 'open' },
             { id: 'in-progress', label: 'V reseni', tone: 'progress' },
             { id: 'waiting', label: 'Ceka na klienta', tone: 'waiting' },
             { id: 'resolved', label: 'Vyreseno', tone: 'resolved' },
             { id: 'closed', label: 'Uzavreno', tone: 'closed' }
+        ];
+        const COMPUTER_TYPES = [
+            { id: 'pc', label: 'PC' },
+            { id: 'server', label: 'Server' },
+            { id: 'other', label: 'Ostatni' }
+        ];
+        const COMPUTER_STATUSES = [
+            { id: 'online', label: 'Online' },
+            { id: 'offline', label: 'Offline' },
+            { id: 'unknown', label: 'Nezname' }
         ];
         const HELP_DESK_PRIORITIES = [
             { id: 'low', label: 'Nizka', tone: 'low' },
@@ -6579,6 +6916,8 @@
             { id: 'overdue', label: 'Po terminu', match: ticket => isHelpdeskOverdue(ticket) },
             { id: 'all', label: 'Vse', match: () => true }
         ];
+        let externalSyncTimer = null;
+        const EXTERNAL_SYNC_INTERVAL = 10 * 60 * 1000;
         let cloudSaveTimer = null;
         try {
             pendingReportShareId = new URLSearchParams(window.location.search).get('reportShare');
@@ -7844,11 +8183,28 @@
             }
         }
 
-        async function syncZabbixClients() {
+        function mergeExternalClients(source, externalClients) {
+            const cleaned = (externalClients || [])
+                .filter((client) => client && client.id && client.name)
+                .map((client) => ({
+                    ...client,
+                    source: source,
+                    type: client.type || source
+                }));
+
+            const preserved = clients.filter((client) => client.source !== source);
+            clients = [...preserved, ...cleaned].sort((a, b) =>
+                a.name.localeCompare(b.name, 'cs', { sensitivity: 'base' })
+            );
+        }
+
+        async function syncZabbixClients(options = {}) {
             try {
                 const response = await fetch('/api/zabbix-hostgroups');
                 if (!response.ok) {
-                    console.warn('Zabbix sync failed:', response.status);
+                    if (!options.silent) {
+                        console.warn('Zabbix sync failed:', response.status);
+                    }
                     return;
                 }
                 const data = await response.json();
@@ -7862,12 +8218,421 @@
                     createdAt: new Date().toISOString()
                 }));
 
-                const manualClients = clients.filter((client) => client.source !== 'zabbix');
-                clients = [...manualClients, ...zabbixClients].sort((a, b) =>
-                    a.name.localeCompare(b.name, 'cs', { sensitivity: 'base' })
-                );
+                mergeExternalClients('zabbix', zabbixClients);
             } catch (err) {
-                console.warn('Zabbix sync failed:', err);
+                if (!options.silent) {
+                    console.warn('Zabbix sync failed:', err);
+                }
+            }
+        }
+
+        async function syncAteraClients(options = {}) {
+            try {
+                const response = await fetch('/api/atera-customers');
+                if (!response.ok) {
+                    if (!options.silent) {
+                        console.warn('Atera sync failed:', response.status);
+                    }
+                    return;
+                }
+                const data = await response.json();
+                const items = Array.isArray(data.customers)
+                    ? data.customers
+                    : Array.isArray(data.items)
+                        ? data.items
+                        : [];
+                if (!items.length) return;
+
+                const ateraClients = items.map((item) => {
+                    const rawId = item.id || item.customerId || item.customerID || item.CompanyID || item.companyId || item.companyID || item.CustomerID;
+                    const name = item.name || item.customerName || item.CustomerName || item.CompanyName || item.companyName || item.displayName;
+                    if (!rawId || !name) return null;
+                    return {
+                        id: `atera-${rawId}`,
+                        externalId: String(rawId),
+                        name: name,
+                        type: 'atera',
+                        source: 'atera',
+                        createdAt: new Date().toISOString()
+                    };
+                }).filter(Boolean);
+
+                mergeExternalClients('atera', ateraClients);
+            } catch (err) {
+                if (!options.silent) {
+                    console.warn('Atera sync failed:', err);
+                }
+            }
+        }
+
+        async function syncExternalClients(options = {}) {
+            await syncZabbixClients(options);
+            await syncAteraClients(options);
+            if (!options.skipRender) {
+                updateClientSelector();
+                updateClientInfo();
+                render();
+            }
+        }
+
+        function parseAteraDate(value) {
+            if (!value) return null;
+            const date = new Date(value);
+            if (!Number.isNaN(date.getTime())) return date;
+            return null;
+        }
+
+        function getAteraAssetType(asset) {
+            const typeValue = (asset.deviceType || asset.typeLabel || '').toString().toLowerCase();
+            const osValue = (asset.os || '').toString().toLowerCase();
+            if (typeValue.includes('server') || osValue.includes('server')) return 'server';
+            if (typeValue.includes('workstation') || typeValue.includes('desktop') || typeValue.includes('laptop') || typeValue.includes('pc')) return 'pc';
+            if (osValue.includes('windows') || osValue.includes('mac') || osValue.includes('linux')) return 'pc';
+            return 'other';
+        }
+
+        function getAteraAssetStatus(asset) {
+            const raw = asset.status;
+            if (typeof raw === 'boolean') return raw ? 'online' : 'offline';
+            if (typeof raw === 'number') return raw === 1 ? 'online' : raw === 0 ? 'offline' : 'unknown';
+            if (typeof raw === 'string') {
+                const value = raw.toLowerCase();
+                if (value.includes('online') || value === 'up') return 'online';
+                if (value.includes('offline') || value === 'down') return 'offline';
+            }
+            if (asset.lastSeenAt) {
+                const diff = Date.now() - asset.lastSeenAt.getTime();
+                if (diff <= 6 * 60 * 60 * 1000) return 'online';
+                if (diff > 6 * 60 * 60 * 1000) return 'offline';
+            }
+            return 'unknown';
+        }
+
+        function getComputersTypeLabel(typeId) {
+            const entry = COMPUTER_TYPES.find(item => item.id === typeId);
+            return entry ? entry.label : typeId;
+        }
+
+        function getComputersStatusLabel(statusId) {
+            const entry = COMPUTER_STATUSES.find(item => item.id === statusId);
+            return entry ? entry.label : statusId;
+        }
+
+        function normalizeAteraAsset(item) {
+            if (!item) return null;
+            const rawId = item.AgentId || item.AgentID || item.agentId || item.agentID || item.id || item.ID;
+            const name = item.MachineName || item.machineName || item.DeviceName || item.deviceName || item.ComputerName || item.computerName || item.name || item.Name;
+            if (!rawId || !name) return null;
+
+            const clientId = item.CustomerID || item.CustomerId || item.customerId || item.customerID || item.CompanyId || item.CompanyID || item.companyId || item.companyID;
+            const clientName = item.CustomerName || item.customerName || item.CompanyName || item.companyName || item.ClientName || item.clientName;
+            const os = item.OS || item.os || item.Os || item.operatingSystem || item.OperatingSystem;
+            const ip = item.IPAddress || item.ipAddress || item.IpAddress || item.ip || item.IP;
+            const user = item.UserName || item.userName || item.LoggedInUser || item.loggedInUser || item.LastLoggedInUser;
+            const status = item.AgentStatus || item.agentStatus || item.Status || item.status || item.OnlineStatus || item.onlineStatus || item.IsOnline || item.isOnline || item.Online;
+            const lastSeenRaw = item.LastSeen || item.lastSeen || item.LastSeenTime || item.lastSeenTime || item.LastSeenAt || item.lastSeenAt;
+            const lastSeenAt = parseAteraDate(lastSeenRaw);
+            const deviceType = item.DeviceType || item.deviceType || item.DeviceTypeDescription || item.deviceTypeDescription || item.AgentType;
+
+            return {
+                id: `atera-agent-${rawId}`,
+                externalId: String(rawId),
+                name,
+                clientId: clientId ? `atera-${clientId}` : '',
+                clientName: clientName || '',
+                os: os || '',
+                ip: ip || '',
+                user: user || '',
+                status,
+                lastSeenAt,
+                lastSeenRaw: lastSeenRaw || '',
+                deviceType: deviceType || ''
+            };
+        }
+
+        async function syncAteraAssets(options = {}) {
+            if (ateraAssetsLoading) return;
+            const now = Date.now();
+            if (!options.force && ateraAssetsLastSync && now - ateraAssetsLastSync < 2 * 60 * 1000) {
+                if (!options.skipRender && currentView === 'computers') {
+                    renderComputersView();
+                }
+                return;
+            }
+            ateraAssetsLoading = true;
+            try {
+                const response = await fetch('/api/atera-agents');
+                if (!response.ok) {
+                    if (!options.silent) {
+                        console.warn('Atera assets sync failed:', response.status);
+                    }
+                    return;
+                }
+                const data = await response.json();
+                const items = Array.isArray(data.agents)
+                    ? data.agents
+                    : Array.isArray(data.items)
+                        ? data.items
+                        : Array.isArray(data.data)
+                            ? data.data
+                            : Array.isArray(data)
+                                ? data
+                                : [];
+                ateraAssets = items.map(normalizeAteraAsset).filter(Boolean);
+                ateraAssetsLastSync = Date.now();
+            } catch (err) {
+                if (!options.silent) {
+                    console.warn('Atera assets sync failed:', err);
+                }
+            } finally {
+                ateraAssetsLoading = false;
+                if (!options.skipRender && currentView === 'computers') {
+                    renderComputersView();
+                }
+            }
+        }
+
+        async function syncExternalAssets(options = {}) {
+            await syncAteraAssets(options);
+        }
+
+        function scheduleExternalClientSync() {
+            if (externalSyncTimer) return;
+            externalSyncTimer = setInterval(() => {
+                if (document.hidden) return;
+                syncExternalClients({ silent: true });
+                syncExternalAssets({ silent: true });
+            }, EXTERNAL_SYNC_INTERVAL);
+        }
+
+        function refreshComputersView() {
+            syncAteraAssets({ force: true });
+        }
+
+        function getComputersClientOptions() {
+            const map = new Map();
+            clients.filter(client => client.source === 'atera').forEach(client => {
+                map.set(client.id, client.name);
+            });
+            ateraAssets.forEach(asset => {
+                if (!asset.clientId) return;
+                if (!map.has(asset.clientId)) {
+                    map.set(asset.clientId, asset.clientName || asset.clientId);
+                }
+            });
+            return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+        }
+
+        function buildComputersFiltersUI() {
+            const clientSelect = document.getElementById('computersClientFilter');
+            if (clientSelect) {
+                const options = [
+                    { id: 'all', label: 'Vsechny' },
+                    ...getComputersClientOptions().map(item => ({ id: item.id, label: item.name }))
+                ];
+                clientSelect.innerHTML = options.map(option =>
+                    `<option value="${escapeHtml(option.id)}">${escapeHtml(option.label)}</option>`
+                ).join('');
+                clientSelect.value = options.some(option => option.id === computersFilters.clientId)
+                    ? computersFilters.clientId
+                    : 'all';
+            }
+
+            const typeSelect = document.getElementById('computersTypeFilter');
+            if (typeSelect) {
+                const options = [{ id: 'all', label: 'Vse' }, ...COMPUTER_TYPES];
+                typeSelect.innerHTML = options.map(option =>
+                    `<option value="${option.id}">${escapeHtml(option.label)}</option>`
+                ).join('');
+                typeSelect.value = options.some(option => option.id === computersFilters.type)
+                    ? computersFilters.type
+                    : 'all';
+            }
+
+            const statusSelect = document.getElementById('computersStatusFilter');
+            if (statusSelect) {
+                const options = [{ id: 'all', label: 'Vse' }, ...COMPUTER_STATUSES];
+                statusSelect.innerHTML = options.map(option =>
+                    `<option value="${option.id}">${escapeHtml(option.label)}</option>`
+                ).join('');
+                statusSelect.value = options.some(option => option.id === computersFilters.status)
+                    ? computersFilters.status
+                    : 'all';
+            }
+
+            const searchInput = document.getElementById('computersSearch');
+            if (searchInput) {
+                searchInput.value = computersFilters.search || '';
+            }
+
+            const sortSelect = document.getElementById('computersSort');
+            if (sortSelect) {
+                const options = [
+                    { id: 'name-asc', label: 'Nazev' },
+                    { id: 'client-asc', label: 'Klient' },
+                    { id: 'lastseen-desc', label: 'Posledni kontakt' },
+                    { id: 'status-asc', label: 'Status' }
+                ];
+                sortSelect.innerHTML = options.map(option =>
+                    `<option value="${option.id}">${escapeHtml(option.label)}</option>`
+                ).join('');
+                sortSelect.value = options.some(option => option.id === computersFilters.sort)
+                    ? computersFilters.sort
+                    : 'name-asc';
+            }
+        }
+
+        function updateComputersFilters() {
+            const clientSelect = document.getElementById('computersClientFilter');
+            const typeSelect = document.getElementById('computersTypeFilter');
+            const statusSelect = document.getElementById('computersStatusFilter');
+            const searchInput = document.getElementById('computersSearch');
+            const sortSelect = document.getElementById('computersSort');
+
+            computersFilters.clientId = clientSelect ? clientSelect.value : 'all';
+            computersFilters.type = typeSelect ? typeSelect.value : 'all';
+            computersFilters.status = statusSelect ? statusSelect.value : 'all';
+            computersFilters.search = searchInput ? (searchInput.value || '').trim() : '';
+            computersFilters.sort = sortSelect ? sortSelect.value : 'name-asc';
+
+            renderComputersView();
+        }
+
+        function getFilteredComputers() {
+            let list = [...ateraAssets];
+            if (computersFilters.clientId !== 'all') {
+                list = list.filter(asset => asset.clientId === computersFilters.clientId);
+            }
+            if (computersFilters.type !== 'all') {
+                list = list.filter(asset => getAteraAssetType(asset) === computersFilters.type);
+            }
+            if (computersFilters.status !== 'all') {
+                list = list.filter(asset => getAteraAssetStatus(asset) === computersFilters.status);
+            }
+            if (computersFilters.search) {
+                const term = computersFilters.search.toLowerCase();
+                list = list.filter(asset => {
+                    return [
+                        asset.name,
+                        asset.os,
+                        asset.ip,
+                        asset.user,
+                        asset.clientName,
+                        asset.externalId
+                    ].some(value => (value || '').toLowerCase().includes(term));
+                });
+            }
+
+            switch (computersFilters.sort) {
+                case 'client-asc':
+                    list.sort((a, b) => (a.clientName || '').localeCompare(b.clientName || '', 'cs', { sensitivity: 'base' }));
+                    break;
+                case 'lastseen-desc':
+                    list.sort((a, b) => {
+                        const aValue = a.lastSeenAt ? a.lastSeenAt.getTime() : 0;
+                        const bValue = b.lastSeenAt ? b.lastSeenAt.getTime() : 0;
+                        return bValue - aValue;
+                    });
+                    break;
+                case 'status-asc':
+                    list.sort((a, b) => getAteraAssetStatus(a).localeCompare(getAteraAssetStatus(b)));
+                    break;
+                default:
+                    list.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'cs', { sensitivity: 'base' }));
+                    break;
+            }
+
+            return list;
+        }
+
+        function formatComputersLastSeen(asset) {
+            if (!asset || !asset.lastSeenAt) return '-';
+            return asset.lastSeenAt.toISOString().slice(0, 16).replace('T', ' ');
+        }
+
+        function renderComputersMetrics(list) {
+            const metricsEl = document.getElementById('computersMetrics');
+            if (!metricsEl) return;
+            const pcCount = list.filter(asset => getAteraAssetType(asset) === 'pc').length;
+            const serverCount = list.filter(asset => getAteraAssetType(asset) === 'server').length;
+            const onlineCount = list.filter(asset => getAteraAssetStatus(asset) === 'online').length;
+            const offlineCount = list.filter(asset => getAteraAssetStatus(asset) === 'offline').length;
+            metricsEl.innerHTML = `
+                <div class="computers-metric">
+                    <div class="computers-metric-value">${list.length}</div>
+                    <div class="computers-metric-label">Celkem</div>
+                </div>
+                <div class="computers-metric">
+                    <div class="computers-metric-value">${pcCount}</div>
+                    <div class="computers-metric-label">PC</div>
+                </div>
+                <div class="computers-metric">
+                    <div class="computers-metric-value">${serverCount}</div>
+                    <div class="computers-metric-label">Server</div>
+                </div>
+                <div class="computers-metric">
+                    <div class="computers-metric-value">${onlineCount}</div>
+                    <div class="computers-metric-label">Online</div>
+                </div>
+                <div class="computers-metric">
+                    <div class="computers-metric-value">${offlineCount}</div>
+                    <div class="computers-metric-label">Offline</div>
+                </div>
+            `;
+        }
+
+        function renderComputersList(list) {
+            const listEl = document.getElementById('computersList');
+            if (!listEl) return;
+            if (!list.length) {
+                listEl.innerHTML = '<div class="computers-empty">Zatim nejsou zadna zarizeni z Atera.</div>';
+                return;
+            }
+
+            listEl.innerHTML = list.map(asset => {
+                const type = getAteraAssetType(asset);
+                const status = getAteraAssetStatus(asset);
+                const typeLabel = getComputersTypeLabel(type);
+                const statusLabel = getComputersStatusLabel(status);
+                const clientName = getHelpdeskClientName(asset.clientId, asset.clientName || '-');
+                const meta = [
+                    asset.os ? `OS: ${asset.os}` : null,
+                    asset.ip ? `IP: ${asset.ip}` : null,
+                    asset.user ? `Uzivatel: ${asset.user}` : null,
+                    `Posledni kontakt: ${formatComputersLastSeen(asset)}`
+                ].filter(Boolean).join(' | ');
+                return `
+                    <div class="computer-card">
+                        <div class="computer-card-head">
+                            <div>
+                                <div class="computer-name">${escapeHtml(asset.name || '-')}</div>
+                                <div class="computer-client">${escapeHtml(clientName)}</div>
+                            </div>
+                        </div>
+                        <div class="computer-meta">${escapeHtml(meta)}</div>
+                        <div class="computer-badges">
+                            <span class="computer-badge type-${type}">${escapeHtml(typeLabel)}</span>
+                            <span class="computer-badge status-${status}">${escapeHtml(statusLabel)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderComputersView() {
+            const view = document.getElementById('computersView');
+            if (!view) return;
+            const statusEl = document.getElementById('computersSyncStatus');
+            if (!ateraAssets.length && !ateraAssetsLoading) {
+                syncAteraAssets({ silent: true });
+            }
+            buildComputersFiltersUI();
+            const list = getFilteredComputers();
+            renderComputersMetrics(list);
+            renderComputersList(list);
+            if (statusEl) {
+                const label = ateraAssetsLastSync ? new Date(ateraAssetsLastSync).toISOString().slice(0, 16).replace('T', ' ') : '-';
+                statusEl.textContent = ateraAssetsLoading ? 'Sync: nacitam...' : `Sync: ${label}`;
             }
         }
 
@@ -8109,13 +8874,15 @@
             
             loadModuleTypes();
             renderDeviceTypeOptions();
-            await syncZabbixClients();
+            await syncExternalClients({ skipRender: true });
+            await syncExternalAssets({ skipRender: true });
             updateClientSelector();
             restoreSidebarSections();
             restoreTimeAllClientsToggle();
             render();
             fetchUserRole();
             setupClientModalCloseHandlers();
+            scheduleExternalClientSync();
         }
         
         // Save data to localStorage
@@ -8262,6 +9029,7 @@
             document.getElementById('reportsView').style.display = 'none';
             document.getElementById('dashboardView').style.display = 'none';
             document.getElementById('clientsView').style.display = 'none';
+            document.getElementById('computersView').style.display = 'none';
             document.getElementById('helpdeskView').style.display = 'none';
             document.getElementById('teamsView').style.display = 'none';
             
@@ -8303,6 +9071,10 @@
                     reportHasLoaded = false;
                     reportFiltersVisible = false;
                     renderReportsView();
+                    break;
+                case 'computers':
+                    document.getElementById('computersView').style.display = 'block';
+                    renderComputersView();
                     break;
                 case 'helpdesk':
                     document.getElementById('helpdeskView').style.display = 'block';
