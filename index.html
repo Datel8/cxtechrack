@@ -8154,26 +8154,38 @@
             if (!window.db || !currentClientId) return;
             try {
                 const clientDoc = db.collection('clients').doc(currentClientId);
-                const [usersSnap, invitesSnap, globalUsersSnap] = await Promise.all([
+                const [usersResult, invitesResult, globalUsersResult] = await Promise.allSettled([
                     clientDoc.collection('users').get(),
                     clientDoc.collection('roleInvites').get(),
                     db.collection('users').get()
                 ]);
 
                 const users = {};
-                usersSnap.forEach((doc) => {
-                    users[doc.id] = doc.data();
-                });
+                if (usersResult.status === 'fulfilled') {
+                    usersResult.value.forEach((doc) => {
+                        users[doc.id] = doc.data();
+                    });
+                } else {
+                    console.warn('Role users load failed:', usersResult.reason);
+                }
 
                 const invites = {};
-                invitesSnap.forEach((doc) => {
-                    invites[doc.id] = doc.data();
-                });
+                if (invitesResult.status === 'fulfilled') {
+                    invitesResult.value.forEach((doc) => {
+                        invites[doc.id] = doc.data();
+                    });
+                } else {
+                    console.warn('Role invites load failed:', invitesResult.reason);
+                }
 
                 const globalUsers = {};
-                globalUsersSnap.forEach((doc) => {
-                    globalUsers[doc.id] = doc.data();
-                });
+                if (globalUsersResult.status === 'fulfilled') {
+                    globalUsersResult.value.forEach((doc) => {
+                        globalUsers[doc.id] = doc.data();
+                    });
+                } else {
+                    console.warn('Global users load failed:', globalUsersResult.reason);
+                }
 
                 renderRoleManagerList(users, invites, globalUsers);
             } catch (err) {
@@ -16923,15 +16935,16 @@
               domainInfo = ' Email je mimo povolene domeny.';
             }
             if (pendingCred) {
-              return auth.signInWithCredential(pendingCred)
-                .then(function() {
-                  alert('Prihlaseni bylo obnoveno primo z Microsoft kredencialu.');
-                })
-                .catch(function(err) {
-                  console.error('Credential sign-in error:', err);
-                  alert('Nenasel jsem existujici metodu prihlaseni pro tento email (' + email + ').' + domainInfo + ' Pokud byl ucet smazan ve Firebase Auth, zkuste ho odstranit i z providers a prihlasit se znovu.');
-                });
-            }
+                  return auth.signInWithCredential(pendingCred)
+                    .then(function() {
+                      alert('Prihlaseni bylo obnoveno primo z Microsoft kredencialu.');
+                    })
+                    .catch(function(err) {
+                      console.error('Credential sign-in error:', err);
+                      var detail = err && err.message ? (' Detail: ' + err.message) : '';
+                      alert('Nenasel jsem existujici metodu prihlaseni pro tento email (' + email + ').' + domainInfo + ' Pokud byl ucet smazan ve Firebase Auth, zkuste ho odstranit i z providers a prihlasit se znovu.' + detail);
+                    });
+                }
             alert('Nenasel jsem existujici metodu prihlaseni pro tento email (' + email + ').' + domainInfo);
             return;
           }
