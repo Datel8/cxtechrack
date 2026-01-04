@@ -4213,6 +4213,34 @@
             white-space: pre-line;
         }
 
+        .client-detail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .client-detail-list-item {
+            padding: 0.5rem 0.75rem;
+            border-radius: 12px;
+            background: var(--panel-surface-2);
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .client-detail-list-item strong {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .client-detail-list-meta {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
         .client-color-chip {
             width: 12px;
             height: 12px;
@@ -4257,6 +4285,49 @@
             display: grid;
             gap: 1.5rem;
             overflow-y: auto;
+        }
+
+        .unifi-sync-list {
+            margin-top: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 0.75rem;
+            background: var(--panel-surface-2);
+            max-height: 420px;
+            overflow: auto;
+        }
+
+        .unifi-sync-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .unifi-sync-table th,
+        .unifi-sync-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+            text-align: left;
+        }
+
+        .unifi-sync-table th {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+        }
+
+        .unifi-sync-inline {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .unifi-sync-inline select,
+        .unifi-sync-inline input {
+            min-width: 120px;
         }
 
         .client-form-header {
@@ -5693,6 +5764,7 @@
                         <button class="sidebar-action-btn" id="roleManagerBtn" onclick="openRoleManagerModal()">Sprava roli</button>
                         <button class="sidebar-action-btn" id="m365ManagerBtn" onclick="openM365Modal()">M365 nastaveni</button>
                         <button class="sidebar-action-btn" id="ateraManagerBtn" onclick="openAteraModal()">Atera sync</button>
+                        <button class="sidebar-action-btn" id="unifiManagerBtn" onclick="openUnifiModal()">UniFi sync</button>
                         <button class="sidebar-action-btn" onclick="openModuleModal()">Kategorie zarizeni</button>
                     </div>
                 </div>
@@ -6033,6 +6105,13 @@
                                 <div class="client-detail-row"><span>Racky</span><strong id="clientDetailRacks">0</strong></div>
                                 <div class="client-detail-row"><span>Zarizeni</span><strong id="clientDetailDevices">0</strong></div>
                                 <div class="client-detail-row"><span>Propojeni</span><strong id="clientDetailConnections">0</strong></div>
+                            </div>
+                            <div class="client-detail-card">
+                                <h3>Sitova zarizeni (UniFi)</h3>
+                                <div id="clientDetailUnifiDevices" class="client-detail-list">-</div>
+                                <div class="client-detail-actions" style="margin-top: 0.75rem;">
+                                    <button class="btn-small btn-secondary" type="button" onclick="openUnifiModal()">Otevrit UniFi sync</button>
+                                </div>
                             </div>
                             <div class="client-detail-card">
                                 <h3>Poznamky</h3>
@@ -6602,7 +6681,11 @@
                 </div>
                 <div class="form-group">
                     <label>Klient</label>
-                    <select id="helpdeskTicketClient"></select>
+                    <select id="helpdeskTicketClient" onchange="onHelpdeskTicketClientChange()"></select>
+                </div>
+                <div class="form-group">
+                    <label>PC / zarizeni</label>
+                    <select id="helpdeskTicketAsset"></select>
                 </div>
                 <div class="form-group">
                     <label>Status</label>
@@ -6921,12 +7004,65 @@
                     </div>
                     <div class="client-form-actions" style="justify-content: flex-start;">
                         <button class="btn-small" type="button" onclick="testAteraConnection()">Otestovat spojeni</button>
+                        <button class="btn-small btn-secondary" type="button" onclick="syncAllExternalData()">Sync vse</button>
                     </div>
                 </div>
             </div>
             <div class="client-form-actions" style="margin-top: 1rem;">
                 <button class="btn btn-secondary" onclick="clearAteraConfig()">Vymazat</button>
                 <button class="btn" onclick="saveAteraConfig()">Ulozit nastaveni</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UniFi Modal -->
+    <div id="unifiModal" class="modal">
+        <div class="modal-content" style="max-width: 980px;">
+            <div class="modal-header">
+                <h2>UniFi sync</h2>
+                <button class="modal-close" onclick="closeUnifiModal()">X</button>
+            </div>
+            <div class="client-form-grid" style="margin-top: 1rem;">
+                <div class="client-form-section">
+                    <h3>Pripojeni</h3>
+                    <div class="form-group">
+                        <label>Povolit sync UniFi</label>
+                        <select id="unifiEnableSync">
+                            <option value="1">Ano</option>
+                            <option value="0">Ne</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>URL controlleru</label>
+                        <input type="text" id="unifiControllerUrl" placeholder="https://udm.example.cz">
+                    </div>
+                    <div class="form-group">
+                        <label>Site ID (volitelne)</label>
+                        <input type="text" id="unifiSiteId" placeholder="default nebo site ID">
+                    </div>
+                    <div class="form-group">
+                        <label>API token</label>
+                        <input type="password" id="unifiApiToken" placeholder="API token z UniFi">
+                    </div>
+                </div>
+                <div class="client-form-section">
+                    <h3>Sync a prirazeni</h3>
+                    <div class="role-note" style="margin: 0;">
+                        Token je ulozen v nastaveni aplikace. Pokud pouzivas vice kontroleru, zmen hodnoty pred syncem.
+                    </div>
+                    <div class="form-group" style="margin-top: 0.75rem;">
+                        <label>Stav</label>
+                        <div class="role-note" id="unifiStatusNote">-</div>
+                    </div>
+                    <div class="client-form-actions" style="justify-content: flex-start;">
+                        <button class="btn-small" type="button" onclick="syncUnifiAssets({ force: true })">Sync ted</button>
+                    </div>
+                </div>
+            </div>
+            <div class="unifi-sync-list" id="unifiSyncList"></div>
+            <div class="client-form-actions" style="margin-top: 1rem;">
+                <button class="btn btn-secondary" onclick="clearUnifiConfig()">Vymazat</button>
+                <button class="btn" onclick="saveUnifiConfig()">Ulozit nastaveni</button>
             </div>
         </div>
     </div>
@@ -7109,6 +7245,13 @@
         let clients = [];
         let currentClientId = null;
         let clientData = {}; // Will store data per client
+        let clientAssets = {};
+        let clientAssetsLoaded = {};
+        let clientAssetsLoading = {};
+        let clientsLoaded = false;
+        let globalUserRole = '';
+        let globalUserLoaded = false;
+        let clientSaveTimers = {};
         
         // Current client's data
         let racks = [];
@@ -7175,6 +7318,10 @@
         let ateraAssets = [];
         let ateraAssetsLastSync = 0;
         let ateraAssetsLoading = false;
+        let unifiAssets = [];
+        let unifiAssetsLastSync = 0;
+        let unifiAssetsLoading = false;
+        let unifiAssignments = {};
         let computersFilters = {
             clientId: 'all',
             type: 'all',
@@ -7590,22 +7737,24 @@
             return currentUserRole === 'admin';
         }
 
+        function canCreateHelpdeskTicket() {
+            return canManageHelpdesk() || isCustomerRole(currentUserRole);
+        }
+
+        function canContributeHelpdesk(ticket) {
+            if (canManageHelpdesk()) return true;
+            if (!isCustomerRole(currentUserRole)) return false;
+            if (!ticket) return false;
+            const accessible = getHelpdeskAccessibleTickets();
+            return accessible.some(item => item.id === ticket.id);
+        }
+
+        function canAssignHelpdeskAsset(ticket) {
+            return canContributeHelpdesk(ticket);
+        }
+
         function hasCustomerExtraAccess() {
-            if (!isCustomerManagerRole()) return false;
-            const perms = getCurrentUserPermissions();
-            const keys = [
-                'manageRacks',
-                'manageDevices',
-                'manageCategories',
-                'manageTime',
-                'viewTimeAll',
-                'editTopology',
-                'deleteRacks',
-                'viewSensitive',
-                'manageRoles',
-                'manageHelpdesk'
-            ];
-            return keys.some((key) => !!perms[key]);
+            return false;
         }
 
         function updateRoleLabel() {
@@ -7637,13 +7786,13 @@
             const userManagerBtn = document.getElementById('userManagerBtn');
             const m365ManagerBtn = document.getElementById('m365ManagerBtn');
             const ateraManagerBtn = document.getElementById('ateraManagerBtn');
+            const unifiManagerBtn = document.getElementById('unifiManagerBtn');
             const addTimeEntryBtn = document.getElementById('addTimeEntryBtn');
             const helpdeskNewTicketBtn = document.getElementById('helpdeskNewTicketBtn');
             const reportsNavBtn = document.querySelector('.view-toggle-btn[data-view="reports"]');
             const dashboardReportsBtn = document.getElementById('dashboardReportsBtn');
             const timeAllToggle = document.getElementById('timeAllClientsToggle');
             const isCustomer = isCustomerRole(currentUserRole);
-            const allowCustomerExtras = hasCustomerExtraAccess();
 
             moduleButtons.forEach((button) => {
                 button.disabled = !canManageCategories();
@@ -7659,6 +7808,9 @@
             }
             if (ateraManagerBtn) {
                 ateraManagerBtn.disabled = !canManageRoles();
+            }
+            if (unifiManagerBtn) {
+                unifiManagerBtn.disabled = !canManageRoles();
             }
             if (reportsNavBtn) {
                 reportsNavBtn.style.display = canViewReports() ? 'block' : 'none';
@@ -7686,36 +7838,16 @@
             }
 
             if (helpdeskNewTicketBtn) {
-                helpdeskNewTicketBtn.disabled = !canManageHelpdesk();
+                helpdeskNewTicketBtn.disabled = !canCreateHelpdeskTicket();
             }
 
             if (isCustomer) {
-                const sectionClient = document.querySelector('.sidebar-section[data-section="client"]');
-                const sectionNetwork = document.querySelector('.sidebar-section[data-section="network"]');
-                const sectionComputers = document.querySelector('.sidebar-section[data-section="computers"]');
-                const sectionTime = document.querySelector('.sidebar-section[data-section="time"]');
-                const sectionReports = document.querySelector('.sidebar-section[data-section="reports"]');
-                const sectionTeams = document.querySelector('.sidebar-section[data-section="teams"]');
-                const sectionAdmin = document.querySelector('.sidebar-section[data-section="admin"]');
-                const sectionModules = document.querySelector('.sidebar-section[data-section="modules"]');
-
-                const showNetwork = allowCustomerExtras && (canManageRacks() || canManageDevices() || canEditTopology() || canViewSensitive());
-                const showComputers = allowCustomerExtras && (canManageDevices() || canViewSensitive());
-                const showTime = allowCustomerExtras && (canManageTimeEntries() || canViewAllTimeEntries());
-                const showReports = allowCustomerExtras && canViewReports();
-                const showTeams = allowCustomerExtras && (canManageHelpdesk() || canManageRoles());
-                const showAdmin = allowCustomerExtras && canManageRoles();
-
-                if (sectionClient) sectionClient.style.display = 'none';
-                if (sectionNetwork) sectionNetwork.style.display = showNetwork ? '' : 'none';
-                if (sectionComputers) sectionComputers.style.display = showComputers ? '' : 'none';
-                if (sectionTime) sectionTime.style.display = showTime ? '' : 'none';
-                if (sectionReports) sectionReports.style.display = showReports ? '' : 'none';
-                if (sectionTeams) sectionTeams.style.display = showTeams ? '' : 'none';
-                if (sectionAdmin) sectionAdmin.style.display = showAdmin ? '' : 'none';
-                if (sectionModules) sectionModules.style.display = 'none';
-
-                if (currentView !== 'helpdesk' && !allowCustomerExtras) {
+                const sections = document.querySelectorAll('.sidebar-section');
+                sections.forEach((section) => {
+                    const isHelpdesk = section.dataset && section.dataset.section === 'helpdesk';
+                    section.style.display = isHelpdesk ? '' : 'none';
+                });
+                if (currentView !== 'helpdesk') {
                     switchView('helpdesk');
                 }
             } else {
@@ -7748,6 +7880,36 @@
             applyRolePermissions();
             applyTimeDefaultsForRole();
             renderDashboard();
+        }
+
+        function isBootstrapAdmin(email) {
+            return BOOTSTRAP_ADMINS.includes((email || '').toLowerCase());
+        }
+
+        function isGlobalAdminUser() {
+            const email = auth && auth.currentUser ? auth.currentUser.email : '';
+            return isBootstrapAdmin(email) || globalUserRole === 'admin';
+        }
+
+        async function fetchGlobalUserRole() {
+            if (!window.db || !window.auth || !auth.currentUser) return '';
+            try {
+                const uid = auth.currentUser.uid;
+                const email = (auth.currentUser.email || '').toLowerCase();
+                if (isBootstrapAdmin(email)) {
+                    globalUserRole = 'admin';
+                    globalUserLoaded = true;
+                    return globalUserRole;
+                }
+                const snap = await db.collection('users').doc(uid).get();
+                globalUserRole = snap.exists ? (snap.data().role || '') : '';
+                globalUserLoaded = true;
+                return globalUserRole;
+            } catch (err) {
+                console.warn('Global role fetch failed:', err);
+                globalUserLoaded = true;
+                return '';
+            }
         }
 
         async function fetchUserRole() {
@@ -8102,6 +8264,100 @@
             note.textContent = 'Sync aktivni.';
         }
 
+        function getUnifiConfig() {
+            const defaults = {
+                enabled: true,
+                controllerUrl: '',
+                siteId: '',
+                apiToken: ''
+            };
+            try {
+                const stored = JSON.parse(localStorage.getItem('rackManagerUnifiConfig') || '{}');
+                return { ...defaults, ...(stored || {}) };
+            } catch (err) {
+                return { ...defaults };
+            }
+        }
+
+        function setUnifiConfig(config) {
+            localStorage.setItem('rackManagerUnifiConfig', JSON.stringify(config || {}));
+            scheduleCloudSave();
+            resetExternalSyncTimer();
+            updateUnifiStatusNote();
+        }
+
+        function populateUnifiForm() {
+            const config = getUnifiConfig();
+            const enableSelect = document.getElementById('unifiEnableSync');
+            const controllerInput = document.getElementById('unifiControllerUrl');
+            const siteInput = document.getElementById('unifiSiteId');
+            const tokenInput = document.getElementById('unifiApiToken');
+
+            if (enableSelect) enableSelect.value = config.enabled === false ? '0' : '1';
+            if (controllerInput) controllerInput.value = config.controllerUrl || '';
+            if (siteInput) siteInput.value = config.siteId || '';
+            if (tokenInput) tokenInput.value = config.apiToken || '';
+            updateUnifiStatusNote();
+        }
+
+        function openUnifiModal() {
+            if (!canManageRoles()) {
+                alert('Nemate opravneni spravovat nastaveni');
+                return;
+            }
+            const modal = document.getElementById('unifiModal');
+            if (!modal) return;
+            populateUnifiForm();
+            renderUnifiSyncList();
+            modal.classList.add('active');
+        }
+
+        function closeUnifiModal() {
+            const modal = document.getElementById('unifiModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function saveUnifiConfig() {
+            const enableSelect = document.getElementById('unifiEnableSync');
+            const controllerInput = document.getElementById('unifiControllerUrl');
+            const siteInput = document.getElementById('unifiSiteId');
+            const tokenInput = document.getElementById('unifiApiToken');
+
+            const config = {
+                enabled: enableSelect ? enableSelect.value === '1' : true,
+                controllerUrl: controllerInput ? controllerInput.value.trim() : '',
+                siteId: siteInput ? siteInput.value.trim() : '',
+                apiToken: tokenInput ? tokenInput.value.trim() : ''
+            };
+
+            setUnifiConfig(config);
+            closeUnifiModal();
+        }
+
+        function clearUnifiConfig() {
+            localStorage.removeItem('rackManagerUnifiConfig');
+            scheduleCloudSave();
+            resetExternalSyncTimer();
+            populateUnifiForm();
+        }
+
+        function updateUnifiStatusNote(message) {
+            const note = document.getElementById('unifiStatusNote');
+            if (!note) return;
+            if (message) {
+                note.textContent = message;
+                return;
+            }
+            const config = getUnifiConfig();
+            if (config.enabled === false) {
+                note.textContent = 'Sync je vypnuty.';
+                return;
+            }
+            note.textContent = unifiAssetsLastSync
+                ? `Posledni sync: ${new Date(unifiAssetsLastSync).toISOString().slice(0, 16).replace('T', ' ')}`
+                : 'Sync aktivni.';
+        }
+
         async function testAteraConnection() {
             const note = document.getElementById('ateraStatusNote');
             if (note) note.textContent = 'Testuji spojeni...';
@@ -8121,6 +8377,27 @@
                 updateAteraStatusNote(`OK: ${count} klientu`);
             } catch (err) {
                 updateAteraStatusNote('Chyba spojeni');
+            }
+        }
+
+        async function syncAllExternalData() {
+            if (!isGlobalAdminUser()) {
+                alert('Nemate opravneni spustit sync.');
+                return;
+            }
+            updateAteraStatusNote('Sync probiha...');
+            updateUnifiStatusNote('Sync probiha...');
+            try {
+                await syncExternalClients({ silent: true });
+                await syncExternalAssets({ force: true, silent: true });
+                updateAteraStatusNote('Sync dokoncen.');
+                updateUnifiStatusNote('Sync dokoncen.');
+                updateClientSelector();
+                updateClientInfo();
+                render();
+            } catch (err) {
+                updateAteraStatusNote('Sync selhal.');
+                updateUnifiStatusNote('Sync selhal.');
             }
         }
 
@@ -9142,6 +9419,11 @@
                 }));
 
                 mergeExternalClients('zabbix', zabbixClients);
+                if (isGlobalAdminUser()) {
+                    zabbixClients.forEach((client) => {
+                        saveClientRecordToCloud(client);
+                    });
+                }
             } catch (err) {
                 if (!options.silent) {
                     console.warn('Zabbix sync failed:', err);
@@ -9195,6 +9477,11 @@
                 }).filter(Boolean);
 
                 mergeExternalClients('atera', ateraClients);
+                if (isGlobalAdminUser()) {
+                    ateraClients.forEach((client) => {
+                        saveClientRecordToCloud(client);
+                    });
+                }
             } catch (err) {
                 if (!options.silent) {
                     console.warn('Atera sync failed:', err);
@@ -9203,6 +9490,7 @@
         }
 
         async function syncExternalClients(options = {}) {
+            if (!isGlobalAdminUser()) return;
             await syncZabbixClients(options);
             await syncAteraClients(options);
             if (!options.skipRender) {
@@ -9291,7 +9579,44 @@
             };
         }
 
+        function normalizeAteraAssetForClient(asset) {
+            if (!asset || !asset.id || !asset.name) return null;
+            const type = getAteraAssetType(asset);
+            const status = getAteraAssetStatus(asset);
+            return {
+                id: asset.id,
+                externalId: asset.externalId || '',
+                name: asset.name || '',
+                type,
+                status,
+                os: asset.os || '',
+                ip: asset.ip || '',
+                wanIp: asset.wanIp || '',
+                user: asset.user || '',
+                lastSeenAt: asset.lastSeenAt ? asset.lastSeenAt.getTime() : null,
+                clientId: asset.clientId || '',
+                clientName: asset.clientName || '',
+                source: 'atera'
+            };
+        }
+
+        function groupAteraAssetsByClient(list) {
+            const grouped = {};
+            const items = Array.isArray(list) ? list : [];
+            items.forEach(asset => {
+                if (!asset || !asset.clientId) return;
+                const normalized = normalizeAteraAssetForClient(asset);
+                if (!normalized) return;
+                if (!grouped[asset.clientId]) {
+                    grouped[asset.clientId] = [];
+                }
+                grouped[asset.clientId].push(normalized);
+            });
+            return grouped;
+        }
+
         async function syncAteraAssets(options = {}) {
+            if (!isGlobalAdminUser()) return;
             const config = getAteraConfig();
             if (config.enabled === false) {
                 if (!options.silent && options.force) {
@@ -9329,6 +9654,18 @@
                                 : [];
                 ateraAssets = items.map(normalizeAteraAsset).filter(Boolean);
                 ateraAssetsLastSync = Date.now();
+                const grouped = groupAteraAssetsByClient(ateraAssets);
+                const clientIds = Object.keys(grouped);
+                if (clientIds.length) {
+                    clientIds.forEach((clientId) => {
+                        clientAssets[clientId] = grouped[clientId];
+                        clientAssetsLoaded[clientId] = true;
+                    });
+                    localStorage.setItem('rackManagerClientAssets', JSON.stringify(clientAssets));
+                    if (!options.skipCloud) {
+                        await Promise.allSettled(clientIds.map((clientId) => saveClientAssetsToCloud(clientId, grouped[clientId])));
+                    }
+                }
             } catch (err) {
                 if (!options.silent) {
                     console.warn('Atera assets sync failed:', err);
@@ -9341,8 +9678,384 @@
             }
         }
 
+        function getUnifiDomId(value) {
+            return String(value || '').replace(/[^a-z0-9_-]/gi, '_');
+        }
+
+        function getUnifiAssignments() {
+            if (unifiAssignments && typeof unifiAssignments === 'object') {
+                return unifiAssignments;
+            }
+            unifiAssignments = {};
+            return unifiAssignments;
+        }
+
+        function loadUnifiAssignments() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('rackManagerUnifiAssignments') || '{}');
+                unifiAssignments = saved && typeof saved === 'object' ? saved : {};
+            } catch (err) {
+                unifiAssignments = {};
+            }
+        }
+
+        function saveUnifiAssignments() {
+            localStorage.setItem('rackManagerUnifiAssignments', JSON.stringify(unifiAssignments || {}));
+            scheduleCloudSave();
+        }
+
+        function saveUnifiAssets() {
+            localStorage.setItem('rackManagerUnifiAssets', JSON.stringify(unifiAssets || []));
+            scheduleCloudSave();
+        }
+
+        function getUnifiModuleType(asset) {
+            const model = `${asset.model || ''}`.toLowerCase();
+            const role = `${asset.role || asset.deviceType || ''}`.toLowerCase();
+            if (asset.isGateway || /udm|usg|uxg|gateway|router/.test(model + role)) return 'router';
+            if (asset.isAccessPoint || /uap|access point|ap/.test(model + role)) return 'ap';
+            if (asset.isSwitch || /switch|usw/.test(model + role)) return 'switch';
+            return 'switch';
+        }
+
+        function normalizeUnifiDevice(item) {
+            if (!item) return null;
+            const rawId = item.id || item._id || item.deviceId || item.device_id || item.mac || item.macAddress || item.MAC || item.serial || item.serialNumber;
+            const name = item.name || item.deviceName || item.hostname || item.host || item.model || item.type;
+            if (!rawId || !name) return null;
+
+            const model = item.model || item.modelName || item.product || item.type || '';
+            const ip = item.ipAddress || item.ip || item.ipv4 || item.IP || '';
+            const mac = item.macAddress || item.mac || item.MAC || '';
+            const siteId = item.siteId || item.site_id || (item.site && item.site.id) || item.site || '';
+            const uplinkName = (item.uplink && (item.uplink.deviceName || item.uplink.device_name)) || item.uplinkDeviceName || item.uplink_device_name || '';
+            const uplinkPort = (item.uplink && (item.uplink.port || item.uplink.portName || item.uplink.port_name)) || item.uplinkPort || '';
+            const uplink = [uplinkName, uplinkPort].filter(Boolean).join(' / ');
+            const ports = item.portCount || item.ports || item.num_ports || (Array.isArray(item.port_table) ? item.port_table.length : 0) || (Array.isArray(item.ports) ? item.ports.length : 0) || 0;
+            const role = item.type || item.deviceType || item.category || '';
+            const isGateway = !!(item.isGateway || item.gateway || item.isGatewayDevice || /udm|usg|uxg/.test(`${model}${role}`.toLowerCase()));
+            const isSwitch = !!(item.isSwitch || item.switch || /switch|usw/.test(`${model}${role}`.toLowerCase()));
+            const isAccessPoint = !!(item.isAccessPoint || item.ap || /uap|access point/.test(`${model}${role}`.toLowerCase()));
+
+            return {
+                id: `unifi-${rawId}`,
+                externalId: String(rawId),
+                name: name || '',
+                model,
+                ip,
+                mac,
+                siteId: siteId || '',
+                uplink,
+                ports: Number(ports) || 0,
+                role,
+                isGateway,
+                isSwitch,
+                isAccessPoint
+            };
+        }
+
+        function mergeUnifiAssets(list) {
+            const assignments = getUnifiAssignments();
+            return list.map((asset) => {
+                const assignment = assignments[asset.id];
+                if (assignment && assignment.clientId) {
+                    asset.clientId = assignment.clientId;
+                }
+                return asset;
+            });
+        }
+
+        function getUnifiClientOptions() {
+            return clients.map(client => ({
+                value: client.id,
+                label: client.name || client.id
+            }));
+        }
+
+        function getClientRacksForUnifi(clientId) {
+            if (!clientId) return [];
+            const data = clientData[clientId] || { racks: [] };
+            return Array.isArray(data.racks) ? data.racks : [];
+        }
+
+        function handleUnifiAssignmentChange(assetId, field, value) {
+            if (!assetId) return;
+            const assignments = getUnifiAssignments();
+            const assignment = assignments[assetId] || {};
+            assignment[field] = value;
+            assignments[assetId] = assignment;
+            unifiAssignments = assignments;
+            const asset = unifiAssets.find(item => item.id === assetId);
+            if (asset && field === 'clientId') {
+                asset.clientId = value || '';
+            }
+            saveUnifiAssignments();
+            renderUnifiSyncList();
+            renderClientDetailsPanel();
+        }
+
+        function buildUnifiRackOptions(clientId, selectedId) {
+            const racksList = getClientRacksForUnifi(clientId);
+            const options = racksList.map(rack => ({
+                value: rack.id,
+                label: rack.name || rack.id
+            }));
+            return [
+                { value: '', label: 'Vybrat rack' },
+                ...options
+            ].map(option => {
+                const selected = option.value === selectedId ? 'selected' : '';
+                return `<option value="${escapeHtml(option.value)}" ${selected}>${escapeHtml(option.label)}</option>`;
+            }).join('');
+        }
+
+        function renderUnifiSyncList() {
+            const container = document.getElementById('unifiSyncList');
+            if (!container) return;
+            if (!unifiAssets.length) {
+                container.innerHTML = '<div class="role-note">Zatim nejsou natazena zadna UniFi zarizeni.</div>';
+                return;
+            }
+
+            const clientOptions = [
+                { value: '', label: 'Vybrat klienta' },
+                ...getUnifiClientOptions()
+            ];
+
+            const rows = unifiAssets.map((asset) => {
+                const assignment = unifiAssignments[asset.id] || {};
+                const selectedClient = assignment.clientId || asset.clientId || '';
+                const selectedRack = assignment.rackId || '';
+                const domId = getUnifiDomId(asset.id);
+                const name = escapeHtml(asset.name || asset.model || asset.externalId || '-');
+                const model = escapeHtml(asset.model || '-');
+                const ip = escapeHtml(asset.ip || '-');
+                const mac = escapeHtml(asset.mac || '-');
+                const uplink = escapeHtml(asset.uplink || '-');
+                const typeLabel = escapeHtml(getModuleTypeLabel(getUnifiModuleType(asset)));
+                const clientSelect = clientOptions.map(option => {
+                    const selected = option.value === selectedClient ? 'selected' : '';
+                    return `<option value="${escapeHtml(option.value)}" ${selected}>${escapeHtml(option.label)}</option>`;
+                }).join('');
+                const rackOptions = buildUnifiRackOptions(selectedClient, selectedRack);
+                const positionValue = assignment.position ? Number(assignment.position) : 1;
+                const heightValue = assignment.height ? Number(assignment.height) : 1;
+                return `
+                    <tr data-asset-id="${escapeHtml(asset.id)}">
+                        <td>${name}</td>
+                        <td>${model}</td>
+                        <td>${ip}</td>
+                        <td>${mac}</td>
+                        <td>${typeLabel}</td>
+                        <td>${uplink}</td>
+                        <td>
+                            <div class="unifi-sync-inline">
+                                <select id="unifiClient-${domId}" onchange="handleUnifiAssignmentChange('${asset.id}', 'clientId', this.value)">
+                                    ${clientSelect}
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="unifi-sync-inline">
+                                <select id="unifiRack-${domId}" onchange="handleUnifiAssignmentChange('${asset.id}', 'rackId', this.value)">
+                                    ${rackOptions}
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="unifi-sync-inline">
+                                <input type="number" id="unifiPosition-${domId}" min="1" value="${positionValue}">
+                                <input type="number" id="unifiHeight-${domId}" min="1" max="10" value="${heightValue}">
+                                <button class="btn-small" type="button" onclick="addUnifiDeviceToRack('${asset.id}')">Pridat</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <table class="unifi-sync-table">
+                    <thead>
+                        <tr>
+                            <th>Nazev</th>
+                            <th>Model</th>
+                            <th>IP</th>
+                            <th>MAC</th>
+                            <th>Typ</th>
+                            <th>Uplink</th>
+                            <th>Klient</th>
+                            <th>Rack</th>
+                            <th>U / Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function updateUnifiAssignmentFromInputs(assetId) {
+            const domId = getUnifiDomId(assetId);
+            const clientSelect = document.getElementById(`unifiClient-${domId}`);
+            const rackSelect = document.getElementById(`unifiRack-${domId}`);
+            const posInput = document.getElementById(`unifiPosition-${domId}`);
+            const heightInput = document.getElementById(`unifiHeight-${domId}`);
+            const assignment = unifiAssignments[assetId] || {};
+            assignment.clientId = clientSelect ? clientSelect.value : assignment.clientId || '';
+            assignment.rackId = rackSelect ? rackSelect.value : assignment.rackId || '';
+            assignment.position = posInput ? parseInt(posInput.value, 10) || 1 : assignment.position || 1;
+            assignment.height = heightInput ? parseInt(heightInput.value, 10) || 1 : assignment.height || 1;
+            unifiAssignments[assetId] = assignment;
+            const asset = unifiAssets.find(item => item.id === assetId);
+            if (asset) {
+                asset.clientId = assignment.clientId || asset.clientId || '';
+            }
+            saveUnifiAssignments();
+        }
+
+        async function syncUnifiAssets(options = {}) {
+            if (!isGlobalAdminUser()) return;
+            const config = getUnifiConfig();
+            if (config.enabled === false) {
+                if (!options.silent && options.force) {
+                    alert('UniFi sync je vypnuty.');
+                }
+                return;
+            }
+            if (unifiAssetsLoading) return;
+            const now = Date.now();
+            if (!options.force && unifiAssetsLastSync && now - unifiAssetsLastSync < 2 * 60 * 1000) {
+                renderUnifiSyncList();
+                return;
+            }
+            if (!config.controllerUrl || !config.apiToken) {
+                updateUnifiStatusNote('Doplnte URL controlleru a API token.');
+                return;
+            }
+            unifiAssetsLoading = true;
+            updateUnifiStatusNote('Sync probihá...');
+            try {
+                const response = await fetch('/api/unifi-devices', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        baseUrl: config.controllerUrl,
+                        apiToken: config.apiToken,
+                        siteId: config.siteId
+                    })
+                });
+                if (!response.ok) {
+                    const payload = await response.json().catch(() => ({}));
+                    updateUnifiStatusNote(`Chyba syncu (${response.status}).`);
+                    console.warn('UniFi sync failed:', response.status, payload);
+                    return;
+                }
+                const data = await response.json();
+                const items = Array.isArray(data.devices)
+                    ? data.devices
+                    : Array.isArray(data.items)
+                        ? data.items
+                        : Array.isArray(data.data)
+                            ? data.data
+                            : Array.isArray(data)
+                                ? data
+                                : [];
+                const normalized = items.map(normalizeUnifiDevice).filter(Boolean);
+                unifiAssets = mergeUnifiAssets(normalized);
+                unifiAssetsLastSync = Date.now();
+                saveUnifiAssets();
+                updateUnifiStatusNote();
+            } catch (err) {
+                console.warn('UniFi sync failed:', err);
+                updateUnifiStatusNote('Sync selhal.');
+            } finally {
+                unifiAssetsLoading = false;
+                renderUnifiSyncList();
+                renderClientDetailsPanel();
+            }
+        }
+
+        function addUnifiDeviceToRack(assetId) {
+            if (!canManageDevices()) {
+                alert('Nemate opravneni spravovat zarizeni');
+                return;
+            }
+            updateUnifiAssignmentFromInputs(assetId);
+            const asset = unifiAssets.find(item => item.id === assetId);
+            if (!asset) return;
+            const assignment = unifiAssignments[assetId] || {};
+            const clientId = assignment.clientId;
+            if (!clientId) {
+                alert('Nejprve vyberte klienta.');
+                return;
+            }
+            const data = clientData[clientId] || { racks: [], devices: [], connections: [] };
+            const racksList = Array.isArray(data.racks) ? data.racks : [];
+            const rackId = assignment.rackId;
+            if (!rackId) {
+                alert('Vyberte rack.');
+                return;
+            }
+            const rack = racksList.find(item => item.id === rackId);
+            if (!rack) {
+                alert('Rack nebyl nalezen.');
+                return;
+            }
+            const position = Number(assignment.position) || 1;
+            const height = Number(assignment.height) || 1;
+            if (position + height - 1 > rack.units) {
+                alert('Zarizeni se nevejde do racku.');
+                return;
+            }
+            const existingDevices = Array.isArray(data.devices) ? data.devices : [];
+            const overlap = existingDevices.find(device => device.rack === rackId && (
+                (position >= device.position && position < device.position + device.height) ||
+                (position + height > device.position && position + height <= device.position + device.height)
+            ));
+            if (overlap) {
+                alert('Pozice je jiz obsazena.');
+                return;
+            }
+            const duplicate = existingDevices.find(device => device.externalSource === 'unifi' && device.externalId === asset.externalId);
+            if (duplicate) {
+                alert('Toto UniFi zarizeni uz je v racku.');
+                return;
+            }
+
+            const device = {
+                id: `unifi-${asset.externalId || Date.now()}`,
+                name: asset.name || asset.model || 'UniFi device',
+                type: getUnifiModuleType(asset),
+                rack: rackId,
+                position: position,
+                height: height,
+                ip: asset.ip || '',
+                model: asset.model || '',
+                serial: asset.mac || '',
+                ports: asset.ports || 24,
+                externalSource: 'unifi',
+                externalId: asset.externalId || '',
+                wanIp: asset.wanIp || ''
+            };
+
+            data.devices = existingDevices;
+            data.devices.push(device);
+            clientData[clientId] = data;
+            localStorage.setItem('rackManagerClientData', JSON.stringify(clientData));
+            scheduleCloudSave();
+
+            if (clientId === currentClientId) {
+                devices = data.devices;
+                render();
+            } else {
+                renderClientDetailsPanel();
+            }
+        }
+
         async function syncExternalAssets(options = {}) {
             await syncAteraAssets(options);
+            await syncUnifiAssets(options);
         }
 
         function scheduleExternalClientSync() {
@@ -9896,6 +10609,190 @@
             renderDeviceTypeOptions();
             renderModuleList();
         }
+
+        function getClientDocRef(clientId) {
+            return db.collection('clients').doc(clientId);
+        }
+
+        async function saveClientRecordToCloud(client) {
+            if (!window.db || !window.auth || !auth.currentUser || !client || !client.id) return;
+            const payload = { ...client };
+            delete payload.id;
+            await getClientDocRef(client.id).set({
+                ...payload,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAtMs: Date.now(),
+                updatedBy: auth.currentUser.email || auth.currentUser.uid
+            }, { merge: true });
+        }
+
+        async function ensureClientMembership(clientId, role) {
+            if (!window.db || !window.auth || !auth.currentUser || !clientId) return;
+            const uid = auth.currentUser.uid;
+            await getClientDocRef(clientId)
+                .collection('users')
+                .doc(uid)
+                .set({
+                    role: role || 'admin',
+                    email: auth.currentUser.email || '',
+                    name: auth.currentUser.displayName || '',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+        }
+
+        async function loadClientsFromCloud() {
+            if (!window.db || !window.auth || !auth.currentUser) return [];
+            try {
+                const uid = auth.currentUser.uid;
+                const email = auth.currentUser.email || '';
+                const admin = isBootstrapAdmin(email) || globalUserRole === 'admin';
+                let docs = [];
+                if (admin) {
+                    const snap = await db.collection('clients').get();
+                    docs = snap.docs;
+                } else {
+                    const fieldPath = firebase.firestore.FieldPath.documentId();
+                    const membershipSnap = await db.collectionGroup('users')
+                        .where(fieldPath, '==', uid)
+                        .get();
+                    const clientIds = membershipSnap.docs
+                        .map(doc => doc.ref.parent && doc.ref.parent.parent ? doc.ref.parent.parent.id : '')
+                        .filter(Boolean);
+                    if (clientIds.length) {
+                        const batches = [];
+                        for (let i = 0; i < clientIds.length; i += 10) {
+                            batches.push(clientIds.slice(i, i + 10));
+                        }
+                        const snaps = await Promise.all(batches.map((batch) =>
+                            db.collection('clients').where(firebase.firestore.FieldPath.documentId(), 'in', batch).get()
+                        ));
+                        docs = snaps.flatMap(snap => snap.docs);
+                    }
+                }
+
+                const loaded = docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                    .filter(client => client.id && client.name);
+                clients = loaded.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'cs', { sensitivity: 'base' }));
+                clientsLoaded = true;
+                localStorage.setItem('rackManagerClients', JSON.stringify(clients));
+                updateClientSelector();
+                renderClientList();
+                renderClientDetailsPanel();
+                const lastClientId = localStorage.getItem('rackManagerLastClient') || '';
+                if (!currentClientId || !clients.find(c => c.id === currentClientId)) {
+                    currentClientId = clients.find(c => c.id === lastClientId) ? lastClientId : (clients[0] ? clients[0].id : null);
+                }
+                if (currentClientId) {
+                    const selector = document.getElementById('clientSelector');
+                    if (selector) selector.value = currentClientId;
+                    await switchClient({ skipView: true });
+                }
+                return clients;
+            } catch (err) {
+                console.warn('Client list load failed:', err);
+                return [];
+            }
+        }
+
+        async function loadClientDataFromCloud(clientId) {
+            if (!window.db || !window.auth || !auth.currentUser || !clientId) return;
+            try {
+                const docRef = getClientDocRef(clientId).collection('data').doc('network');
+                const snap = await docRef.get();
+                if (snap.exists) {
+                    const data = snap.data() || {};
+                    clientData[clientId] = {
+                        racks: Array.isArray(data.racks) ? data.racks : [],
+                        devices: Array.isArray(data.devices) ? data.devices : [],
+                        connections: Array.isArray(data.connections) ? data.connections : []
+                    };
+                    localStorage.setItem('rackManagerClientData', JSON.stringify(clientData));
+                }
+            } catch (err) {
+                console.warn('Client data load failed:', err);
+            }
+        }
+
+        async function saveClientDataToCloud(clientId) {
+            if (!window.db || !window.auth || !auth.currentUser || !clientId) return;
+            const data = clientData[clientId] || { racks: [], devices: [], connections: [] };
+            try {
+                await getClientDocRef(clientId).collection('data').doc('network').set({
+                    racks: data.racks || [],
+                    devices: data.devices || [],
+                    connections: data.connections || [],
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAtMs: Date.now(),
+                    updatedBy: auth.currentUser.email || auth.currentUser.uid
+                }, { merge: true });
+            } catch (err) {
+                console.warn('Client data save failed:', err);
+            }
+        }
+
+        async function saveClientAssetsToCloud(clientId, assets) {
+            if (!window.db || !window.auth || !auth.currentUser || !clientId) return;
+            const list = Array.isArray(assets) ? assets : [];
+            try {
+                await getClientDocRef(clientId)
+                    .collection('assets')
+                    .doc('atera')
+                    .set({
+                        items: list,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAtMs: Date.now(),
+                        updatedBy: auth.currentUser.email || auth.currentUser.uid,
+                        source: 'atera'
+                    }, { merge: true });
+            } catch (err) {
+                console.warn('Client assets save failed:', err);
+            }
+        }
+
+        async function loadClientAssetsFromCloud(clientId, options = {}) {
+            if (!window.db || !window.auth || !auth.currentUser || !clientId) return [];
+            if (clientAssetsLoaded[clientId] && !options.force) {
+                return clientAssets[clientId] || [];
+            }
+            if (clientAssetsLoading[clientId]) {
+                return clientAssets[clientId] || [];
+            }
+            clientAssetsLoading[clientId] = true;
+            try {
+                const docRef = getClientDocRef(clientId).collection('assets').doc('atera');
+                const snap = await docRef.get();
+                const data = snap.exists ? (snap.data() || {}) : {};
+                const items = Array.isArray(data.items) ? data.items : [];
+                clientAssets[clientId] = items;
+                clientAssetsLoaded[clientId] = true;
+                localStorage.setItem('rackManagerClientAssets', JSON.stringify(clientAssets));
+                return items;
+            } catch (err) {
+                console.warn('Client assets load failed:', err);
+                return clientAssets[clientId] || [];
+            } finally {
+                clientAssetsLoading[clientId] = false;
+            }
+        }
+
+        async function deleteClientFromCloud(clientId) {
+            if (!window.db || !window.auth || !auth.currentUser || !clientId) return;
+            try {
+                await getClientDocRef(clientId).delete();
+            } catch (err) {
+                console.warn('Client delete failed:', err);
+            }
+        }
+
+        function scheduleClientSave(clientId) {
+            if (!clientId) return;
+            if (clientSaveTimers[clientId]) {
+                clearTimeout(clientSaveTimers[clientId]);
+            }
+            clientSaveTimers[clientId] = setTimeout(() => {
+                saveClientDataToCloud(clientId);
+            }, 1200);
+        }
         
         // Initialize from localStorage
         async function init() {
@@ -9910,6 +10807,28 @@
             if (savedClientData) {
                 clientData = JSON.parse(savedClientData);
             }
+
+            const savedClientAssets = localStorage.getItem('rackManagerClientAssets');
+            if (savedClientAssets) {
+                try {
+                    clientAssets = JSON.parse(savedClientAssets) || {};
+                } catch (err) {
+                    clientAssets = {};
+                }
+                Object.keys(clientAssets).forEach((clientId) => {
+                    clientAssetsLoaded[clientId] = true;
+                });
+            }
+
+            const savedUnifiAssets = localStorage.getItem('rackManagerUnifiAssets');
+            if (savedUnifiAssets) {
+                try {
+                    unifiAssets = JSON.parse(savedUnifiAssets);
+                } catch (err) {
+                    unifiAssets = [];
+                }
+            }
+            loadUnifiAssignments();
 
             await loadHelpdeskTickets();
             
@@ -9949,8 +10868,9 @@
             if (currentClientId) {
                 localStorage.setItem('rackManagerLastClient', currentClientId);
             }
-
-            scheduleCloudSave();
+            if (currentClientId) {
+                scheduleClientSave(currentClientId);
+            }
         }
         
         // Load data for specific client
@@ -9967,7 +10887,7 @@
         }
         
         // Switch client
-        function switchClient(options = {}) {
+        async function switchClient(options = {}) {
             const selector = document.getElementById('clientSelector');
             const clientId = selector.value;
             
@@ -9986,12 +10906,18 @@
                 updateClientInfo();
                 enableControls();
             }
+            helpdeskTicketsLoaded = false;
             render();
             fetchUserRole();
             initTimeTracking();
             if (!options.skipView) {
                 switchView(options.view || 'overview');
             }
+            await loadClientDataFromCloud(clientId);
+            await loadClientAssetsFromCloud(clientId);
+            loadClientData(clientId);
+            render();
+            renderClientDetailsPanel();
         }
         
         // Update client selector
@@ -10054,29 +10980,7 @@
 
         function canAccessView(view) {
             if (!isCustomerRole(currentUserRole)) return true;
-            if (view === 'helpdesk') return canViewHelpdesk();
-            const perms = getCurrentUserPermissions();
-            const allowExtras = hasCustomerExtraAccess();
-            if (!allowExtras) return false;
-            if (['racks', 'network', 'topology', 'overview'].includes(view)) {
-                return perms.manageRacks || perms.manageDevices || perms.editTopology || perms.viewSensitive;
-            }
-            if (view === 'computers') {
-                return perms.manageDevices || perms.viewSensitive;
-            }
-            if (view === 'time') {
-                return perms.manageTime || perms.viewTimeAll;
-            }
-            if (view === 'reports') {
-                return canViewReports();
-            }
-            if (view === 'teams') {
-                return perms.manageHelpdesk || perms.manageRoles;
-            }
-            if (view === 'clients') {
-                return perms.manageRoles;
-            }
-            return false;
+            return view === 'helpdesk' && canViewHelpdesk();
         }
         
         // View switching
@@ -10169,14 +11073,16 @@
         async function loadHelpdeskTickets(force) {
             if (helpdeskTicketsLoaded && !force) return;
             helpdeskTickets = [];
-            if (!window.db || !window.auth || !auth.currentUser || !window.GLOBAL_PATH) {
+            if (!window.db || !window.auth || !auth.currentUser) {
                 return;
             }
             try {
-                const snap = await db.doc(GLOBAL_PATH).get();
-                if (snap.exists) {
-                    const data = snap.data() || {};
-                    helpdeskTickets = Array.isArray(data.helpdeskTickets) ? data.helpdeskTickets : [];
+                if (isGlobalAdminUser()) {
+                    const snap = await db.collectionGroup('helpdeskTickets').get();
+                    helpdeskTickets = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                } else if (currentClientId) {
+                    const snap = await getClientDocRef(currentClientId).collection('helpdeskTickets').get();
+                    helpdeskTickets = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 }
                 helpdeskTicketsLoaded = true;
             } catch (err) {
@@ -10184,9 +11090,28 @@
             }
         }
 
-        function saveHelpdeskTickets() {
+        function saveHelpdeskTickets(ticket) {
             helpdeskTicketsLoaded = true;
-            scheduleCloudSave();
+            if (ticket) {
+                saveHelpdeskTicketToCloud(ticket);
+            }
+        }
+
+        async function saveHelpdeskTicketToCloud(ticket) {
+            if (!window.db || !window.auth || !auth.currentUser || !ticket) return;
+            const clientId = ticket.clientId || currentClientId || 'unassigned';
+            try {
+                await getClientDocRef(clientId)
+                    .collection('helpdeskTickets')
+                    .doc(ticket.id)
+                    .set({
+                        ...ticket,
+                        clientId: clientId,
+                        updatedAt: ticket.updatedAt || Date.now()
+                    }, { merge: true });
+            } catch (err) {
+                console.warn('Helpdesk ticket save failed:', err);
+            }
         }
 
         function getHelpdeskAssigneeFallback() {
@@ -10246,6 +11171,11 @@
 
         async function loadHelpdeskAssignees(force) {
             if (helpdeskAssigneesClientId === currentClientId && helpdeskAssignees.length && !force) {
+                return helpdeskAssignees;
+            }
+            if (isCustomerRole(currentUserRole)) {
+                helpdeskAssignees = buildHelpdeskAssigneeOptions(getHelpdeskAssigneeFallback());
+                helpdeskAssigneesClientId = currentClientId || null;
                 return helpdeskAssignees;
             }
             if (!currentClientId || !window.db || !window.auth || !auth.currentUser) {
@@ -10730,10 +11660,17 @@
             const externalId = external.externalId || '-';
             const lastSync = external.lastSyncAt ? formatHelpdeskDate(external.lastSyncAt) : '-';
             const canEdit = canManageHelpdesk();
+            const canContribute = canContributeHelpdesk(ticket);
+            const canAssignAsset = canAssignHelpdeskAsset(ticket);
             const actionButtons = [];
             const attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
             const chatMessages = Array.isArray(ticket.chat) ? ticket.chat : [];
             const chatAuthorDefault = getHelpdeskCurrentUserLabel();
+            const ticketAsset = getHelpdeskTicketAsset(ticket);
+            const assetLabel = ticketAsset
+                ? (ticketAsset.label || buildHelpdeskAssetOptionLabel(ticketAsset))
+                : '-';
+            ensureHelpdeskAssetsLoaded(ticket.clientId || '');
             const attachmentsHtml = attachments.length
                 ? attachments.map((attachment) => {
                     const url = attachment.url || attachment.dataUrl || '';
@@ -10817,17 +11754,30 @@
                     <div class="helpdesk-ticket-tags">${tags}</div>
                 </div>
                 <div class="helpdesk-detail-section">
+                    <div class="helpdesk-detail-subtitle">PC / zarizeni</div>
+                    ${canAssignAsset ? `
+                        <select id="helpdeskDetailAssetSelect" onchange="updateHelpdeskTicketAsset('${ticket.id}')">
+                            ${buildHelpdeskAssetOptionsHtml(ticket.clientId || '', ticketAsset ? ticketAsset.id : '', ticketAsset ? (ticketAsset.label || ticketAsset.name) : '')}
+                        </select>
+                    ` : `<div>${escapeHtml(assetLabel)}</div>`}
+                </div>
+                <div class="helpdesk-detail-section">
                     <div class="helpdesk-detail-subtitle">Chat se zakaznikem</div>
                     <div class="helpdesk-chat-list">${chatHtml}</div>
-                    ${canEdit ? `
+                    ${canContribute ? `
                         <div class="helpdesk-chat-form">
-                            <div style="display: grid; grid-template-columns: 140px 1fr; gap: 0.6rem;">
-                                <select id="helpdeskChatChannel">
-                                    <option value="internal">Technik</option>
-                                    <option value="customer">Zakaznik</option>
-                                </select>
+                            ${canEdit ? `
+                                <div style="display: grid; grid-template-columns: 140px 1fr; gap: 0.6rem;">
+                                    <select id="helpdeskChatChannel">
+                                        <option value="internal">Technik</option>
+                                        <option value="customer">Zakaznik</option>
+                                    </select>
+                                    <input type="text" id="helpdeskChatAuthor" value="${escapeHtml(chatAuthorDefault)}" placeholder="Jmeno odesilatele">
+                                </div>
+                            ` : `
+                                <input type="hidden" id="helpdeskChatChannel" value="customer">
                                 <input type="text" id="helpdeskChatAuthor" value="${escapeHtml(chatAuthorDefault)}" placeholder="Jmeno odesilatele">
-                            </div>
+                            `}
                             <textarea id="helpdeskChatMessage" rows="3" placeholder="Napis zpravu..."></textarea>
                             <div class="helpdesk-chat-actions">
                                 <button class="btn-small" type="button" onclick="addHelpdeskChatMessage()">Pridat zpravu</button>
@@ -10838,7 +11788,7 @@
                 <div class="helpdesk-detail-section">
                     <div class="helpdesk-detail-subtitle">Prilohy a screenshoty</div>
                     <div class="helpdesk-attachment-grid">${attachmentsHtml}</div>
-                    ${canEdit ? `
+                    ${canContribute ? `
                         <div class="helpdesk-attachment-controls">
                             <input type="file" id="helpdeskAttachmentInput" multiple onchange="handleHelpdeskAttachmentUpload(event)" style="display: none;">
                             <button class="btn-small" type="button" onclick="triggerHelpdeskAttachmentUpload()">Pridat prilohu</button>
@@ -10898,12 +11848,136 @@
             renderHelpdeskList(filtered);
         }
 
+        function ensureHelpdeskAssetsLoaded(clientId) {
+            if (!clientId || !window.db || !window.auth || !auth.currentUser) return;
+            if (getHelpdeskAssignableAssets(clientId).length) return;
+            if (clientAssetsLoaded[clientId] || clientAssetsLoading[clientId]) return;
+            loadClientAssetsFromCloud(clientId).then(() => {
+                if (helpdeskSelectedId) {
+                    renderHelpdeskDetail(helpdeskSelectedId);
+                }
+                const modal = document.getElementById('helpdeskTicketModal');
+                if (modal && modal.classList.contains('active')) {
+                    const clientSelect = document.getElementById('helpdeskTicketClient');
+                    const assetSelect = document.getElementById('helpdeskTicketAsset');
+                    renderHelpdeskTicketAssetOptions(clientSelect ? clientSelect.value : '', assetSelect ? assetSelect.value : '');
+                }
+            });
+        }
+
+        function getHelpdeskAssignableAssets(clientId) {
+            if (!clientId) return [];
+            const cached = Array.isArray(clientAssets[clientId]) ? clientAssets[clientId] : [];
+            let list = cached;
+            if (!list.length && isGlobalAdminUser() && Array.isArray(ateraAssets) && ateraAssets.length) {
+                list = ateraAssets
+                    .filter(asset => asset.clientId === clientId)
+                    .map(normalizeAteraAssetForClient)
+                    .filter(Boolean);
+            }
+            const normalized = list.map(asset => {
+                if (!asset) return null;
+                const type = asset.type || getAteraAssetType(asset);
+                return { ...asset, type };
+            }).filter(Boolean);
+            return normalized.filter(asset => ['pc', 'server'].includes(asset.type || ''));
+        }
+
+        function buildHelpdeskAssetOptionLabel(asset) {
+            if (!asset) return '';
+            const name = asset.name || asset.label || asset.id || '';
+            const typeValue = asset.type || getAteraAssetType(asset);
+            const statusValue = asset.status || getAteraAssetStatus(asset);
+            const typeLabel = typeValue ? getComputersTypeLabel(typeValue) : '';
+            const statusLabel = statusValue ? getComputersStatusLabel(statusValue) : '';
+            const ipLabel = asset.ip ? `IP ${asset.ip}` : '';
+            const userLabel = asset.user ? `User ${asset.user}` : '';
+            const extra = [typeLabel, statusLabel, ipLabel, userLabel].filter(Boolean).join(' / ');
+            return extra ? `${name} (${extra})` : name;
+        }
+
+        function getHelpdeskTicketAsset(ticket) {
+            if (!ticket) return null;
+            if (ticket.asset && typeof ticket.asset === 'object') return ticket.asset;
+            const assetId = ticket.assetId || '';
+            const assetName = ticket.assetName || ticket.assetLabel || '';
+            if (assetId || assetName) {
+                return {
+                    id: assetId,
+                    name: assetName || assetId,
+                    label: ticket.assetLabel || assetName || assetId,
+                    source: ticket.assetSource || ''
+                };
+            }
+            return null;
+        }
+
+        function buildHelpdeskAssetPayload(clientId, assetId, fallbackAsset) {
+            if (!assetId) return null;
+            const assets = getHelpdeskAssignableAssets(clientId);
+            const match = assets.find(asset => asset.id === assetId);
+            const base = match || fallbackAsset || {};
+            const name = base.name || base.label || assetId;
+            const type = base.type || getAteraAssetType(base);
+            const status = base.status || getAteraAssetStatus(base);
+            const payload = {
+                id: assetId,
+                name,
+                type: type || '',
+                status: status || '',
+                source: base.source || 'atera'
+            };
+            payload.label = base.label || buildHelpdeskAssetOptionLabel({
+                ...payload,
+                ip: base.ip || '',
+                user: base.user || ''
+            });
+            return payload;
+        }
+
+        function buildHelpdeskAssetOptionsHtml(clientId, selectedId, selectedLabel) {
+            const assets = getHelpdeskAssignableAssets(clientId);
+            const options = [];
+            if (!assets.length) {
+                const label = clientAssetsLoading[clientId] ? 'Nacitam zarizeni...' : 'Bez zarizeni';
+                options.push({ value: '', label });
+                if (selectedId) {
+                    options.push({ value: selectedId, label: selectedLabel || selectedId });
+                }
+            } else {
+                options.push({ value: '', label: 'Neprirazeno' });
+                assets.forEach(asset => {
+                    options.push({ value: asset.id, label: buildHelpdeskAssetOptionLabel(asset) });
+                });
+                if (selectedId && !assets.find(asset => asset.id === selectedId)) {
+                    options.push({ value: selectedId, label: selectedLabel || selectedId });
+                }
+            }
+            return options.map(option => {
+                const selectedAttr = option.value === selectedId ? ' selected' : '';
+                return `<option value="${escapeHtml(option.value)}"${selectedAttr}>${escapeHtml(option.label)}</option>`;
+            }).join('');
+        }
+
+        function renderHelpdeskTicketAssetOptions(clientId, selectedId, selectedLabel) {
+            const assetSelect = document.getElementById('helpdeskTicketAsset');
+            if (!assetSelect) return;
+            const resolvedClientId = clientId || currentClientId || '';
+            ensureHelpdeskAssetsLoaded(resolvedClientId);
+            assetSelect.innerHTML = buildHelpdeskAssetOptionsHtml(resolvedClientId, selectedId, selectedLabel);
+            assetSelect.value = selectedId || '';
+        }
+
         function renderHelpdeskTicketFormOptions() {
             const clientSelect = document.getElementById('helpdeskTicketClient');
             if (clientSelect) {
+                const isCustomer = isCustomerRole(currentUserRole);
+                const visibleClients = isCustomer
+                    ? clients.filter(client => client.id === currentClientId)
+                    : clients;
                 const options = [
                     { value: '', label: 'Neprirazeno' },
-                    ...clients.map(client => ({ value: client.id, label: client.name }))
+                    ...visibleClients.map(client => ({ value: client.id, label: client.name }))
                 ];
                 clientSelect.innerHTML = options.map(option =>
                     `<option value="${option.value}">${escapeHtml(option.label)}</option>`
@@ -10932,9 +12006,20 @@
             }
         }
 
+        function onHelpdeskTicketClientChange() {
+            const clientSelect = document.getElementById('helpdeskTicketClient');
+            const clientId = clientSelect ? clientSelect.value : '';
+            renderHelpdeskTicketAssetOptions(clientId, '');
+        }
+
         async function openHelpdeskTicketModal(ticketId) {
-            if (!canManageHelpdesk()) {
+            const isCustomer = isCustomerRole(currentUserRole);
+            if (!canCreateHelpdeskTicket()) {
                 alert('Nemate opravneni spravovat helpdesk');
+                return;
+            }
+            if (ticketId && !canManageHelpdesk()) {
+                alert('Nemate opravneni upravovat tiket');
                 return;
             }
             const modal = document.getElementById('helpdeskTicketModal');
@@ -10943,6 +12028,7 @@
             const titleInput = document.getElementById('helpdeskTicketTitle');
             const descInput = document.getElementById('helpdeskTicketDesc');
             const clientSelect = document.getElementById('helpdeskTicketClient');
+            const assetSelect = document.getElementById('helpdeskTicketAsset');
             const statusSelect = document.getElementById('helpdeskTicketStatus');
             const prioritySelect = document.getElementById('helpdeskTicketPriority');
             const assigneeInput = document.getElementById('helpdeskTicketAssignee');
@@ -10961,6 +12047,9 @@
                 if (titleInput) titleInput.value = ticket.title || '';
                 if (descInput) descInput.value = ticket.description || '';
                 if (clientSelect) clientSelect.value = ticket.clientId || '';
+                const existingAsset = getHelpdeskTicketAsset(ticket);
+                renderHelpdeskTicketAssetOptions(ticket.clientId || '', existingAsset ? existingAsset.id : '', existingAsset ? existingAsset.label : '');
+                if (assetSelect) assetSelect.value = existingAsset ? existingAsset.id : '';
                 if (statusSelect) statusSelect.value = ticket.status || 'open';
                 if (prioritySelect) prioritySelect.value = ticket.priority || 'medium';
                 if (assigneeInput) assigneeInput.value = ticket.assignee || '';
@@ -10973,6 +12062,8 @@
                 if (titleInput) titleInput.value = '';
                 if (descInput) descInput.value = '';
                 if (clientSelect) clientSelect.value = currentClientId || '';
+                renderHelpdeskTicketAssetOptions(currentClientId || '', '');
+                if (assetSelect) assetSelect.value = '';
                 if (statusSelect) statusSelect.value = 'open';
                 if (prioritySelect) prioritySelect.value = 'medium';
                 if (assigneeInput) assigneeInput.value = '';
@@ -10980,6 +12071,29 @@
                 if (sourceSelect) sourceSelect.value = 'manual';
                 if (tagsInput) tagsInput.value = '';
             }
+
+            const fieldGroups = {
+                client: clientSelect,
+                asset: assetSelect,
+                status: statusSelect,
+                priority: prioritySelect,
+                assignee: assigneeInput,
+                due: dueInput,
+                source: sourceSelect,
+                tags: tagsInput
+            };
+            Object.keys(fieldGroups).forEach((key) => {
+                const field = fieldGroups[key];
+                if (!field) return;
+                const group = field.closest('.form-group');
+                const show = !isCustomer || key === 'client' || key === 'asset';
+                if (group) group.style.display = show ? '' : 'none';
+                if (key === 'client') {
+                    field.disabled = isCustomer;
+                } else if (key !== 'asset') {
+                    field.disabled = isCustomer;
+                }
+            });
 
             if (modal) modal.classList.add('active');
         }
@@ -10990,7 +12104,8 @@
         }
 
         function saveHelpdeskTicket() {
-            if (!canManageHelpdesk()) {
+            const isCustomer = isCustomerRole(currentUserRole);
+            if (!canCreateHelpdeskTicket()) {
                 alert('Nemate opravneni spravovat helpdesk');
                 return;
             }
@@ -10998,6 +12113,7 @@
             const titleInput = document.getElementById('helpdeskTicketTitle');
             const descInput = document.getElementById('helpdeskTicketDesc');
             const clientSelect = document.getElementById('helpdeskTicketClient');
+            const assetSelect = document.getElementById('helpdeskTicketAsset');
             const statusSelect = document.getElementById('helpdeskTicketStatus');
             const prioritySelect = document.getElementById('helpdeskTicketPriority');
             const assigneeInput = document.getElementById('helpdeskTicketAssignee');
@@ -11013,9 +12129,13 @@
 
             const now = Date.now();
             const ticketId = idInput && idInput.value ? idInput.value : createHelpdeskTicketId();
-            const clientId = clientSelect ? clientSelect.value : '';
+            const clientId = isCustomer ? (currentClientId || '') : (clientSelect ? clientSelect.value : '');
+            if (isCustomer && !clientId) {
+                alert('Vyberte klienta.');
+                return;
+            }
             const clientName = getHelpdeskClientName(clientId);
-            const tags = tagsInput
+            const tags = !isCustomer && tagsInput
                 ? tagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean)
                 : [];
             const currentEmail = getCurrentUserEmailLower();
@@ -11025,17 +12145,20 @@
 
             const existingIndex = helpdeskTickets.findIndex(ticket => ticket.id === ticketId);
             const baseTicket = existingIndex >= 0 ? helpdeskTickets[existingIndex] : null;
+            const baseAsset = getHelpdeskTicketAsset(baseTicket);
+            const assetId = assetSelect ? assetSelect.value : (baseAsset ? baseAsset.id : '');
+            const assetPayload = assetId ? buildHelpdeskAssetPayload(clientId, assetId, baseAsset) : null;
             const ticketData = {
                 id: ticketId,
                 title,
                 description: descInput ? descInput.value.trim() : '',
                 clientId: clientId || '',
                 clientName: clientName,
-                status: statusSelect ? statusSelect.value : 'open',
-                priority: prioritySelect ? prioritySelect.value : 'medium',
-                assignee: assigneeInput ? assigneeInput.value.trim() : '',
-                dueAt: dueInput && dueInput.value ? dueInput.value : '',
-                source: sourceSelect ? sourceSelect.value : 'manual',
+                status: isCustomer ? (baseTicket ? baseTicket.status : 'open') : (statusSelect ? statusSelect.value : 'open'),
+                priority: isCustomer ? (baseTicket ? baseTicket.priority : 'medium') : (prioritySelect ? prioritySelect.value : 'medium'),
+                assignee: isCustomer ? (baseTicket ? baseTicket.assignee : '') : (assigneeInput ? assigneeInput.value.trim() : ''),
+                dueAt: isCustomer ? (baseTicket ? baseTicket.dueAt : '') : (dueInput && dueInput.value ? dueInput.value : ''),
+                source: isCustomer ? (baseTicket ? baseTicket.source : 'form') : (sourceSelect ? sourceSelect.value : 'manual'),
                 tags,
                 createdAt: baseTicket ? baseTicket.createdAt : now,
                 updatedAt: now,
@@ -11045,6 +12168,7 @@
                 requesterEmail: baseTicket ? (baseTicket.requesterEmail || currentEmail) : currentEmail,
                 createdByEmail: baseTicket ? (baseTicket.createdByEmail || currentEmail) : currentEmail,
                 createdByName: baseTicket ? (baseTicket.createdByName || currentName) : currentName,
+                asset: assetPayload,
                 external: baseTicket ? baseTicket.external : {
                     provider: '',
                     externalId: '',
@@ -11060,10 +12184,29 @@
                 helpdeskTickets.push(ticketData);
             }
 
-            saveHelpdeskTickets();
+            saveHelpdeskTickets(ticketData);
             helpdeskSelectedId = ticketId;
             closeHelpdeskTicketModal();
             renderHelpdeskView();
+        }
+
+        function updateHelpdeskTicketAsset(ticketId) {
+            const ticket = getHelpdeskTicketById(ticketId);
+            if (!ticket) return;
+            if (!canAssignHelpdeskAsset(ticket)) {
+                alert('Nemate opravneni menit zarizeni u tiketu.');
+                return;
+            }
+            const select = document.getElementById('helpdeskDetailAssetSelect');
+            const assetId = select ? select.value : '';
+            const assetPayload = assetId
+                ? buildHelpdeskAssetPayload(ticket.clientId || currentClientId || '', assetId, getHelpdeskTicketAsset(ticket))
+                : null;
+            ticket.asset = assetPayload;
+            ticket.updatedAt = Date.now();
+            saveHelpdeskTickets(ticket);
+            renderHelpdeskView();
+            renderHelpdeskDetail(ticketId);
         }
 
         function getHelpdeskTicketById(ticketId) {
@@ -11071,13 +12214,13 @@
         }
 
         function addHelpdeskChatMessage() {
-            if (!canManageHelpdesk()) {
-                alert('Nemate opravneni spravovat helpdesk');
-                return;
-            }
             const ticket = getHelpdeskTicketById(helpdeskSelectedId);
             if (!ticket) {
                 alert('Nejprve vyberte tiket.');
+                return;
+            }
+            if (!canContributeHelpdesk(ticket)) {
+                alert('Nemate opravneni spravovat helpdesk');
                 return;
             }
             const channelSelect = document.getElementById('helpdeskChatChannel');
@@ -11088,8 +12231,13 @@
                 alert('Zadejte zpravu.');
                 return;
             }
-            const channel = channelSelect && channelSelect.value === 'customer' ? 'customer' : 'internal';
-            const fallbackAuthor = channel === 'customer' ? 'Zakaznik' : getHelpdeskCurrentUserLabel();
+            const isInternal = canManageHelpdesk();
+            const channel = isInternal
+                ? (channelSelect && channelSelect.value === 'customer' ? 'customer' : 'internal')
+                : 'customer';
+            const fallbackAuthor = isInternal
+                ? (channel === 'customer' ? 'Zakaznik' : getHelpdeskCurrentUserLabel())
+                : (auth && auth.currentUser ? (auth.currentUser.displayName || auth.currentUser.email || 'Zakaznik') : 'Zakaznik');
             const author = authorInput ? (authorInput.value.trim() || fallbackAuthor) : fallbackAuthor;
             const message = {
                 id: `msg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
@@ -11101,7 +12249,7 @@
             ticket.chat = Array.isArray(ticket.chat) ? ticket.chat : [];
             ticket.chat.push(message);
             ticket.updatedAt = Date.now();
-            saveHelpdeskTickets();
+            saveHelpdeskTickets(ticket);
             if (messageInput) messageInput.value = '';
             renderHelpdeskView();
             renderHelpdeskDetail(helpdeskSelectedId);
@@ -11114,9 +12262,9 @@
             input.click();
         }
 
-        function getHelpdeskAttachmentPath(ticketId, attachmentId) {
-            const clientId = currentClientId || 'global';
-            return `helpdesk/${clientId}/${ticketId}/${attachmentId}`;
+        function getHelpdeskAttachmentPath(ticketId, attachmentId, clientId) {
+            const safeClientId = clientId || currentClientId || 'unassigned';
+            return `helpdesk/${safeClientId}/${ticketId}/${attachmentId}`;
         }
 
         function ensureHelpdeskStorage() {
@@ -11129,8 +12277,10 @@
 
         async function uploadHelpdeskFileAttachment(ticketId, file) {
             if (!ensureHelpdeskStorage()) return null;
+            const ticket = getHelpdeskTicketById(ticketId);
+            const clientId = ticket ? ticket.clientId : currentClientId;
             const attachmentId = `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-            const path = getHelpdeskAttachmentPath(ticketId, attachmentId);
+            const path = getHelpdeskAttachmentPath(ticketId, attachmentId, clientId);
             const ref = storage.ref(path);
             await ref.put(file);
             const url = await ref.getDownloadURL();
@@ -11148,8 +12298,10 @@
 
         async function uploadHelpdeskDataUrlAttachment(ticketId, dataUrl, meta) {
             if (!ensureHelpdeskStorage()) return null;
+            const ticket = getHelpdeskTicketById(ticketId);
+            const clientId = ticket ? ticket.clientId : currentClientId;
             const attachmentId = `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-            const path = getHelpdeskAttachmentPath(ticketId, attachmentId);
+            const path = getHelpdeskAttachmentPath(ticketId, attachmentId, clientId);
             const ref = storage.ref(path);
             await ref.putString(dataUrl, 'data_url', { contentType: meta.type || 'image/jpeg' });
             const url = await ref.getDownloadURL();
@@ -11166,13 +12318,13 @@
         }
 
         async function handleHelpdeskAttachmentUpload(event) {
-            if (!canManageHelpdesk()) {
-                alert('Nemate opravneni spravovat helpdesk');
-                return;
-            }
             const ticket = getHelpdeskTicketById(helpdeskSelectedId);
             if (!ticket) {
                 alert('Nejprve vyberte tiket.');
+                return;
+            }
+            if (!canContributeHelpdesk(ticket)) {
+                alert('Nemate opravneni spravovat helpdesk');
                 return;
             }
             const input = event && event.target ? event.target : null;
@@ -11200,7 +12352,7 @@
 
             if (added) {
                 ticket.updatedAt = Date.now();
-                saveHelpdeskTickets();
+                saveHelpdeskTickets(ticket);
                 renderHelpdeskView();
                 renderHelpdeskDetail(helpdeskSelectedId);
             }
@@ -11227,19 +12379,19 @@
                 }
             }
             ticket.updatedAt = Date.now();
-            saveHelpdeskTickets();
+            saveHelpdeskTickets(ticket);
             renderHelpdeskView();
             renderHelpdeskDetail(helpdeskSelectedId);
         }
 
         async function captureHelpdeskScreenshot() {
-            if (!canManageHelpdesk()) {
-                alert('Nemate opravneni spravovat helpdesk');
-                return;
-            }
             const ticket = getHelpdeskTicketById(helpdeskSelectedId);
             if (!ticket) {
                 alert('Nejprve vyberte tiket.');
+                return;
+            }
+            if (!canContributeHelpdesk(ticket)) {
+                alert('Nemate opravneni spravovat helpdesk');
                 return;
             }
             if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
@@ -11332,7 +12484,7 @@
                     ticket.attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
                     ticket.attachments.push(attachment);
                     ticket.updatedAt = Date.now();
-                    saveHelpdeskTickets();
+                    saveHelpdeskTickets(ticket);
                     renderHelpdeskView();
                     renderHelpdeskDetail(helpdeskSelectedId);
                 }
@@ -11363,7 +12515,7 @@
             } else {
                 ticket.resolvedAt = null;
             }
-            saveHelpdeskTickets();
+            saveHelpdeskTickets(ticket);
             renderHelpdeskView();
             renderHelpdeskDetail(helpdeskSelectedId);
         }
@@ -13949,6 +15101,7 @@
                 saveData();
                 updateClientSelector();
                 render();
+                saveClientRecordToCloud(existing);
                 closeClientModal();
                 return;
             }
@@ -13962,6 +15115,8 @@
             clients.push(client);
             saveData();
             updateClientSelector();
+            saveClientRecordToCloud(client);
+            ensureClientMembership(client.id, 'admin');
             
             // Automatically select the new client
             const selector = document.getElementById('clientSelector');
@@ -13981,6 +15136,7 @@
                 
                 // Remove client data
                 delete clientData[clientId];
+                deleteClientFromCloud(clientId);
                 
                 // If this was the current client, clear selection
                 if (currentClientId === clientId) {
@@ -14038,6 +15194,35 @@
                         </div>
                         <div class="client-card-pricing">Pricing: ${buildPricingSummary(client)}</div>
                         ${client.contact ? `<div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">Kontakt: ${client.contact}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderClientUnifiDevices(clientId) {
+            const listEl = document.getElementById('clientDetailUnifiDevices');
+            if (!listEl) return;
+            if (!clientId) {
+                listEl.textContent = '-';
+                return;
+            }
+            const items = unifiAssets.filter(asset => asset.clientId === clientId);
+            if (!items.length) {
+                listEl.innerHTML = '<div class="client-detail-list-item"><div class="client-detail-list-meta">Zatim zadna UniFi zarizeni.</div></div>';
+                return;
+            }
+            listEl.innerHTML = items.map(asset => {
+                const title = escapeHtml(asset.name || asset.model || asset.externalId || '-');
+                const metaParts = [
+                    asset.model ? `Model: ${asset.model}` : null,
+                    asset.ip ? `IP: ${asset.ip}` : null,
+                    asset.mac ? `MAC: ${asset.mac}` : null,
+                    asset.uplink ? `Uplink: ${asset.uplink}` : null
+                ].filter(Boolean).join(' • ');
+                return `
+                    <div class="client-detail-list-item">
+                        <strong>${title}</strong>
+                        <div class="client-detail-list-meta">${escapeHtml(metaParts || '-')}</div>
                     </div>
                 `;
             }).join('');
@@ -14111,6 +15296,7 @@
             if (devicesEl) devicesEl.textContent = snapshot.devices.length;
             if (connectionsEl) connectionsEl.textContent = snapshot.connections.length;
             if (notesEl) notesEl.textContent = client.notes || '-';
+            renderClientUnifiDevices(client.id);
 
             empty.style.display = 'none';
             detail.style.display = 'block';
@@ -15443,9 +16629,9 @@
         }
 
         async function loadReportPresetsFromGlobal() {
-            if (!window.db || !window.auth || !auth.currentUser || !window.GLOBAL_PATH) return false;
+            if (!window.db || !window.auth || !auth.currentUser || !window.GLOBAL_REPORTS_PATH) return false;
             try {
-                const snap = await db.doc(GLOBAL_PATH).get();
+                const snap = await db.doc(GLOBAL_REPORTS_PATH).get();
                 if (!snap.exists) return false;
                 const data = snap.data() || {};
                 const presetsByUser = data.reportPresetsByUser || {};
@@ -15466,7 +16652,7 @@
         }
 
         async function saveReportPresetToGlobal(preset) {
-            if (!window.db || !window.auth || !auth.currentUser || !window.GLOBAL_PATH || !preset) return;
+            if (!window.db || !window.auth || !auth.currentUser || !window.GLOBAL_REPORTS_PATH || !preset) return;
             const fieldPath = `reportPresetsByUser.${auth.currentUser.uid}.${preset.id}`;
             const payload = {
                 id: preset.id,
@@ -15476,7 +16662,7 @@
                 updatedBy: auth.currentUser?.email || auth.currentUser?.uid || ''
             };
             try {
-                await db.doc(GLOBAL_PATH).set({ [fieldPath]: payload }, { merge: true });
+                await db.doc(GLOBAL_REPORTS_PATH).set({ [fieldPath]: payload }, { merge: true });
             } catch (err) {
                 console.warn('Save report preset to global failed:', err);
             }
@@ -16776,8 +17962,10 @@
             try {
                 const list = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
                 const ateraConfig = JSON.parse(localStorage.getItem('rackManagerAteraConfig') || 'null');
+                const unifiConfig = JSON.parse(localStorage.getItem('rackManagerUnifiConfig') || 'null');
                 return (Array.isArray(list) && list.length > 0)
-                    || !!ateraConfig;
+                    || !!ateraConfig
+                    || !!unifiConfig;
             } catch (err) {
                 return false;
             }
@@ -16785,26 +17973,16 @@
 
         function applyCloudData(data, silent) {
             const payload = data || {};
-            const cloudClients = payload.clients || [];
-            const cloudClientData = payload.clientData || {};
-            const cloudLastClientId = payload.lastClientId || null;
             const cloudM365Config = payload.m365Config || null;
-            const hasHelpdeskTickets = Object.prototype.hasOwnProperty.call(payload, 'helpdeskTickets');
-            const cloudHelpdeskTickets = payload.helpdeskTickets || [];
             const hasAteraConfig = Object.prototype.hasOwnProperty.call(payload, 'ateraConfig');
             const cloudAteraConfig = payload.ateraConfig || null;
+            const hasUnifiConfig = Object.prototype.hasOwnProperty.call(payload, 'unifiConfig');
+            const cloudUnifiConfig = payload.unifiConfig || null;
+            const hasUnifiAssets = Object.prototype.hasOwnProperty.call(payload, 'unifiAssets');
+            const cloudUnifiAssets = payload.unifiAssets || [];
+            const hasUnifiAssignments = Object.prototype.hasOwnProperty.call(payload, 'unifiAssignments');
+            const cloudUnifiAssignments = payload.unifiAssignments || {};
 
-            localStorage.setItem('rackManagerClients', JSON.stringify(cloudClients));
-            localStorage.setItem('rackManagerClientData', JSON.stringify(cloudClientData));
-            if (hasHelpdeskTickets) {
-                helpdeskTickets = Array.isArray(cloudHelpdeskTickets) ? cloudHelpdeskTickets : [];
-                helpdeskTicketsLoaded = true;
-            }
-            if (cloudLastClientId) {
-                localStorage.setItem('rackManagerLastClient', cloudLastClientId);
-            } else {
-                localStorage.removeItem('rackManagerLastClient');
-            }
             if (cloudM365Config) {
                 localStorage.setItem('rackManagerM365Config', JSON.stringify(cloudM365Config));
             }
@@ -16815,18 +17993,35 @@
                     localStorage.removeItem('rackManagerAteraConfig');
                 }
             }
+            if (hasUnifiConfig) {
+                if (cloudUnifiConfig) {
+                    localStorage.setItem('rackManagerUnifiConfig', JSON.stringify(cloudUnifiConfig));
+                } else {
+                    localStorage.removeItem('rackManagerUnifiConfig');
+                }
+            }
+            if (hasUnifiAssets) {
+                const assets = Array.isArray(cloudUnifiAssets) ? cloudUnifiAssets : [];
+                localStorage.setItem('rackManagerUnifiAssets', JSON.stringify(assets));
+                unifiAssets = assets;
+            }
+            if (hasUnifiAssignments) {
+                const assignments = cloudUnifiAssignments && typeof cloudUnifiAssignments === 'object'
+                    ? cloudUnifiAssignments
+                    : {};
+                localStorage.setItem('rackManagerUnifiAssignments', JSON.stringify(assignments));
+                unifiAssignments = assignments;
+            }
             setLocalGlobalUpdatedAt(payload.updatedAtMs || 0);
 
-            if (typeof init === 'function') {
-                init();
-            }
             if (!silent) {
-                alert('Data byla nactena z Firestore');
+                alert('Globalni nastaveni bylo nacteno z Firestore');
             }
         }
 
         function scheduleCloudSave() {
             if (!window.db || !window.auth || !auth.currentUser) return;
+            if (!isGlobalAdminUser()) return;
             if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
             cloudSaveTimer = setTimeout(function() {
                 saveToCloud(true);
@@ -17470,8 +18665,9 @@
     alert('Firebase config error: ' + err.message);
   });
 
-  // --- Firestore doc, kde budeme drzet data ---
-  var GLOBAL_PATH = "rackManager/global";
+  // --- Firestore docs for global config + reports ---
+  var GLOBAL_CONFIG_PATH = "globals/config";
+  var GLOBAL_REPORTS_PATH = "globals/reports";
   // Ulozit vsechna data z localStorage do Firestore
   async function saveToCloud(silent) {
     try {
@@ -17482,29 +18678,28 @@
         }
         return;
       }
+      if (!isGlobalAdminUser()) {
+        return;
+      }
 
-      var clients = JSON.parse(localStorage.getItem('rackManagerClients') || '[]');
-      var clientData = JSON.parse(localStorage.getItem('rackManagerClientData') || '{}');
-      var lastClientId = localStorage.getItem('rackManagerLastClient') || null;
       var m365Config = JSON.parse(localStorage.getItem('rackManagerM365Config') || '{}');
       var ateraConfig = JSON.parse(localStorage.getItem('rackManagerAteraConfig') || '{}');
-      var helpdeskPayload = (typeof helpdeskTickets !== 'undefined' && Array.isArray(helpdeskTickets))
-        ? helpdeskTickets
-        : [];
+      var unifiConfig = JSON.parse(localStorage.getItem('rackManagerUnifiConfig') || '{}');
+      var unifiAssets = JSON.parse(localStorage.getItem('rackManagerUnifiAssets') || '[]');
+      var unifiAssignments = JSON.parse(localStorage.getItem('rackManagerUnifiAssignments') || '{}');
 
       var payload = {
-        clients: clients,
-        clientData: clientData,
-        lastClientId: lastClientId,
         m365Config: m365Config,
         ateraConfig: ateraConfig,
-        helpdeskTickets: helpdeskPayload,
+        unifiConfig: unifiConfig,
+        unifiAssets: unifiAssets,
+        unifiAssignments: unifiAssignments,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         updatedAtMs: Date.now(),
         updatedBy: user.email || user.uid
       };
 
-      await db.doc(GLOBAL_PATH).set(payload, { merge: true });
+      await db.doc(GLOBAL_CONFIG_PATH).set(payload, { merge: true });
       setLocalGlobalUpdatedAt(payload.updatedAtMs);
       if (!silent) {
         alert('Data byla ulozena do Firestore');
@@ -17527,10 +18722,10 @@
         return false;
       }
 
-      var snap = await db.doc(GLOBAL_PATH).get();
+      var snap = await db.doc(GLOBAL_CONFIG_PATH).get();
       if (!snap.exists) {
         if (!silent) {
-          alert('V cloudu zatim nejsou zadna data');
+          alert('V cloudu zatim neni globalni nastaveni');
         }
         return false;
       }
@@ -17550,11 +18745,13 @@
   async function syncCloudOnLogin() {
     try {
       if (!auth || !auth.currentUser || !db) return;
-      var snap = await db.doc(GLOBAL_PATH).get();
+      await fetchGlobalUserRole();
+      var snap = await db.doc(GLOBAL_CONFIG_PATH).get();
       if (!snap.exists) {
         if (hasLocalData()) {
           saveToCloud(true);
         }
+        await loadClientsFromCloud();
         return;
       }
 
@@ -17565,6 +18762,11 @@
         applyCloudData(data, true);
       } else {
         saveToCloud(true);
+      }
+      await loadClientsFromCloud();
+      if (isGlobalAdminUser()) {
+        syncExternalClients({ silent: true });
+        syncExternalAssets({ silent: true });
       }
     } catch (err) {
       console.warn('Cloud sync failed:', err);

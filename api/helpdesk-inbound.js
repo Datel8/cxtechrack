@@ -98,7 +98,7 @@ function extractAttachments(payload) {
   return Array.isArray(list) ? list : [];
 }
 
-async function uploadAttachment(bucket, ticketId, attachment) {
+async function uploadAttachment(bucket, clientId, ticketId, attachment) {
   const contentBytes = attachment.contentBytes || attachment.ContentBytes || attachment.content || attachment.data || '';
   if (!contentBytes) return null;
   const cleanName = sanitizeFileName(attachment.name || attachment.fileName || 'priloha');
@@ -109,7 +109,8 @@ async function uploadAttachment(bucket, ticketId, attachment) {
 
   const token = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
   const fileId = createId('ATT');
-  const path = `helpdesk/inbound/${ticketId}/${fileId}-${cleanName}`;
+  const safeClient = clientId || 'unassigned';
+  const path = `helpdesk/${safeClient}/inbound/${ticketId}/${fileId}-${cleanName}`;
   const file = bucket.file(path);
 
   await file.save(buffer, {
@@ -166,99 +167,99 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Missing mailbox address' });
     }
 
-    const docPath = stripQuotes(process.env.RACK_MANAGER_GLOBAL_PATH || 'rackManager/global');
-    const docRef = db.doc(docPath);
-
     const ticketId = createId('HD');
     const now = Date.now();
+    const clientsSnap = await db.collection('clients').get();
+    const clients = clientsSnap.docs.map(doc => ({ id: doc.id, ...(doc.data() || {}) }));
+
+    let clientId = payload.clientId || payload.ClientId || '';
+    let clientName = payload.clientName || payload.ClientName || '';
+
+    if (!clientId && mailbox) {
+      const domain = mailbox.includes('@') ? mailbox.split('@')[1] : '';
+      const match = clients.find((client) => {
+        const emails = Array.isArray(client.helpdeskEmails) ? client.helpdeskEmails : [];
+        const domains = Array.isArray(client.helpdeskDomains) ? client.helpdeskDomains : [];
+        const normalizedEmails = emails.map((entry) => entry.toLowerCase().trim());
+        const emailMatch = normalizedEmails
+          .filter((entry) => entry.includes('@'))
+          .map(normalizeEmail)
+          .includes(mailbox);
+        const emailDomainMatch = normalizedEmails
+          .filter((entry) => !entry.includes('@'))
+          .map((entry) => entry.replace(/^@/, ''))
+          .includes(domain);
+        const domainMatch = domain
+          ? domains.map((item) => item.toLowerCase().replace(/^@/, '')).includes(domain)
+          : false;
+        return emailMatch || domainMatch || emailDomainMatch;
+      });
+      if (match) {
+        clientId = match.id;
+        clientName = match.name || clientName;
+      }
+    }
+
+    const resolvedClientId = clientId || 'unassigned';
+    const ticketClientId = clientId || resolvedClientId;
     const attachmentsPayload = extractAttachments(payload);
     const attachmentResults = [];
 
     for (const attachment of attachmentsPayload) {
-      const saved = await uploadAttachment(bucket, ticketId, attachment);
+      const saved = await uploadAttachment(bucket, resolvedClientId, ticketId, attachment);
       if (saved) attachmentResults.push(saved);
     }
 
-    await db.runTransaction(async (transaction) => {
-      const snap = await transaction.get(docRef);
-      const data = snap.exists ? (snap.data() || {}) : {};
-      const clients = Array.isArray(data.clients) ? data.clients : [];
-      let clientId = payload.clientId || payload.ClientId || '';
-      let clientName = payload.clientName || payload.ClientName || '';
-
-      if (!clientId && mailbox) {
-        const domain = mailbox.includes('@') ? mailbox.split('@')[1] : '';
-        const match = clients.find((client) => {
-          const emails = Array.isArray(client.helpdeskEmails) ? client.helpdeskEmails : [];
-          const domains = Array.isArray(client.helpdeskDomains) ? client.helpdeskDomains : [];
-          const normalizedEmails = emails.map((entry) => entry.toLowerCase().trim());
-          const emailMatch = normalizedEmails
-            .filter((entry) => entry.includes('@'))
-            .map(normalizeEmail)
-            .includes(mailbox);
-          const emailDomainMatch = normalizedEmails
-            .filter((entry) => !entry.includes('@'))
-            .map((entry) => entry.replace(/^@/, ''))
-            .includes(domain);
-          const domainMatch = domain
-            ? domains.map((item) => item.toLowerCase().replace(/^@/, '')).includes(domain)
-            : false;
-          return emailMatch || domainMatch || emailDomainMatch;
-        });
-        if (match) {
-          clientId = match.id;
-          clientName = match.name || clientName;
+    const ticket = {
+      id: ticketId,
+      title: subject || '(bez predmetu)',
+      description: body || '',
+      clientId: ticketClientId,
+      clientName: clientName || (resolvedClientId === 'unassigned' ? 'Neprirazeno' : ''),
+      status: 'open',
+      priority: 'medium',
+      assignee: '',
+      dueAt: '',
+      source: 'email',
+      tags: [],
+      createdAt: now,
+      updatedAt: now,
+      resolvedAt: null,
+      attachments: attachmentResults,
+      chat: [
+        {
+          id: createId('MSG'),
+          channel: 'customer',
+          author: fromName || fromAddress || 'Zakaznik',
+          content: body || '',
+          createdAt: now
         }
+      ],
+      requesterEmail: fromAddress || '',
+      createdByEmail: fromAddress || '',
+      createdByName: fromName || '',
+      external: {
+        provider: 'email',
+        externalId: messageId || '',
+        externalUrl: '',
+        lastSyncAt: now,
+        status: 'linked',
+        mailbox: mailbox,
+        sender: fromAddress
       }
+    };
 
-      const ticket = {
-        id: ticketId,
-        title: subject || '(bez predmetu)',
-        description: body || '',
-        clientId: clientId || '',
-        clientName: clientName || '',
-        status: 'open',
-        priority: 'medium',
-        assignee: '',
-        dueAt: '',
-        source: 'email',
-        tags: [],
-        createdAt: now,
-        updatedAt: now,
-        resolvedAt: null,
-        attachments: attachmentResults,
-        chat: [
-          {
-            id: createId('MSG'),
-            channel: 'customer',
-            author: fromName || fromAddress || 'Zakaznik',
-            content: body || '',
-            createdAt: now
-          }
-        ],
-        requesterEmail: fromAddress || '',
-        createdByEmail: fromAddress || '',
-        createdByName: fromName || '',
-        external: {
-          provider: 'email',
-          externalId: messageId || '',
-          externalUrl: '',
-          lastSyncAt: now,
-          status: 'linked',
-          mailbox: mailbox,
-          sender: fromAddress
-        }
-      };
+    if (resolvedClientId === 'unassigned') {
+      await db.collection('clients')
+        .doc('unassigned')
+        .set({ name: 'Neprirazeno', source: 'system' }, { merge: true });
+    }
 
-      const tickets = Array.isArray(data.helpdeskTickets) ? data.helpdeskTickets : [];
-      tickets.push(ticket);
-      transaction.set(docRef, {
-        helpdeskTickets: tickets,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAtMs: Date.now(),
-        updatedBy: 'helpdesk-inbound'
-      }, { merge: true });
-    });
+    await db.collection('clients')
+      .doc(resolvedClientId)
+      .collection('helpdeskTickets')
+      .doc(ticketId)
+      .set(ticket, { merge: true });
 
     return res.status(200).json({ ok: true, ticketId });
   } catch (err) {
