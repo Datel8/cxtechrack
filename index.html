@@ -6372,7 +6372,7 @@
                         </div>
                         <div class="computers-filter-group">
                             <label for="computersSearch">Hledat</label>
-                            <input type="text" id="computersSearch" placeholder="Nazev, OS, IP, uzivatel" oninput="updateComputersFilters()">
+                            <input type="text" id="computersSearch" placeholder="Nazev, OS, IP, WAN, uzivatel" oninput="updateComputersFilters()">
                         </div>
                     </aside>
                     <section class="computers-panel">
@@ -9270,6 +9270,8 @@
             const lastSeenRaw = item.LastSeen || item.lastSeen || item.LastSeenTime || item.lastSeenTime || item.LastSeenAt || item.lastSeenAt;
             const lastSeenAt = parseAteraDate(lastSeenRaw);
             const deviceType = item.DeviceType || item.deviceType || item.DeviceTypeDescription || item.deviceTypeDescription || item.AgentType;
+            const wanIps = normalizeWanIps(item);
+            const wanIp = wanIps.length ? wanIps.join(', ') : '';
 
             return {
                 id: `atera-agent-${rawId}`,
@@ -9279,6 +9281,8 @@
                 clientName: clientName || '',
                 os: os || '',
                 ip: ip || '',
+                wanIp: wanIp,
+                wanIps: wanIps,
                 user: user || '',
                 status,
                 lastSeenAt,
@@ -9472,6 +9476,7 @@
                         asset.name,
                         asset.os,
                         asset.ip,
+                        asset.wanIp,
                         asset.user,
                         asset.clientName,
                         asset.externalId
@@ -9504,6 +9509,89 @@
         function formatComputersLastSeen(asset) {
             if (!asset || !asset.lastSeenAt) return '-';
             return asset.lastSeenAt.toISOString().slice(0, 16).replace('T', ' ');
+        }
+
+        function normalizeWanIps(item) {
+            if (!item || typeof item !== 'object') return [];
+            const values = [];
+            const addValue = (value) => {
+                if (!value) return;
+                if (typeof value === 'string') {
+                    const cleaned = value.trim();
+                    if (cleaned) values.push(cleaned);
+                    return;
+                }
+                if (typeof value === 'number') {
+                    values.push(String(value));
+                }
+            };
+            const readValue = (value) => {
+                if (!value) return;
+                if (Array.isArray(value)) {
+                    value.forEach(readValue);
+                    return;
+                }
+                if (typeof value === 'object') {
+                    addValue(value.ip || value.IP || value.address || value.Address);
+                    return;
+                }
+                addValue(value);
+            };
+            const keys = [
+                'PublicIP',
+                'PublicIp',
+                'publicIp',
+                'PublicIPAddress',
+                'PublicIpAddress',
+                'PublicIPAddresses',
+                'ExternalIP',
+                'ExternalIp',
+                'ExternalIPAddress',
+                'ExternalIpAddress',
+                'WANIP',
+                'WanIP',
+                'WanIp',
+                'WANIpAddress',
+                'WANIPAddress',
+                'InternetIP',
+                'InternetIp',
+                'InternetIPAddress',
+                'InternetIpAddress',
+                'WanAddress',
+                'WanAddresses',
+                'PublicAddresses',
+                'ExternalAddresses'
+            ];
+            keys.forEach((key) => {
+                if (Object.prototype.hasOwnProperty.call(item, key)) {
+                    readValue(item[key]);
+                }
+            });
+            const containers = [
+                item.NetworkAdapters,
+                item.networkAdapters,
+                item.NetworkInterfaces,
+                item.networkInterfaces,
+                item.Interfaces,
+                item.interfaces,
+                item.Networks,
+                item.networks
+            ];
+            containers.forEach((container) => {
+                if (Array.isArray(container)) {
+                    container.forEach((entry) => {
+                        keys.forEach((key) => {
+                            if (entry && Object.prototype.hasOwnProperty.call(entry, key)) {
+                                readValue(entry[key]);
+                            }
+                        });
+                    });
+                }
+            });
+            return values
+                .map((value) => value.trim())
+                .filter(Boolean)
+                .filter((value, index, arr) => arr.indexOf(value) === index);
         }
 
         function renderComputersMetrics(list) {
@@ -9554,6 +9642,7 @@
                 const meta = [
                     asset.os ? `OS: ${asset.os}` : null,
                     asset.ip ? `IP: ${asset.ip}` : null,
+                    asset.wanIp ? `WAN: ${asset.wanIp}` : null,
                     asset.user ? `Uzivatel: ${asset.user}` : null,
                     `Posledni kontakt: ${formatComputersLastSeen(asset)}`
                 ].filter(Boolean).join(' | ');
@@ -11161,25 +11250,65 @@
             let stream = null;
             try {
                 stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                const track = stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
+                if (!track) {
+                    alert('Sdileni obrazovky se nepodarilo spustit.');
+                    return;
+                }
                 const video = document.createElement('video');
+                video.muted = true;
+                video.playsInline = true;
                 video.srcObject = stream;
                 await video.play().catch(() => {});
                 await new Promise((resolve) => {
-                    if (video.readyState >= 2) resolve();
-                    video.onloadedmetadata = resolve;
+                    let done = false;
+                    const finish = () => {
+                        if (done) return;
+                        done = true;
+                        resolve();
+                    };
+                    const timer = setTimeout(finish, 1200);
+                    const handler = () => {
+                        clearTimeout(timer);
+                        finish();
+                    };
+                    if (video.readyState >= 2) {
+                        handler();
+                        return;
+                    }
+                    video.onloadedmetadata = handler;
+                    video.onloadeddata = handler;
                 });
+                if (typeof video.requestVideoFrameCallback === 'function') {
+                    await new Promise((resolve) => {
+                        video.requestVideoFrameCallback(() => resolve());
+                    });
+                } else {
+                    await new Promise((resolve) => setTimeout(resolve, 150));
+                }
 
                 const maxWidth = 1400;
                 const maxHeight = 900;
+                const settings = track.getSettings ? track.getSettings() : {};
+                const sourceWidth = video.videoWidth || settings.width || maxWidth;
+                const sourceHeight = video.videoHeight || settings.height || maxHeight;
+                if (!sourceWidth || !sourceHeight) {
+                    alert('Snimek obrazovky se nepodarilo poridit.');
+                    return;
+                }
                 const scale = Math.min(
                     1,
-                    maxWidth / (video.videoWidth || maxWidth),
-                    maxHeight / (video.videoHeight || maxHeight)
+                    maxWidth / sourceWidth,
+                    maxHeight / sourceHeight
                 );
                 const canvas = document.createElement('canvas');
-                canvas.width = Math.max(1, Math.round((video.videoWidth || maxWidth) * scale));
-                canvas.height = Math.max(1, Math.round((video.videoHeight || maxHeight) * scale));
+                canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+                canvas.height = Math.max(1, Math.round(sourceHeight * scale));
                 const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    alert('Snimek obrazovky se nepodarilo poridit.');
+                    return;
+                }
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                 let dataUrl = canvas.toDataURL('image/jpeg', 0.85);
